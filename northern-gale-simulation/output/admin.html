@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Northern Gale — Admin: Komponentreferens</title>
+<style>
+/* === Same base CSS as dashboard === */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, -apple-system, sans-serif; background: #f8f9fa; color: #212529; font-size: 14px; line-height: 1.5; }
+header { background: #fff; border-bottom: 1px solid #dee2e6; padding: 16px 24px; }
+header h1 { font-size: 20px; font-weight: 700; }
+header p { color: #6c757d; font-size: 13px; margin-top: 2px; }
+
+.input-panel { background: #fff; border-bottom: 2px solid #dee2e6; }
+.input-panel-header { display: flex; align-items: center; justify-content: space-between; padding: 6px 24px; background: #f8f9fa; border-bottom: 1px solid #dee2e6; }
+.input-panel-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #6c757d; }
+.input-panel-toggle { padding: 3px 12px; font-size: 11px; font-weight: 600; border-radius: 4px; border: 1px solid #dee2e6; background: #fff; cursor: pointer; color: #495057; }
+
+.controls { background: #fff; border-bottom: 1px solid #dee2e6; padding: 12px 24px; display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+.ctrl-group { display: flex; flex-direction: column; gap: 6px; }
+.ctrl-row { display: flex; align-items: center; gap: 8px; }
+.ctrl-label { font-size: 12px; font-weight: 700; color: #495057; text-transform: uppercase; letter-spacing: .04em; }
+.ctrl-row label { font-size: 13px; color: #495057; white-space: nowrap; }
+.ctrl-row input[type=range] { accent-color: #343a40; }
+.ctrl-row span.value { font-weight: 600; min-width: 60px; font-size: 13px; }
+
+.toggle-btn { padding: 5px 14px; border-radius: 20px; border: 2px solid transparent; font-size: 13px; font-weight: 600; cursor: default; color: #fff; opacity: 1; }
+
+.battery-label { font-size: 13px; color: #495057; }
+.battery-label input[type=checkbox] { margin-right: 6px; accent-color: #2a9d8f; width: 15px; height: 15px; }
+.battery-hint { font-size: 11px; color: #adb5bd; }
+
+.cost-toggle-label { font-size: 13px; font-weight: 600; color: #495057; display: flex; align-items: center; gap: 6px; }
+.cost-toggle-label input[type=checkbox] { accent-color: #343a40; width: 15px; height: 15px; }
+
+.dp-load-panel { min-width: 280px; }
+.dp-load-row { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 4px; }
+.dp-load-row label { min-width: 160px; color: #495057; }
+.dp-load-row input[type=range] { width: 110px; accent-color: #343a40; }
+.dp-load-row .hval { font-weight: 600; min-width: 52px; text-align: right; font-size: 13px; }
+.dp-load-summary { font-size: 12px; margin-top: 4px; color: #495057; }
+
+.speed-panel { min-width: 340px; }
+.speed-row { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 4px; }
+.speed-row label { min-width: 90px; color: #495057; }
+.speed-row input[type=range] { width: 130px; accent-color: #343a40; }
+.speed-row .spct { font-weight: 600; min-width: 36px; text-align: right; }
+.speed-row .hint { color: #adb5bd; font-size: 11px; min-width: 80px; }
+.speed-sum { font-size: 12px; margin-top: 4px; }
+.preset-row { display: flex; gap: 6px; margin-top: 6px; }
+.preset-btn { padding: 3px 10px; font-size: 12px; border-radius: 4px; border: 1px solid #dee2e6; background: #fff; cursor: default; }
+
+.hours-panel { min-width: 280px; }
+.hours-row { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 4px; }
+.hours-row label { min-width: 130px; color: #495057; }
+.hours-row input[type=range] { width: 130px; accent-color: #343a40; }
+.hours-row .hval { font-weight: 600; min-width: 52px; text-align: right; font-size: 13px; }
+.hours-total { font-size: 12px; margin-top: 4px; color: #495057; }
+
+.capex-controls { background: #fff; border-bottom: 1px solid #dee2e6; padding: 10px 24px; display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
+.capex-input-wrap { display: flex; align-items: center; gap: 6px; }
+.capex-input-wrap label { font-size: 13px; font-weight: 600; white-space: nowrap; }
+.capex-input-wrap input[type=number] { width: 88px; padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; font-weight: 700; }
+.capex-unit { font-size: 12px; color: #6c757d; }
+
+main { padding: 24px; max-width: 1400px; }
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.kpi-card { background: #fff; border-radius: 8px; border-left: 5px solid #ccc; padding: 16px 18px; box-shadow: 0 1px 3px rgba(0,0,0,.07); }
+.kpi-card .scope-name { font-size: 13px; font-weight: 700; margin-bottom: 10px; }
+.kpi-card .kpi-main { font-size: 28px; font-weight: 800; margin-bottom: 2px; }
+.kpi-card .kpi-sub { font-size: 12px; color: #6c757d; margin-bottom: 10px; }
+
+.charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+.chart-card { background: #fff; border-radius: 8px; padding: 16px 18px; box-shadow: 0 1px 3px rgba(0,0,0,.07); }
+.chart-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 12px; color: #343a40; }
+.chart-placeholder { height: 120px; background: #f8f9fa; border: 2px dashed #dee2e6; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #adb5bd; font-size: 13px; }
+
+.table-card { background: #fff; border-radius: 8px; padding: 16px 18px; box-shadow: 0 1px 3px rgba(0,0,0,.07); margin-bottom: 24px; }
+.table-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 12px; color: #343a40; }
+
+footer { padding: 16px 24px; color: #6c757d; font-size: 12px; border-top: 1px solid #dee2e6; background: #fff; }
+
+/* === Admin ID-tag overlay === */
+.id-tag {
+  display: inline-block;
+  background: #e76f51;
+  color: #fff;
+  font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 3px;
+  margin-left: 6px;
+  vertical-align: middle;
+  letter-spacing: .02em;
+  cursor: help;
+  position: relative;
+}
+.id-tag.green { background: #059669; }
+.id-tag.blue { background: #2563eb; }
+.id-tag.purple { background: #7c3aed; }
+.id-tag.gray { background: #6b7280; }
+.id-tag.teal { background: #2a9d8f; }
+.id-tag.dark { background: #343a40; }
+.id-tag.amber { background: #d97706; }
+
+/* Tooltip */
+.id-tag[data-info]:hover::after {
+  content: attr(data-info);
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f2937;
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: system-ui, sans-serif;
+  font-weight: 400;
+  white-space: nowrap;
+  z-index: 999;
+  pointer-events: none;
+}
+
+.back-link { font-size: 13px; font-weight: 600; color: #343a40; text-decoration: none; padding: 6px 14px; border: 1px solid #dee2e6; border-radius: 6px; background: #fff; white-space: nowrap; }
+.back-link:hover { background: #f0f0f0; }
+
+.legend { background: #fff; border-radius: 8px; padding: 12px 18px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.07); display: flex; flex-wrap: wrap; gap: 12px; align-items: center; font-size: 12px; color: #495057; }
+.legend-item { display: flex; align-items: center; gap: 4px; }
+</style>
+</head>
+<body>
+<div id="njord-password-gate">
+  <div class="njord-gate-box">
+    <div class="ns-logo">NS</div>
+    <h2>Njord Survey — Internal</h2>
+    <form onsubmit="return njordCheckPass()">
+      <input type="password" id="njord-gate-pwd" class="njord-gate-input"
+             placeholder="Enter password" autocomplete="off">
+      <button type="submit" class="njord-gate-btn">Open</button>
+    </form>
+    <div id="njord-gate-err" class="njord-gate-err">Incorrect password</div>
+  </div>
+</div>
+
+<header style="display:flex;align-items:center;justify-content:space-between;">
+  <div>
+    <h1>Northern Gale — Komponentreferens</h1>
+    <p>Visuell karta av alla ID-namn. Hovra över en tag för beskrivning.</p>
+  </div>
+  <a href="comparison.html" class="back-link">Tillbaka till Dashboard</a>
+</header>
+
+<!-- Legend -->
+<div style="padding: 12px 24px 0;">
+  <div class="legend">
+    <span style="font-weight:700;">Färgkoder:</span>
+    <span class="legend-item"><span class="id-tag" style="margin:0;">panel</span> Panel/struktur</span>
+    <span class="legend-item"><span class="id-tag green" style="margin:0;">scope</span> Scope & global</span>
+    <span class="legend-item"><span class="id-tag teal" style="margin:0;">cost</span> Kostnad</span>
+    <span class="legend-item"><span class="id-tag dark" style="margin:0;">hours</span> Driftstimmar</span>
+    <span class="legend-item"><span class="id-tag gray" style="margin:0;">dp</span> DP/ROV</span>
+    <span class="legend-item"><span class="id-tag amber" style="margin:0;">speed</span> Fartprofil</span>
+    <span class="legend-item"><span class="id-tag purple" style="margin:0;">capex</span> CAPEX</span>
+    <span class="legend-item"><span class="id-tag blue" style="margin:0;">output</span> Output</span>
+  </div>
+</div>
+
+<!-- INPUT PANEL — mirror of dashboard -->
+<div class="input-panel">
+  <div class="input-panel-header">
+    <span class="input-panel-title">Input Parameters <span class="id-tag" data-info="Sticky wrapper, position:sticky top:0">input-panel</span></span>
+    <span>
+      <span class="id-tag" data-info="Rubrikrad">panel-header</span>
+      <button class="input-panel-toggle">Minimera ▲ <span class="id-tag" data-info="Collapse/expand knapp">panel-collapse</span></button>
+    </span>
+  </div>
+
+  <div class="controls">
+    <!-- 1. Scope toggles -->
+    <div class="ctrl-group">
+      <div class="ctrl-label">Scopes <span class="id-tag green" data-info="4 knappar, visa/dölj scope">scope-toggles</span></div>
+      <div class="ctrl-row">
+        <button class="toggle-btn" style="background:#e76f51;">Scania DW6 Hybrid</button>
+        <button class="toggle-btn" style="background:#2a9d8f;">Diesel-Elektrisk 4 genset</button>
+        <button class="toggle-btn" style="background:#264653;">Diesel-Elektrisk 3 genset</button>
+        <button class="toggle-btn" style="background:#6c757d;">Traditionell Mekanisk</button>
+      </div>
+    </div>
+
+    <!-- 2. Bränslepris -->
+    <div class="ctrl-group">
+      <div class="ctrl-label">Bränslepris (SEK/ton) <span class="id-tag green" data-info="Slider 8000-20000, steg 500">fuel-price</span></div>
+      <div class="ctrl-row">
+        <input type="range" min="8000" max="20000" step="500" value="12000" style="width:160px" disabled>
+        <span class="value">12 000</span>
+      </div>
+    </div>
+
+    <!-- 3. Period -->
+    <div class="ctrl-group">
+      <div class="ctrl-label">Period (år) <span class="id-tag green" data-info="Slider 1-10, steg 1">period</span></div>
+      <div class="ctrl-row">
+        <input type="range" min="1" max="10" step="1" value="10" style="width:120px" disabled>
+        <span class="value">10</span>
+      </div>
+    </div>
+
+    <!-- 4. Batteri -->
+    <div class="ctrl-group">
+      <div class="ctrl-label">Batteri Peak Shaving <span class="id-tag green" data-info="Checkbox on/off, scope 1-3">battery-toggle</span></div>
+      <div class="ctrl-row">
+        <label class="battery-label">
+          <input type="checkbox" checked disabled>
+          150 kWh LFP (Scope 1–3)
+        </label>
+      </div>
+      <div class="battery-hint">Påverkar DP/ROV-bränsle: färre gensets, lägre BSFC</div>
+    </div>
+
+    <!-- 5. Kostnadskomponenter -->
+    <div class="ctrl-group">
+      <div class="ctrl-label">Kostnadskomponenter</div>
+      <div class="ctrl-row">
+        <label class="cost-toggle-label">
+          <input type="checkbox" checked disabled>
+          Inkludera bränslekostnad
+          <span class="id-tag teal" data-info="Checkbox — bränsle i beräkning">cost-fuel</span>
+        </label>
+      </div>
+      <div class="ctrl-row">
+        <label class="cost-toggle-label">
+          <input type="checkbox" checked disabled>
+          Inkludera underhållskostnad
+          <span class="id-tag teal" data-info="Checkbox — underhåll i beräkning">cost-maint</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- 6. Driftstimmar -->
+    <div class="ctrl-group hours-panel">
+      <div class="ctrl-label">Driftstimmar per år (max 8 760 h)</div>
+      <div class="hours-row">
+        <label>Sjömätning (h):</label>
+        <input type="range" min="0" max="6000" step="100" value="3800" style="width:130px" disabled>
+        <span class="hval">3 800</span>
+        <span class="id-tag dark" data-info="Slider 0-6000, steg 100">hours-survey</span>
+      </div>
+      <div class="hours-row">
+        <label>Transit (h):</label>
+        <input type="range" min="0" max="4000" step="100" value="1500" style="width:130px" disabled>
+        <span class="hval">1 500</span>
+        <span class="id-tag dark" data-info="Slider 0-4000, steg 100">hours-transit</span>
+      </div>
+      <div class="hours-row">
+        <label>DP/ROV (h):</label>
+        <input type="range" min="0" max="3000" step="100" value="1200" style="width:130px" disabled>
+        <span class="hval">1 200</span>
+        <span class="id-tag dark" data-info="Slider 0-3000, steg 100">hours-dp</span>
+      </div>
+      <div class="hours-row">
+        <label>Kajliggande (h):</label>
+        <span class="hval" style="color:#6c757d;">2 260</span>
+        <span class="id-tag dark" data-info="Display — beräknad: 8760 − övriga">hours-idle</span>
+      </div>
+      <div class="hours-total">
+        Total: <strong>6 500</strong> h/år (271 dygn)
+        <span class="id-tag dark" data-info="Display — total h/år + dygn">hours-total</span>
+      </div>
+    </div>
+
+    <!-- 7. DP/ROV -->
+    <div class="ctrl-group dp-load-panel">
+      <div class="ctrl-label">DP/ROV — Lastprofil (Scope 1–3)</div>
+      <div class="dp-load-row">
+        <label>Thruster snittlast (%):</label>
+        <input type="range" min="10" max="90" step="5" value="50" disabled>
+        <span class="hval">50 %</span>
+        <span class="id-tag gray" data-info="Slider 10-90%, steg 5">dp-thruster</span>
+      </div>
+      <div class="dp-load-row">
+        <label>Propulsion per axel (kW):</label>
+        <input type="range" min="0" max="100" step="10" value="0" disabled>
+        <span class="hval">0 kW</span>
+        <span class="id-tag gray" data-info="Slider 0-100kW, steg 10">dp-prop</span>
+      </div>
+      <div class="dp-load-row">
+        <label>Hotel-last (kW):</label>
+        <input type="range" min="20" max="150" step="10" value="30" disabled>
+        <span class="hval">30 kW</span>
+        <span class="id-tag gray" data-info="Slider 20-150kW, steg 10">dp-hotel</span>
+      </div>
+      <div class="dp-load-summary">
+        Total DP-last: <strong>180</strong> kW | Gensets: <strong>1</strong> st
+        <span class="id-tag gray" data-info="Display — summering">dp-summary</span>
+      </div>
+    </div>
+
+    <!-- 8. Fartprofil -->
+    <div class="ctrl-group speed-panel">
+      <div class="ctrl-label">Sjömätning — Fartprofil (fördela till 100%)</div>
+      <div class="speed-row">
+        <label>6.3 knop:</label>
+        <input type="range" min="0" max="100" step="5" value="20" style="width:130px" disabled>
+        <span class="spct">20%</span>
+        <span class="hint">~99 kW/axel</span>
+      </div>
+      <div class="speed-row">
+        <label>7 knop:</label>
+        <input type="range" min="0" max="100" step="5" value="30" style="width:130px" disabled>
+        <span class="spct">30%</span>
+        <span class="hint">~135 kW/axel</span>
+      </div>
+      <div class="speed-row">
+        <label>8.3 knop:</label>
+        <input type="range" min="0" max="100" step="5" value="25" style="width:130px" disabled>
+        <span class="spct">25%</span>
+        <span class="hint">~171 kW/axel</span>
+      </div>
+      <div class="speed-row">
+        <label>9 knop:</label>
+        <input type="range" min="0" max="100" step="5" value="15" style="width:130px" disabled>
+        <span class="spct">15%</span>
+        <span class="hint">~242 kW/axel</span>
+      </div>
+      <div class="speed-row">
+        <label>10 knop:</label>
+        <input type="range" min="0" max="100" step="5" value="10" style="width:130px" disabled>
+        <span class="spct">10%</span>
+        <span class="hint">~315 kW/axel</span>
+      </div>
+      <div style="margin-top:2px;">
+        <span class="id-tag amber" data-info="5 fart-sliders, 0-100% per fart, steg 5">speed-profile</span>
+      </div>
+      <div class="speed-sum">Summa: <strong>100</strong>% <span class="id-tag amber" data-info="Display — summa med varning om ≠100%">speed-sum</span></div>
+      <div class="preset-row">
+        <button class="preset-btn">Låg fart (6-7 kn)</button>
+        <button class="preset-btn">Blandad (default)</button>
+        <button class="preset-btn">Hög fart (8-10 kn)</button>
+        <span class="id-tag amber" data-info="3 preset-knappar">speed-presets</span>
+      </div>
+      <div style="font-size:11px; color:#adb5bd; margin-top:4px;">Gäller enbart sjömätningstimmar</div>
+    </div>
+  </div>
+
+  <!-- CAPEX -->
+  <div class="capex-controls">
+    <label style="font-size:13px; font-weight:600; color:#495057; display:flex; align-items:center; gap:6px;">
+      <input type="checkbox" checked disabled style="accent-color:#343a40; width:15px; height:15px;">
+      Inkludera CAPEX i TCO
+      <span class="id-tag purple" data-info="Checkbox — CAPEX on/off">capex-toggle</span>
+    </label>
+    <div style="display:flex; flex-wrap:wrap; gap:16px;">
+      <div class="capex-input-wrap">
+        <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e76f51;"></span>
+        <label>Scania DW6 Hybrid:</label>
+        <input type="number" value="21.9" disabled>
+        <span class="capex-unit">MSEK</span>
+      </div>
+      <div class="capex-input-wrap">
+        <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#2a9d8f;"></span>
+        <label>Diesel-Elektrisk 4 genset:</label>
+        <input type="number" value="27.7" disabled>
+        <span class="capex-unit">MSEK</span>
+      </div>
+      <div class="capex-input-wrap">
+        <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#264653;"></span>
+        <label>Diesel-Elektrisk 3 genset:</label>
+        <input type="number" value="21.2" disabled>
+        <span class="capex-unit">MSEK</span>
+      </div>
+      <div class="capex-input-wrap">
+        <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#6c757d;"></span>
+        <label>Traditionell Mekanisk:</label>
+        <input type="number" value="11.8" disabled>
+        <span class="capex-unit">MSEK</span>
+      </div>
+      <span class="id-tag purple" data-info="Number inputs — CAPEX per scope i MSEK">capex-inputs</span>
+    </div>
+  </div>
+</div>
+
+<!-- OUTPUT SECTIONS -->
+<main>
+  <!-- KPI cards -->
+  <div style="margin-bottom:8px; font-size: 12px; font-weight:700; color:#6c757d; text-transform:uppercase; letter-spacing:.04em;">
+    Output-sektioner
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card" style="border-left-color:#e76f51;">
+      <div class="scope-name">Scania DW6 Hybrid</div>
+      <div class="kpi-main" style="color:#e76f51;">9 010 476 kr</div>
+      <div class="kpi-sub">TCO 10 år (CAPEX + OPEX)</div>
+    </div>
+    <div class="kpi-card" style="border-left-color:#2a9d8f;">
+      <div class="scope-name">Diesel-Elektrisk 4 genset</div>
+      <div class="kpi-main" style="color:#2a9d8f;">9 093 009 kr</div>
+      <div class="kpi-sub">TCO 10 år (CAPEX + OPEX)</div>
+    </div>
+    <div class="kpi-card" style="border-left-color:#264653;">
+      <div class="scope-name">Diesel-Elektrisk 3 genset</div>
+      <div class="kpi-main" style="color:#264653;">9 075 012 kr</div>
+      <div class="kpi-sub">TCO 10 år (CAPEX + OPEX)</div>
+    </div>
+    <div class="kpi-card" style="border-left-color:#6c757d;">
+      <div class="scope-name">Traditionell Mekanisk</div>
+      <div class="kpi-main" style="color:#6c757d;">7 492 459 kr</div>
+      <div class="kpi-sub">TCO 10 år (CAPEX + OPEX)</div>
+    </div>
+  </div>
+  <div style="text-align:center; margin: -8px 0 24px;"><span class="id-tag blue" data-info="KPI kort-grid, ett per synligt scope">kpi-cards</span></div>
+
+  <!-- TCO chart -->
+  <div style="background:#fff; border-radius:8px; padding:16px 18px; box-shadow:0 1px 3px rgba(0,0,0,.07); margin-bottom:24px;">
+    <h3 style="font-size:14px; font-weight:700; margin-bottom:12px; color:#343a40;">Total Cost of Ownership — CAPEX + Ackumulerad OPEX</h3>
+    <div class="chart-placeholder">[ TCO stapeldiagram ] <span class="id-tag blue" data-info="Stacked bar chart — CAPEX + OPEX">chart-tco</span></div>
+  </div>
+
+  <!-- 2 charts -->
+  <div class="charts-grid">
+    <div class="chart-card">
+      <h3>Ackumulerad totalkostnad</h3>
+      <div class="chart-placeholder">[ Linjediagram ] <span class="id-tag blue" data-info="Linjediagram — ackumulerad kostnad över tid">chart-cumulative</span></div>
+    </div>
+    <div class="chart-card">
+      <h3>Årlig kostnad — bränsle + underhåll</h3>
+      <div class="chart-placeholder">[ Stapeldiagram ] <span class="id-tag blue" data-info="Grouped bar — årlig kostnad">chart-annual</span></div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-card">
+    <h3>Sammanfattning</h3>
+    <div class="chart-placeholder" style="height:60px;">[ Detaljerad tabell ] <span class="id-tag blue" data-info="Sammanfattningstabell per scope">summary-table</span></div>
+  </div>
+</main>
+
+<footer>
+  Komponentreferens v1.0 — 2026-04-02 · Hovra över <span class="id-tag" style="margin:0;">ID-taggar</span> för beskrivning · Källa: <code>docs/ui-components.md</code>
+</footer>
+
+</body>
+</html>

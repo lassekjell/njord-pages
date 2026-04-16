@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Njord Survey | Presentations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --njord-red: #da2129;
+    --njord-dark-red: #84160e;
+    --njord-navy: #0a1e2a;
+    --njord-teal: #21bdbe;
+    --njord-blue: #244b67;
+    --njord-dark: #293133;
+    --njord-light: #f5f5f5;
+    --njord-white: #ffffff;
+    --njord-gray: #6b7280;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--njord-navy);
+    color: var(--njord-white);
+    min-height: 100vh;
+  }
+
+  .header {
+    background: linear-gradient(135deg, var(--njord-navy) 0%, var(--njord-blue) 100%);
+    border-bottom: 3px solid var(--njord-red);
+    padding: 2rem 2rem 1.5rem;
+  }
+
+  .header-content {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .logo-placeholder {
+    width: 48px;
+    height: 48px;
+    background: var(--njord-red);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+
+  .header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .header p {
+    color: rgba(255,255,255,0.6);
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+  }
+
+  .main {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .section-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--njord-teal);
+    margin-bottom: 1rem;
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-decoration: none;
+    color: var(--njord-white);
+    transition: all 0.2s ease;
+    display: block;
+  }
+
+  .card:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: var(--njord-teal);
+    transform: translateY(-2px);
+  }
+
+  .card-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+  }
+
+  .tag-presentation { background: var(--njord-red); }
+  .tag-demo { background: var(--njord-teal); color: var(--njord-navy); }
+  .tag-tool { background: var(--njord-blue); }
+  .tag-training { background: #7c3aed; }
+
+  .card h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+  }
+
+  .card p {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.5;
+  }
+
+  .card-date {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.4);
+    margin-top: 0.75rem;
+  }
+
+  .footer {
+    text-align: center;
+    padding: 2rem;
+    color: rgba(255,255,255,0.3);
+    font-size: 0.8rem;
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+
+  @media (max-width: 640px) {
+    .card-grid { grid-template-columns: 1fr; }
+    .header-content { flex-direction: column; text-align: center; }
+  }
+</style>
+<style>
+/* ─── PASSWORD GATE ─── */
+#njord-password-gate {
+  position: fixed; inset: 0; z-index: 99999;
+  background: #0a1e2a;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+#njord-password-gate.unlocked {
+  opacity: 0; visibility: hidden; pointer-events: none;
+}
+.njord-gate-box { text-align: center; max-width: 380px; width: 90%; }
+.njord-gate-box h2 {
+  color: white; font-size: 1.1rem; font-weight: 500;
+  margin-bottom: 1.5rem; opacity: 0.8;
+}
+.njord-gate-box .ns-logo {
+  width: 60px; height: 60px; background: #da2129; border-radius: 12px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 1.4rem; color: white; margin-bottom: 1.5rem;
+}
+.njord-gate-input {
+  width: 100%; padding: 0.85rem 1.2rem;
+  border: 2px solid rgba(255,255,255,0.15); border-radius: 10px;
+  background: rgba(255,255,255,0.07); color: white;
+  font-family: inherit; font-size: 1rem; outline: none;
+  transition: border-color 0.2s; margin-bottom: 0.75rem;
+}
+.njord-gate-input::placeholder { color: rgba(255,255,255,0.35); }
+.njord-gate-input:focus { border-color: #21bdbe; }
+.njord-gate-input.error {
+  border-color: #da2129;
+  animation: njord-shake 0.4s ease;
+}
+.njord-gate-btn {
+  width: 100%; padding: 0.85rem; border: none; border-radius: 10px;
+  background: #da2129; color: white; font-family: inherit;
+  font-size: 0.95rem; font-weight: 600; cursor: pointer;
+  transition: background 0.2s;
+}
+.njord-gate-btn:hover { background: #84160e; }
+.njord-gate-err {
+  color: #da2129; font-size: 0.8rem; margin-top: 0.75rem;
+  opacity: 0; transition: opacity 0.3s;
+}
+.njord-gate-err.visible { opacity: 1; }
+@keyframes njord-shake {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+</style>
+</head>
+<body>
+<div id="njord-password-gate">
+  <div class="njord-gate-box">
+    <div class="ns-logo">NS</div>
+    <h2>Njord Survey — Internal</h2>
+    <form onsubmit="return njordCheckPass()">
+      <input type="password" id="njord-gate-pwd" class="njord-gate-input"
+             placeholder="Enter password" autocomplete="off">
+      <button type="submit" class="njord-gate-btn">Open</button>
+    </form>
+    <div id="njord-gate-err" class="njord-gate-err">Incorrect password</div>
+  </div>
+</div>
+
+
+<div class="header">
+  <div class="header-content">
+    <div class="logo-placeholder">NS</div>
+    <div>
+      <h1>Njord Survey — Presentations</h1>
+      <p>Internal presentations & visualizations</p>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <div class="section-label">Presentations</div>
+  <div class="card-grid">
+
+    <a href="ai-presentation/index.html" class="card">
+      <span class="card-tag tag-presentation">Presentation</span>
+      <h3>AI & Claude | Njord Survey</h3>
+      <p>Presentation om hur AI och Claude kan stödja Njord Surveys verksamhet.</p>
+      <div class="card-date">April 2025</div>
+    </a>
+
+  </div>
+
+  <div class="section-label">Demos & Visualizations</div>
+  <div class="card-grid">
+
+    <a href="ai-presentation/demos/vessel-motion-simulation.html" class="card">
+      <span class="card-tag tag-demo">Demo</span>
+      <h3>Vessel Motion Simulation</h3>
+      <p>Interaktiv simulering av fartygsrörelser.</p>
+      <div class="card-date">April 2025</div>
+    </a>
+
+    <a href="ai-presentation/demos/vessel-energy-flow.html" class="card">
+      <span class="card-tag tag-demo">Demo</span>
+      <h3>Vessel Energy Flow</h3>
+      <p>Visualisering av energiflöden ombord.</p>
+      <div class="card-date">April 2025</div>
+    </a>
+
+    <a href="ai-presentation/demos/cockpit-beslutsstod.html" class="card">
+      <span class="card-tag tag-demo">Demo</span>
+      <h3>Cockpit Beslutsstöd</h3>
+      <p>AI-baserat beslutsstöd för bryggan.</p>
+      <div class="card-date">April 2025</div>
+    </a>
+
+  </div>
+
+  <div class="section-label">Tools & Training</div>
+  <div class="card-grid">
+
+    <a href="quiz-offshore-sanningar.html" class="card">
+      <span class="card-tag tag-training">Training</span>
+      <h3>Quiz: Offshore Sanningar</h3>
+      <p>Interaktivt quiz om offshore-verkligheter.</p>
+      <div class="card-date">2025</div>
+    </a>
+
+    <a href="operations/rutiner/maintenance-philosophy-northern-storm.html" class="card">
+      <span class="card-tag tag-tool">Operations</span>
+      <h3>Maintenance Philosophy — Northern Storm</h3>
+      <p>Underhållsfilosofi och strategi för Northern Storm.</p>
+      <div class="card-date">2025</div>
+    </a>
+
+  </div>
+
+</div>
+
+<div class="footer">
+  Njord Survey &mdash; Internal use only
+</div>
+
+
+<script>
+function njordCheckPass() {
+  var p = document.getElementById('njord-gate-pwd').value;
+  if (p === 'njord2026') {
+    document.getElementById('njord-password-gate').classList.add('unlocked');
+    sessionStorage.setItem('njord-unlocked', '1');
+    return false;
+  }
+  var inp = document.getElementById('njord-gate-pwd');
+  inp.classList.add('error');
+  document.getElementById('njord-gate-err').classList.add('visible');
+  setTimeout(function(){ inp.classList.remove('error'); }, 500);
+  return false;
+}
+if (sessionStorage.getItem('njord-unlocked') === '1') {
+  document.addEventListener('DOMContentLoaded', function() {
+    var g = document.getElementById('njord-password-gate');
+    if (g) g.classList.add('unlocked');
+  });
+}
+</script>
+
+</body>
+</html>

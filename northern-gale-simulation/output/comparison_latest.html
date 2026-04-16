@@ -1,0 +1,1724 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Northern Gale — Jämförelse Drivlina</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, -apple-system, sans-serif; background: #f8f9fa; color: #212529; font-size: 14px; line-height: 1.5; }
+header { background: #fff; border-bottom: 1px solid #dee2e6; padding: 16px 24px; }
+header h1 { font-size: 20px; font-weight: 700; }
+header p { color: #6c757d; font-size: 13px; margin-top: 2px; }
+
+.input-panel { position: sticky; top: 0; z-index: 100; background: #fff; border-bottom: 2px solid #dee2e6; box-shadow: 0 2px 8px rgba(0,0,0,.08); transition: box-shadow .2s; }
+.input-panel.collapsed .controls, .input-panel.collapsed .capex-controls { display: none; }
+.input-panel-header { display: flex; align-items: center; justify-content: space-between; padding: 6px 24px; background: #f8f9fa; border-bottom: 1px solid #dee2e6; }
+.input-panel-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #6c757d; }
+.input-panel-toggle { padding: 3px 12px; font-size: 11px; font-weight: 600; border-radius: 4px; border: 1px solid #dee2e6; background: #fff; cursor: pointer; color: #495057; }
+.input-panel-toggle:hover { background: #f0f0f0; }
+
+.controls { background: #fff; border-bottom: 1px solid #dee2e6; padding: 12px 24px; }
+.controls-top { display: flex; justify-content: center; padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid #f0f0f0; }
+.controls-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px 24px; }
+.ctrl-group { display: flex; flex-direction: column; gap: 6px; }
+.ctrl-row { display: flex; align-items: center; gap: 8px; }
+.ctrl-label { font-size: 12px; font-weight: 700; color: #495057; text-transform: uppercase; letter-spacing: .04em; }
+.ctrl-row label { font-size: 13px; color: #495057; white-space: nowrap; }
+.ctrl-row input[type=range] { accent-color: #343a40; }
+.ctrl-row span.value { font-weight: 600; min-width: 60px; font-size: 13px; }
+
+.toggle-btn { padding: 5px 14px; border-radius: 20px; border: 2px solid transparent; font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity .15s; }
+.toggle-btn.active { opacity: 1; color: #fff; }
+.toggle-btn.inactive { opacity: 0.45; background: #fff !important; }
+
+.battery-label { font-size: 13px; color: #495057; cursor: pointer; }
+.battery-label input[type=checkbox] { margin-right: 6px; accent-color: #2a9d8f; width: 15px; height: 15px; cursor: pointer; }
+.battery-hint { font-size: 11px; color: #adb5bd; }
+
+.cost-toggle-label { font-size: 13px; font-weight: 600; color: #495057; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+.cost-toggle-label input[type=checkbox] { accent-color: #343a40; width: 15px; height: 15px; cursor: pointer; }
+
+.dp-load-panel { min-width: 280px; }
+.dp-load-row { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 4px; }
+.dp-load-row label { min-width: 160px; color: #495057; }
+.dp-load-row input[type=range] { width: 110px; accent-color: #343a40; }
+.dp-load-row .hval { font-weight: 600; min-width: 52px; text-align: right; font-size: 13px; }
+.dp-load-summary { font-size: 12px; margin-top: 4px; color: #495057; }
+
+.speed-panel { min-width: 340px; }
+.speed-row { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 4px; }
+.speed-row label { min-width: 90px; color: #495057; }
+.speed-row input[type=range] { width: 130px; accent-color: #343a40; }
+.speed-row .spct { font-weight: 600; min-width: 36px; text-align: right; }
+.speed-row .hint { color: #adb5bd; font-size: 11px; min-width: 80px; }
+.speed-sum { font-size: 12px; margin-top: 4px; }
+.speed-sum strong { color: #212529; }
+.speed-sum.warn strong { color: #dc3545; }
+.preset-row { display: flex; gap: 6px; margin-top: 6px; }
+.preset-btn { padding: 3px 10px; font-size: 12px; border-radius: 4px; border: 1px solid #dee2e6; background: #fff; cursor: pointer; }
+.preset-btn:hover { background: #f0f0f0; }
+
+.hours-panel { min-width: 280px; }
+.hours-row { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 4px; }
+.hours-row label { min-width: 130px; color: #495057; }
+.hours-row input[type=range] { width: 130px; accent-color: #343a40; }
+.hours-row .hval { font-weight: 600; min-width: 52px; text-align: right; font-size: 13px; }
+.hours-total { font-size: 12px; margin-top: 4px; color: #495057; }
+
+.capex-controls { background: #fff; border-bottom: 1px solid #dee2e6; padding: 10px 24px; display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
+.capex-input-wrap { display: flex; align-items: center; gap: 6px; }
+.capex-input-wrap label { font-size: 13px; font-weight: 600; white-space: nowrap; }
+.capex-input-wrap input[type=number] { width: 88px; padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; font-weight: 700; }
+.capex-unit { font-size: 12px; color: #6c757d; }
+
+.tco-chart-card { background: #fff; border-radius: 8px; padding: 16px 18px; box-shadow: 0 1px 3px rgba(0,0,0,.07); margin-bottom: 24px; }
+.tco-chart-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 12px; color: #343a40; }
+.warn-cell { color: #dc3545; font-weight: 700; }
+
+main { padding: 24px; max-width: 1400px; }
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.kpi-card { background: #fff; border-radius: 8px; border-left: 5px solid #ccc; padding: 16px 18px; box-shadow: 0 1px 3px rgba(0,0,0,.07); }
+.kpi-card .scope-name { font-size: 13px; font-weight: 700; margin-bottom: 10px; }
+.kpi-card .kpi-main { font-size: 28px; font-weight: 800; margin-bottom: 2px; }
+.kpi-card .kpi-sub { font-size: 12px; color: #6c757d; margin-bottom: 10px; }
+.kpi-card .kpi-rows { border-top: 1px solid #f0f0f0; padding-top: 8px; }
+.kpi-row { display: flex; justify-content: space-between; font-size: 12px; padding: 2px 0; }
+.kpi-row .label { color: #6c757d; }
+.kpi-row .val { font-weight: 600; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; margin-top: 6px; }
+.badge-baseline { background: #dee2e6; color: #495057; }
+.badge-saving { background: #d1fae5; color: #065f46; }
+.badge-battery { background: #dbeafe; color: #1e40af; font-size: 10px; padding: 1px 6px; margin-left: 4px; }
+
+.charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+@media (max-width: 900px) { .charts-grid { grid-template-columns: 1fr; } }
+.chart-card { background: #fff; border-radius: 8px; padding: 16px 18px; box-shadow: 0 1px 3px rgba(0,0,0,.07); }
+.chart-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 12px; color: #343a40; }
+.chart-wrap { position: relative; height: 280px; }
+
+.table-card { background: #fff; border-radius: 8px; padding: 16px 18px; box-shadow: 0 1px 3px rgba(0,0,0,.07); margin-bottom: 24px; overflow-x: auto; }
+.table-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 12px; color: #343a40; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #6c757d; border-bottom: 2px solid #dee2e6; padding: 6px 10px; white-space: nowrap; }
+td { padding: 8px 10px; border-bottom: 1px solid #f0f0f0; }
+tr:last-child td { border-bottom: none; }
+td.scope-cell { font-weight: 700; }
+.scope-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.dp-section-header { background: #f8f9fa; font-weight: 700; font-size: 12px; color: #495057; }
+.dp-ref-selector { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; align-items: center; }
+.dp-ref-selector span { font-size: 12px; color: #6c757d; margin-right: 4px; }
+.dp-ref-btn { padding: 3px 10px; font-size: 12px; border-radius: 4px; border: 1px solid #dee2e6; background: #fff; cursor: pointer; }
+.dp-ref-btn.active-ref { background: #343a40; color: #fff; border-color: #343a40; }
+.saving-cell { color: #065f46; font-weight: 600; }
+
+footer { padding: 16px 24px; color: #6c757d; font-size: 12px; border-top: 1px solid #dee2e6; background: #fff; }
+</style>
+</head>
+<body>
+<div id="njord-password-gate">
+  <div class="njord-gate-box">
+    <div class="ns-logo">NS</div>
+    <h2>Njord Survey — Internal</h2>
+    <form onsubmit="return njordCheckPass()">
+      <input type="password" id="njord-gate-pwd" class="njord-gate-input"
+             placeholder="Enter password" autocomplete="off">
+      <button type="submit" class="njord-gate-btn">Open</button>
+    </form>
+    <div id="njord-gate-err" class="njord-gate-err">Incorrect password</div>
+  </div>
+</div>
+
+<header style="display:flex;align-items:center;justify-content:space-between;">
+  <div>
+    <h1>Northern Gale — Drivlina Jämförelse</h1>
+    <p>Livscykelkostnad och bränsleförbrukning — 4 alternativa drivlinekoncept</p>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <a href="admin.html" style="font-size:13px;font-weight:600;color:#6c757d;text-decoration:none;padding:6px 14px;border:1px solid #dee2e6;border-radius:6px;background:#fff;white-space:nowrap;">Admin</a>
+    <a href="assumptions.html" style="font-size:13px;font-weight:600;color:#343a40;text-decoration:none;padding:6px 14px;border:1px solid #dee2e6;border-radius:6px;background:#fff;white-space:nowrap;">Data & Antaganden</a>
+  </div>
+</header>
+
+<div class="input-panel" id="input-panel">
+  <div class="input-panel-header">
+    <span class="input-panel-title">Input Parameters</span>
+    <button class="input-panel-toggle" id="panel-toggle-btn" onclick="toggleInputPanel()">Minimera ▲</button>
+  </div>
+<div class="controls">
+  <!-- ROW 1: Scope toggles — centered -->
+  <div class="controls-top">
+    <div class="ctrl-group" style="align-items:center;">
+      <div class="ctrl-label">Scopes</div>
+      <div class="ctrl-row" id="scope-toggles"></div>
+    </div>
+  </div>
+
+  <!-- ROW 2: 4-column grid -->
+  <div class="controls-grid">
+    <!-- COLUMN 1: Bränslepris + Period + Batteri + Kostnadskomp -->
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <div class="ctrl-group">
+        <div class="ctrl-label">Bränslepris (SEK/ton)</div>
+        <div class="ctrl-row">
+          <input type="range" id="fuel-slider" min="8000" max="20000" step="500" value="12000" style="width:140px">
+          <span class="value" id="fuel-display">12 000</span>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label">Period (år)</div>
+        <div class="ctrl-row">
+          <input type="range" id="period-slider" min="1" max="10" step="1" value="10" style="width:100px">
+          <span class="value" id="period-display">10</span>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label">Batteri Peak Shaving</div>
+        <div class="ctrl-row">
+          <label class="battery-label">
+            <input type="checkbox" id="battery-toggle" checked>
+            150 kWh LFP (Scope 1–3)
+          </label>
+        </div>
+        <div class="battery-hint">Påverkar DP/ROV-bränsle: färre gensets, lägre BSFC</div>
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label">Kostnadskomponenter</div>
+        <div class="ctrl-row">
+          <label class="cost-toggle-label">
+            <input type="checkbox" id="fuel-cost-toggle" checked onchange="toggleFuelCost(this.checked)">
+            Inkludera bränslekostnad
+          </label>
+        </div>
+        <div class="ctrl-row">
+          <label class="cost-toggle-label">
+            <input type="checkbox" id="maint-cost-toggle" checked onchange="toggleMaintCost(this.checked)">
+            Inkludera underhållskostnad
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLUMN 2: Driftstimmar -->
+    <div class="ctrl-group hours-panel" style="min-width:0;">
+      <div class="ctrl-label">Driftstimmar per år (max 8 760 h)</div>
+      <div class="hours-row">
+        <label for="survey-hours-slider">Sjömätning (h):</label>
+        <input type="range" id="survey-hours-slider" min="0" max="6000" step="100" value="2000">
+        <span class="hval" id="survey-hours-display">2 000</span>
+      </div>
+      <div class="hours-row">
+        <label for="transit-hours-slider">Transit (h):</label>
+        <input type="range" id="transit-hours-slider" min="0" max="4000" step="100" value="1000">
+        <span class="hval" id="transit-hours-display">1 000</span>
+      </div>
+      <div class="hours-row">
+        <label for="dp-hours-slider">DP/ROV (h):</label>
+        <input type="range" id="dp-hours-slider" min="0" max="3000" step="100" value="1200">
+        <span class="hval" id="dp-hours-display">1 200</span>
+      </div>
+      <div class="hours-row">
+        <label>Kajliggande (h):</label>
+        <span class="hval" id="kaj-hours-display" style="color:#6c757d;">4 560</span>
+      </div>
+      <div class="hours-total">
+        Total: <strong id="total-hours-display">8 760</strong> h/år
+        (<span id="total-days-display">365</span> dygn)
+      </div>
+    </div>
+
+    <!-- COLUMN 3: DP/ROV lastprofil -->
+    <div class="ctrl-group dp-load-panel" style="min-width:0;">
+      <div class="ctrl-label">DP/ROV — Lastprofil (Scope 1–3)</div>
+      <div class="dp-load-row">
+        <label for="dp-thruster-slider">Thruster snittlast (%):</label>
+        <input type="range" id="dp-thruster-slider" min="10" max="90" step="5" value="50">
+        <span class="hval" id="dp-thruster-display">50 %</span>
+      </div>
+      <div class="dp-load-row">
+        <label for="dp-prop-slider">Propulsion per axel (kW):</label>
+        <input type="range" id="dp-prop-slider" min="0" max="100" step="10" value="0">
+        <span class="hval" id="dp-prop-display">0 kW</span>
+      </div>
+      <div class="dp-load-row">
+        <label for="dp-hotel-slider">Hotel-last (kW):</label>
+        <input type="range" id="dp-hotel-slider" min="20" max="150" step="10" value="30">
+        <span class="hval" id="dp-hotel-display">30 kW</span>
+      </div>
+      <div class="dp-load-summary">
+        Total DP-last: <strong id="dp-total-load">180</strong> kW
+        | Gensets: <strong id="dp-genset-count">1</strong> st
+      </div>
+    </div>
+
+    <!-- COLUMN 4: Fartprofil -->
+    <div class="ctrl-group speed-panel" style="min-width:0;">
+      <div class="ctrl-label">Sjömätning — Fartprofil (fördela till 100%)</div>
+      <div id="speed-rows"></div>
+      <div class="speed-sum" id="speed-sum-row">Summa: <strong id="speed-sum">100</strong>%</div>
+      <div class="preset-row">
+        <button class="preset-btn" onclick="setPreset('low')">Låg fart (6-7 kn)</button>
+        <button class="preset-btn" onclick="setPreset('mixed')">Blandad (default)</button>
+        <button class="preset-btn" onclick="setPreset('high')">Hög fart (8-10 kn)</button>
+      </div>
+      <div style="font-size:11px; color:#adb5bd; margin-top:4px;">Gäller enbart sjömätningstimmar</div>
+    </div>
+  </div>
+</div>
+
+<div class="capex-controls">
+  <label style="font-size:13px; font-weight:600; color:#495057; cursor:pointer; display:flex; align-items:center; gap:6px;">
+    <input type="checkbox" id="capex-toggle" checked onchange="toggleCapex(this.checked)" style="accent-color:#343a40; width:15px; height:15px; cursor:pointer;">
+    Inkludera CAPEX i TCO
+  </label>
+  <div id="capex-inputs" style="display:flex; flex-wrap:wrap; gap:16px;"></div>
+</div>
+  <!-- Yanmar Scope 4 parametrar -->
+  <div class="yanmar-controls" style="padding:6px 24px 10px; border-top:1px solid #dee2e6; background:#fff8f0;">
+    <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#b45309; margin-bottom:6px;">
+      Yanmar 750kW — Scope 4 parametrar
+    </div>
+    <div style="display:flex; flex-wrap:wrap; gap:16px; align-items:end;">
+      <div style="min-width:140px;">
+        <label style="font-size:11px; color:#6c757d;">Överhalningsintervall (h)</label>
+        <input type="number" id="yanmar-oh-interval" value="15000" min="5000" max="40000" step="1000"
+          style="width:100%; padding:3px 6px; border:1px solid #d1d5db; border-radius:4px; font-size:13px;">
+      </div>
+      <div style="min-width:140px;">
+        <label style="font-size:11px; color:#6c757d;">Överhalningskostnad (kSEK)</label>
+        <input type="number" id="yanmar-oh-cost" value="1000" min="100" max="5000" step="50"
+          style="width:100%; padding:3px 6px; border:1px solid #d1d5db; border-radius:4px; font-size:13px;">
+      </div>
+      <div style="min-width:140px;">
+        <label style="font-size:11px; color:#6c757d;">Livslängd (h)</label>
+        <input type="number" id="yanmar-lifespan" value="40000" min="15000" max="80000" step="1000"
+          style="width:100%; padding:3px 6px; border:1px solid #d1d5db; border-radius:4px; font-size:13px;">
+      </div>
+      <div style="min-width:160px;">
+        <label style="font-size:11px; color:#6c757d;">Motorbyte-kostnad (kSEK, 2 nya)</label>
+        <input type="number" id="yanmar-repl-cost" value="6000" min="1000" max="15000" step="500"
+          style="width:100%; padding:3px 6px; border:1px solid #d1d5db; border-radius:4px; font-size:13px;">
+      </div>
+      <div style="min-width:140px;">
+        <label style="font-size:11px; color:#6c757d;">500h service (SEK)</label>
+        <input type="number" id="yanmar-svc500" value="9000" min="2000" max="30000" step="500"
+          style="width:100%; padding:3px 6px; border:1px solid #d1d5db; border-radius:4px; font-size:13px;">
+      </div>
+      <div style="min-width:140px;">
+        <label style="font-size:11px; color:#6c757d;">1000h service (SEK)</label>
+        <input type="number" id="yanmar-svc1000" value="12000" min="3000" max="50000" step="500"
+          style="width:100%; padding:3px 6px; border:1px solid #d1d5db; border-radius:4px; font-size:13px;">
+      </div>
+    </div>
+  </div>
+</div><!-- /input-panel -->
+
+<main>
+  <div class="kpi-grid" id="kpi-grid"></div>
+
+  <div class="tco-chart-card">
+    <h3 id="tco-title">Total Cost of Ownership — CAPEX + Ackumulerad OPEX</h3>
+    <div style="position:relative; height:320px;"><canvas id="chart-tco"></canvas></div>
+  </div>
+
+  <div class="charts-grid">
+    <div class="chart-card">
+      <h3>Ackumulerad TCO (CAPEX + OPEX + renovering)</h3>
+      <div class="chart-wrap"><canvas id="chart-cumulative"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Årlig kostnad — bränsle + underhåll</h3>
+      <div class="chart-wrap"><canvas id="chart-annual"></canvas></div>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <h3>Sammanfattning</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Scope</th>
+          <th>Bränsle år 1 (ton)</th>
+          <th>CO₂ år 1 (ton)</th>
+          <th>Bränslekostnad år 1</th>
+          <th>Underhåll år 1</th>
+          <th>Total år 1</th>
+          <th id="th-opex-n">Ackumulerad OPEX N år</th>
+          <th>Helrenov. (antal)</th>
+          <th>Helrenov. kostnad</th>
+          <th id="th-capex">CAPEX</th>
+          <th id="th-tco-n">TCO N år</th>
+          <th id="th-tco-saving">TCO besparing vs baseline</th>
+        </tr>
+      </thead>
+      <tbody id="summary-tbody"></tbody>
+    </table>
+  </div>
+</main>
+
+<footer>
+  Motordata verifierade 2026-04-01. Batteri peak shaving: 150 kWh LFP (Scania RES3) — dimensioneras för snittlast, ej maxlast.
+</footer>
+
+<script>
+const SCOPE_COLORS = {
+  "scope1-scania-hybrid": "#e76f51",
+  "scope2-mets-de":       "#2a9d8f",
+  "scope3-zem-de":        "#264653",
+  "scope4-traditional":   "#6c757d"
+};
+
+const BASELINE_ID = "scope4-traditional";
+const BATTERY_SCOPE_IDS = ["scope1-scania-hybrid", "scope2-mets-de", "scope3-zem-de"];
+const HOURS_PER_YEAR = 8760;
+
+let COMPARISON_DATA = {"generated": "2026-04-02T15:19:17", "vessel": "northern-gale", "fuel_price_base": 12000.0, "fuel_escalation": 0.03, "maint_escalation": 0.02, "scopes": {"scope1-scania-hybrid": {"name": "Scania DW6 Hybrid", "type": "hybrid", "operation": "standard-survey", "years": [{"year": 1, "fuel_tonnes": 687.85, "fuel_cost_sek": 8254156.0, "maintenance_cost_sek": 664700.0, "total_cost_sek": 8918856.0}, {"year": 2, "fuel_tonnes": 687.85, "fuel_cost_sek": 8501780.0, "maintenance_cost_sek": 677994.0, "total_cost_sek": 9179774.0}, {"year": 3, "fuel_tonnes": 687.85, "fuel_cost_sek": 8756834.0, "maintenance_cost_sek": 691554.0, "total_cost_sek": 9448388.0}, {"year": 4, "fuel_tonnes": 687.85, "fuel_cost_sek": 9019539.0, "maintenance_cost_sek": 705385.0, "total_cost_sek": 9724924.0}, {"year": 5, "fuel_tonnes": 687.85, "fuel_cost_sek": 9290125.0, "maintenance_cost_sek": 719493.0, "total_cost_sek": 10009618.0}, {"year": 6, "fuel_tonnes": 687.85, "fuel_cost_sek": 9568829.0, "maintenance_cost_sek": 733883.0, "total_cost_sek": 10302712.0}, {"year": 7, "fuel_tonnes": 687.85, "fuel_cost_sek": 9855893.0, "maintenance_cost_sek": 748560.0, "total_cost_sek": 10604453.0}, {"year": 8, "fuel_tonnes": 687.85, "fuel_cost_sek": 10151570.0, "maintenance_cost_sek": 763531.0, "total_cost_sek": 10915101.0}, {"year": 9, "fuel_tonnes": 687.85, "fuel_cost_sek": 10456117.0, "maintenance_cost_sek": 778802.0, "total_cost_sek": 11234919.0}, {"year": 10, "fuel_tonnes": 687.85, "fuel_cost_sek": 10769801.0, "maintenance_cost_sek": 794378.0, "total_cost_sek": 11564179.0}], "lifetime": {"total_fuel_tonnes": 6878.5, "total_fuel_cost_sek": 94624644.0, "total_maintenance_sek": 7278280.0, "total_cost_sek": 101902924.0}}, "scope2-mets-de": {"name": "METS Diesel-Elektrisk", "type": "diesel_electric", "operation": "standard-survey", "years": [{"year": 1, "fuel_tonnes": 696.18, "fuel_cost_sek": 8354219.0, "maintenance_cost_sek": 458500.0, "total_cost_sek": 8812719.0}, {"year": 2, "fuel_tonnes": 696.18, "fuel_cost_sek": 8604845.0, "maintenance_cost_sek": 467670.0, "total_cost_sek": 9072515.0}, {"year": 3, "fuel_tonnes": 696.18, "fuel_cost_sek": 8862991.0, "maintenance_cost_sek": 477023.0, "total_cost_sek": 9340014.0}, {"year": 4, "fuel_tonnes": 696.18, "fuel_cost_sek": 9128880.0, "maintenance_cost_sek": 486564.0, "total_cost_sek": 9615444.0}, {"year": 5, "fuel_tonnes": 696.18, "fuel_cost_sek": 9402747.0, "maintenance_cost_sek": 496295.0, "total_cost_sek": 9899042.0}, {"year": 6, "fuel_tonnes": 696.18, "fuel_cost_sek": 9684829.0, "maintenance_cost_sek": 506221.0, "total_cost_sek": 10191050.0}, {"year": 7, "fuel_tonnes": 696.18, "fuel_cost_sek": 9975374.0, "maintenance_cost_sek": 516345.0, "total_cost_sek": 10491719.0}, {"year": 8, "fuel_tonnes": 696.18, "fuel_cost_sek": 10274635.0, "maintenance_cost_sek": 526672.0, "total_cost_sek": 10801307.0}, {"year": 9, "fuel_tonnes": 696.18, "fuel_cost_sek": 10582874.0, "maintenance_cost_sek": 537206.0, "total_cost_sek": 11120080.0}, {"year": 10, "fuel_tonnes": 696.18, "fuel_cost_sek": 10900361.0, "maintenance_cost_sek": 547950.0, "total_cost_sek": 11448311.0}], "lifetime": {"total_fuel_tonnes": 6961.8, "total_fuel_cost_sek": 95771755.0, "total_maintenance_sek": 5020446.0, "total_cost_sek": 100792201.0}}, "scope3-zem-de": {"name": "ZEM Diesel-Elektrisk", "type": "diesel_electric", "operation": "standard-survey", "years": [{"year": 1, "fuel_tonnes": 704.88, "fuel_cost_sek": 8458534.0, "maintenance_cost_sek": 437700.0, "total_cost_sek": 8896234.0}, {"year": 2, "fuel_tonnes": 704.88, "fuel_cost_sek": 8712290.0, "maintenance_cost_sek": 446454.0, "total_cost_sek": 9158744.0}, {"year": 3, "fuel_tonnes": 704.88, "fuel_cost_sek": 8973658.0, "maintenance_cost_sek": 455383.0, "total_cost_sek": 9429041.0}, {"year": 4, "fuel_tonnes": 704.88, "fuel_cost_sek": 9242868.0, "maintenance_cost_sek": 464491.0, "total_cost_sek": 9707359.0}, {"year": 5, "fuel_tonnes": 704.88, "fuel_cost_sek": 9520154.0, "maintenance_cost_sek": 473781.0, "total_cost_sek": 9993935.0}, {"year": 6, "fuel_tonnes": 704.88, "fuel_cost_sek": 9805759.0, "maintenance_cost_sek": 483256.0, "total_cost_sek": 10289015.0}, {"year": 7, "fuel_tonnes": 704.88, "fuel_cost_sek": 10099931.0, "maintenance_cost_sek": 492921.0, "total_cost_sek": 10592852.0}, {"year": 8, "fuel_tonnes": 704.88, "fuel_cost_sek": 10402929.0, "maintenance_cost_sek": 502780.0, "total_cost_sek": 10905709.0}, {"year": 9, "fuel_tonnes": 704.88, "fuel_cost_sek": 10715017.0, "maintenance_cost_sek": 512835.0, "total_cost_sek": 11227852.0}, {"year": 10, "fuel_tonnes": 704.88, "fuel_cost_sek": 11036468.0, "maintenance_cost_sek": 523092.0, "total_cost_sek": 11559560.0}], "lifetime": {"total_fuel_tonnes": 7048.8, "total_fuel_cost_sek": 96967608.0, "total_maintenance_sek": 4792693.0, "total_cost_sek": 101760301.0}}, "scope4-traditional": {"name": "Traditionell Mekanisk", "type": "diesel", "operation": "traditional-survey", "years": [{"year": 1, "fuel_tonnes": 690.65, "fuel_cost_sek": 8287786.0, "maintenance_cost_sek": 468000.0, "total_cost_sek": 8755786.0}, {"year": 2, "fuel_tonnes": 690.65, "fuel_cost_sek": 8536419.0, "maintenance_cost_sek": 477360.0, "total_cost_sek": 9013779.0}, {"year": 3, "fuel_tonnes": 690.65, "fuel_cost_sek": 8792512.0, "maintenance_cost_sek": 486907.0, "total_cost_sek": 9279419.0}, {"year": 4, "fuel_tonnes": 690.65, "fuel_cost_sek": 9056287.0, "maintenance_cost_sek": 496645.0, "total_cost_sek": 9552932.0}, {"year": 5, "fuel_tonnes": 690.65, "fuel_cost_sek": 9327976.0, "maintenance_cost_sek": 506578.0, "total_cost_sek": 9834554.0}, {"year": 6, "fuel_tonnes": 690.65, "fuel_cost_sek": 9607815.0, "maintenance_cost_sek": 516710.0, "total_cost_sek": 10124525.0}, {"year": 7, "fuel_tonnes": 690.65, "fuel_cost_sek": 9896049.0, "maintenance_cost_sek": 527044.0, "total_cost_sek": 10423093.0}, {"year": 8, "fuel_tonnes": 690.65, "fuel_cost_sek": 10192931.0, "maintenance_cost_sek": 537585.0, "total_cost_sek": 10730516.0}, {"year": 9, "fuel_tonnes": 690.65, "fuel_cost_sek": 10498719.0, "maintenance_cost_sek": 548337.0, "total_cost_sek": 11047056.0}, {"year": 10, "fuel_tonnes": 690.65, "fuel_cost_sek": 10813680.0, "maintenance_cost_sek": 559303.0, "total_cost_sek": 11372983.0}], "lifetime": {"total_fuel_tonnes": 6906.5, "total_fuel_cost_sek": 95010174.0, "total_maintenance_sek": 5124469.0, "total_cost_sek": 100134643.0}}}, "scope_params": {"scope1-scania-hybrid": {"type": "hybrid", "engine_max_kw": 440.0, "bsfc_curve": [[0.1, 260.0], [0.15, 245.0], [0.2, 230.0], [0.25, 220.0], [0.5, 205.0], [0.75, 198.0], [1.0, 202.0]], "eta_chain": 0.9219, "genset_kw": 440.0, "genset_max_kw": 440.0, "genset_count": 2, "genset_bsfc_curve": [[0.1, 240.0], [0.15, 225.0], [0.2, 215.0], [0.25, 210.0], [0.5, 200.0], [0.75, 195.0], [1.0, 200.0]], "survey_hours": 3800, "transit_hours": 1500, "dp_rov_hours": 1200, "transit_fuel_tonnes_yr1": 369.3106, "battery_enabled": true, "maintenance_yr1_sek": 664700.0, "maint_prop_diesel_sek_per_h": 20.0, "maint_genset_sek_per_h": 20.0, "maint_electric_sek_per_h": 10.0, "hotel_kw": 50.0, "fuel_escalation": 0.03, "maint_escalation": 0.02, "hybrid_electric_threshold_kw": 295.0, "capex_msek": 21.9, "engine_map": {"transit": {"prop_diesel_count": 2, "genset_count": 2, "electric_count": 2}, "survey": {"prop_diesel_count": 2, "genset_count": 2, "electric_count": 2}, "dp_rov": {"prop_diesel_count": 0, "genset_count": 2, "electric_count": 2}, "dock": {"prop_diesel_count": 0, "genset_count": 0, "electric_count": 0}}, "maint_factor": 1.15, "engine_groups": [{"engine_id": "scania-dw6-440-genset", "name": "Scania DW6 440kW Genset", "role": "genset", "count": 4, "overhaul_interval_h": 30000, "overhaul_cost_sek": 750000, "lifespan_h": 30000, "lifespan_replacement_cost_sek": 0, "modes": {"transit": {"running": 3}, "survey": {"running": 1}, "dp_rov": {"running": 1}, "dock": {"running": 0}}}]}, "scope2-mets-de": {"type": "diesel_electric", "engine_max_kw": 750.0, "bsfc_curve": [], "eta_chain": 0.9219, "genset_kw": 440.0, "genset_max_kw": 440.0, "genset_count": 4, "genset_bsfc_curve": [[0.1, 240.0], [0.15, 225.0], [0.2, 215.0], [0.25, 210.0], [0.5, 200.0], [0.75, 195.0], [1.0, 200.0]], "survey_hours": 3800, "transit_hours": 1500, "dp_rov_hours": 1200, "transit_fuel_tonnes_yr1": 377.6492, "battery_enabled": true, "maintenance_yr1_sek": 458500.0, "maint_prop_diesel_sek_per_h": 0.0, "maint_genset_sek_per_h": 20.0, "maint_electric_sek_per_h": 12.5, "hotel_kw": 50.0, "fuel_escalation": 0.03, "maint_escalation": 0.02, "capex_msek": 27.7, "engine_map": {"transit": {"prop_diesel_count": 0, "genset_count": 4, "electric_count": 2}, "survey": {"prop_diesel_count": 0, "genset_count": 2, "electric_count": 2}, "dp_rov": {"prop_diesel_count": 0, "genset_count": 2, "electric_count": 2}, "dock": {"prop_diesel_count": 0, "genset_count": 1, "electric_count": 0}}, "maint_factor": 1.0, "engine_groups": [{"engine_id": "scania-dw6-440-genset", "name": "Scania DW6 440kW Genset", "role": "genset", "count": 4, "overhaul_interval_h": 30000, "overhaul_cost_sek": 750000, "lifespan_h": 30000, "lifespan_replacement_cost_sek": 0, "modes": {"transit": {"running": 4}, "survey": {"running": 1}, "dp_rov": {"running": 1}, "dock": {"running": 0}}}]}, "scope3-zem-de": {"type": "diesel_electric", "engine_max_kw": 600.0, "bsfc_curve": [], "eta_chain": 0.9219, "genset_kw": 380.0, "genset_max_kw": 380.0, "genset_count": 4, "genset_bsfc_curve": [[0.1, 245.0], [0.15, 230.0], [0.2, 218.0], [0.25, 212.0], [0.5, 202.0], [0.75, 197.0], [1.0, 202.0]], "survey_hours": 3800, "transit_hours": 1500, "dp_rov_hours": 1200, "transit_fuel_tonnes_yr1": 384.6132, "battery_enabled": true, "maintenance_yr1_sek": 437700.0, "maint_prop_diesel_sek_per_h": 0.0, "maint_genset_sek_per_h": 20.0, "maint_electric_sek_per_h": 10.9, "hotel_kw": 50.0, "fuel_escalation": 0.03, "maint_escalation": 0.02, "capex_msek": 21.2, "engine_map": {"transit": {"prop_diesel_count": 0, "genset_count": 4, "electric_count": 2}, "survey": {"prop_diesel_count": 0, "genset_count": 2, "electric_count": 2}, "dp_rov": {"prop_diesel_count": 0, "genset_count": 2, "electric_count": 2}, "dock": {"prop_diesel_count": 0, "genset_count": 1, "electric_count": 0}}, "maint_factor": 1.0, "engine_groups": [{"engine_id": "penta-d13-380", "name": "Volvo Penta D13 380kW Genset", "role": "genset", "count": 4, "overhaul_interval_h": 30000, "overhaul_cost_sek": 750000, "lifespan_h": 30000, "lifespan_replacement_cost_sek": 0, "modes": {"transit": {"running": 4}, "survey": {"running": 1}, "dp_rov": {"running": 1}, "dock": {"running": 0}}}]}, "scope4-traditional": {"type": "diesel", "engine_max_kw": 750.0, "bsfc_curve": [[0.05, 380.0], [0.1, 340.0], [0.15, 310.0], [0.2, 290.0], [0.25, 270.0], [0.5, 220.0], [0.75, 200.0], [1.0, 205.0]], "eta_chain": 0.97, "genset_kw": 75.0, "genset_max_kw": 75.0, "genset_count": 2, "genset_bsfc_curve": [[0.1, 310.0], [0.15, 280.0], [0.2, 260.0], [0.25, 245.0], [0.5, 220.0], [0.75, 210.0], [1.0, 215.0]], "survey_hours": 5000, "transit_hours": 1500, "dp_rov_hours": 0, "transit_fuel_tonnes_yr1": 358.9883, "battery_enabled": false, "maintenance_yr1_sek": 468000.0, "maint_prop_diesel_sek_per_h": 30.0, "maint_genset_sek_per_h": 12.0, "maint_electric_sek_per_h": 0.0, "hotel_kw": 50.0, "fuel_escalation": 0.03, "maint_escalation": 0.02, "capex_msek": 11.8, "engine_map": {"transit": {"prop_diesel_count": 2, "genset_count": 1, "electric_count": 0}, "survey": {"prop_diesel_count": 2, "genset_count": 1, "electric_count": 0}, "dp_rov": {"prop_diesel_count": 0, "genset_count": 0, "electric_count": 0}, "dock": {"prop_diesel_count": 0, "genset_count": 1, "electric_count": 0}}, "maint_factor": 1.0, "engine_groups": [{"engine_id": "yanmar-750", "name": "Yanmar 750kW Marine Diesel", "role": "propulsion", "count": 2, "overhaul_interval_h": 15000, "overhaul_cost_sek": 1000000, "lifespan_h": 40000, "lifespan_replacement_cost_sek": 6000000, "modes": {"transit": {"running": 2}, "survey": {"running": 2}, "dp_rov": {"running": 0}, "dock": {"running": 0}}}, {"engine_id": "genset-75kw", "name": "Generisk 75kW Hotellgenset", "role": "genset", "count": 2, "overhaul_interval_h": 15000, "overhaul_cost_sek": 200000, "lifespan_h": 30000, "lifespan_replacement_cost_sek": 0, "modes": {"transit": {"running": 1}, "survey": {"running": 1}, "dp_rov": {"running": 0}, "dock": {"running": 0}}}]}}, "sea_trial": {"6.3": {"axel_kw": 99.4, "bsfc": 0.244}, "7.0": {"axel_kw": 135.0, "bsfc": 0.242}, "8.3": {"axel_kw": 171.3, "bsfc": 0.24}, "9.0": {"axel_kw": 241.8, "bsfc": 0.237}, "10.0": {"axel_kw": 314.5, "bsfc": 0.233}, "11.0": {"axel_kw": 461.4, "bsfc": 0.225}, "12.0": {"axel_kw": 619.9, "bsfc": 0.216}, "13.0": {"axel_kw": 873.7, "bsfc": 0.211}, "14.0": {"axel_kw": 1141.1, "bsfc": 0.205}, "15.0": {"axel_kw": 1141.1, "bsfc": 0.204}, "16.0": {"axel_kw": 1609.7, "bsfc": 0.202}, "17.0": {"axel_kw": 1779.5, "bsfc": 0.203}, "18.0": {"axel_kw": 1948.3, "bsfc": 0.203}}, "default_speed_distribution": [{"knop": 6.3, "fraction": 0.2}, {"knop": 7.0, "fraction": 0.3}, {"knop": 8.3, "fraction": 0.25}, {"knop": 9.0, "fraction": 0.15}, {"knop": 10.0, "fraction": 0.1}], "speed_presets": {"low": [0.5, 0.3, 0.15, 0.05, 0.0], "mixed": [0.2, 0.3, 0.25, 0.15, 0.1], "high": [0.05, 0.1, 0.3, 0.35, 0.2]}, "dp_rov_defaults": {"thruster_installed_kw": 300.0, "thruster_avg_load_pct": 0.5, "prop_kw_per_shaft": 0.0, "hotel_kw": 30.0}, "co2_kg_per_kg_fuel": 3.206};
+
+// --- Input panel collapse/expand ---
+function toggleInputPanel() {
+  const panel = document.getElementById('input-panel');
+  const btn = document.getElementById('panel-toggle-btn');
+  panel.classList.toggle('collapsed');
+  const isCollapsed = panel.classList.contains('collapsed');
+  btn.textContent = isCollapsed ? 'Visa parametrar ▼' : 'Minimera ▲';
+}
+
+// State
+let activePeriod = 10;
+let fuelMultiplier = 1.0;
+let visibleScopes = new Set(Object.keys(COMPARISON_DATA.scopes));
+let speedFractions = [];
+let liveSurveyHours = 2000;
+let liveTransitHours = 1000;
+let liveDpRovHours = 1200;
+let liveDpThrusterPct = 50;
+let liveDpPropKwPerShaft = 0;
+let liveDpHotelKw = 30;
+let liveCapex = {};
+let capexEnabled = true;
+let fuelEnabled = true;
+let maintEnabled = true;
+let liveSurveyFuel = {};
+let liveTransitFuel = {};
+
+// Initialize CAPEX storage
+for (let scopeId in COMPARISON_DATA.scopes) {
+  liveCapex[scopeId] = COMPARISON_DATA.scope_params[scopeId]?.capex_msek || 0;
+}
+
+// Helper: format number with thousands separator (matching original fmtNum)
+function formatNumber(num) {
+  return Math.round(num).toLocaleString('sv-SE');
+}
+function fmtTonne(n) { return n.toFixed(1).replace(".", ","); }
+
+// Interpolation for BSFC
+function interpolateBSFC(loadFrac, bsfcCurve) {
+  if (!bsfcCurve || bsfcCurve.length === 0) return 200;
+
+  let sorted = [...bsfcCurve].sort((a, b) => a[0] - b[0]);
+
+  if (loadFrac <= sorted[0][0]) return sorted[0][1];
+  if (loadFrac >= sorted[sorted.length - 1][0]) return sorted[sorted.length - 1][1];
+
+  for (let i = 0; i < sorted.length - 1; i++) {
+    let [x1, y1] = sorted[i];
+    let [x2, y2] = sorted[i + 1];
+    if (loadFrac >= x1 && loadFrac <= x2) {
+      return y1 + (y2 - y1) * (loadFrac - x1) / (x2 - x1);
+    }
+  }
+  return 200;
+}
+
+// Determine gensets needed
+function determineGensets(demandKw, gensetMaxKw, gensetCount) {
+  if (demandKw <= 0) return 0;
+  let n = Math.ceil(demandKw / gensetMaxKw);
+  return Math.min(Math.max(n, 1), gensetCount);
+}
+
+// Survey fuel
+function calcSurveyFuelTonnes(scopeId) {
+  var params = COMPARISON_DATA.scope_params[scopeId];
+  var dist = COMPARISON_DATA.default_speed_distribution;
+  var seaTrial = COMPARISON_DATA.sea_trial;
+  var surveyHours = liveSurveyHours;
+  var totalFuel = 0.0;
+
+  for (var i = 0; i < dist.length; i++) {
+    var knop = dist[i].knop;
+    var fraction = speedFractions[i];
+    var trialKey = knop.toFixed(1);
+    var trial = seaTrial[trialKey];
+    if (!trial) { console.warn("calcSurveyFuel: no sea_trial entry for key='" + trialKey + "'"); continue; }
+    var hoursAtSpeed = surveyHours * fraction;
+    var axelKw = trial.axel_kw;
+
+    if (params.type === "diesel") {
+      // Motor måste leverera mer pga växellådeförlust: motorKw = axelKw / eta_chain
+      var motorKw = axelKw / params.eta_chain;
+      var perShaftKw = motorKw / 2;
+      var loadFrac = perShaftKw / params.engine_max_kw;
+      var bsfc = interpolateBSFC(loadFrac, params.bsfc_curve);
+      totalFuel += motorKw * bsfc * hoursAtSpeed / 1000000;
+
+    } else if (params.type === "diesel_electric") {
+      var totalPropKw = axelKw;
+      var gensetDemand = totalPropKw / params.eta_chain + params.hotel_kw;
+      var nGensets = determineGensets(gensetDemand, params.genset_max_kw, params.genset_count);
+      var perGensetKw = gensetDemand / nGensets;
+      var gLoadFrac = perGensetKw / params.genset_max_kw;
+      var gBsfc = interpolateBSFC(gLoadFrac, params.genset_bsfc_curve);
+      totalFuel += gensetDemand * gBsfc * hoursAtSpeed / 1000000;
+
+    } else if (params.type === "hybrid") {
+      var threshold = params.hybrid_electric_threshold_kw || 295;
+      var perShaftKw = axelKw / 2;
+      if (perShaftKw <= threshold) {
+        var elDemand = axelKw / params.eta_chain + params.hotel_kw;
+        var nGs = determineGensets(elDemand, params.genset_max_kw, params.genset_count);
+        var perGs = elDemand / nGs;
+        var gsLoadFrac = perGs / params.genset_max_kw;
+        var gsBsfc = interpolateBSFC(gsLoadFrac, params.genset_bsfc_curve);
+        totalFuel += elDemand * gsBsfc * hoursAtSpeed / 1000000;
+      } else {
+        var mechPerShaft = perShaftKw - threshold;
+        var elPerShaft = threshold;
+        var mechLoadFrac = mechPerShaft / params.engine_max_kw;
+        var mechBsfc = interpolateBSFC(mechLoadFrac, params.bsfc_curve);
+        totalFuel += mechPerShaft * 2 * mechBsfc * hoursAtSpeed / 1000000;
+        var elDemand2 = elPerShaft * 2 / params.eta_chain + params.hotel_kw;
+        var nGs2 = determineGensets(elDemand2, params.genset_max_kw, params.genset_count);
+        var perGs2 = elDemand2 / nGs2;
+        var gsLoadFrac2 = perGs2 / params.genset_max_kw;
+        var gsBsfc2 = interpolateBSFC(gsLoadFrac2, params.genset_bsfc_curve);
+        totalFuel += elDemand2 * gsBsfc2 * hoursAtSpeed / 1000000;
+      }
+    }
+  }
+
+  // Diesel scope: hotel genset fuel is separate from propulsion (OUTSIDE loop!)
+  if (params.type === "diesel" && params.genset_max_kw) {
+    var hotelLoadFrac = params.hotel_kw / params.genset_max_kw;
+    var hotelBsfc = interpolateBSFC(hotelLoadFrac, params.genset_bsfc_curve);
+    totalFuel += params.hotel_kw * surveyHours * hotelBsfc / 1000000;
+  }
+
+  return totalFuel;
+}
+
+// Transit fuel
+function calcTransitFuelTonnes(scopeId) {
+  var params = COMPARISON_DATA.scope_params[scopeId];
+  var seaTrial = COMPARISON_DATA.sea_trial;
+  var transitTrial = seaTrial["14.0"];
+  if (!transitTrial) return params.transit_fuel_tonnes_yr1 * (liveTransitHours / Math.max(params.transit_hours, 1));
+
+  var axelKw = transitTrial.axel_kw;
+  var h = liveTransitHours;
+
+  if (params.type === "diesel") {
+    // Motor måste leverera mer pga växellådeförlust
+    var motorKw = axelKw / params.eta_chain;
+    var perShaftKw = motorKw / 2;
+    var loadFrac = perShaftKw / params.engine_max_kw;
+    var bsfc = interpolateBSFC(loadFrac, params.bsfc_curve);
+    var propFuel = motorKw * bsfc * h / 1000000;
+    var hotelFuel = 0;
+    if (params.genset_max_kw) {
+      var hotelLoadFrac = params.hotel_kw / params.genset_max_kw;
+      var hotelBsfc = interpolateBSFC(hotelLoadFrac, params.genset_bsfc_curve);
+      hotelFuel = params.hotel_kw * hotelBsfc * h / 1000000;
+    }
+    return propFuel + hotelFuel;
+
+  } else if (params.type === "diesel_electric") {
+    var totalPropKw = axelKw;
+    var gensetDemand = totalPropKw / params.eta_chain + params.hotel_kw;
+    var nGensets = determineGensets(gensetDemand, params.genset_max_kw, params.genset_count);
+    var perGensetKw = gensetDemand / nGensets;
+    var gLoadFrac = perGensetKw / params.genset_max_kw;
+    var gBsfc = interpolateBSFC(gLoadFrac, params.genset_bsfc_curve);
+    return gensetDemand * gBsfc * h / 1000000;
+
+  } else if (params.type === "hybrid") {
+    var mechMaxKw = params.engine_max_kw;
+    var perShaftKw = axelKw / 2;
+    var mechPerShaft = Math.min(perShaftKw, mechMaxKw);
+    var elPerShaft = perShaftKw - mechPerShaft;
+    var mechLoadFrac = mechPerShaft / mechMaxKw;
+    var mechBsfc = interpolateBSFC(mechLoadFrac, params.bsfc_curve);
+    var mechFuel = mechPerShaft * 2 * mechBsfc * h / 1000000;
+    var elFuel = 0;
+    if (elPerShaft > 0) {
+      var elDemand = (elPerShaft * 2) / params.eta_chain + params.hotel_kw;
+      var nGs = determineGensets(elDemand, params.genset_max_kw, params.genset_count);
+      var perGs = elDemand / nGs;
+      var gsLoadFrac = perGs / params.genset_max_kw;
+      if (gsLoadFrac > 1.0) { gsLoadFrac = 1.0; }
+      var gsBsfc = interpolateBSFC(gsLoadFrac, params.genset_bsfc_curve);
+      elFuel = elDemand * gsBsfc * h / 1000000;
+    }
+    return mechFuel + elFuel;
+  }
+
+  return params.transit_fuel_tonnes_yr1 * (liveTransitHours / Math.max(params.transit_hours, 1));
+}
+
+// DP genset count
+function calcDpGensetCount(scopeId) {
+  let sp = COMPARISON_DATA.scope_params[scopeId];
+  if (!sp || sp.dp_rov_hours === 0) return 0;
+  if (liveDpRovHours === 0) return 0;
+
+  let dpDefaults = COMPARISON_DATA.dp_rov_defaults;
+  let thrusterKw = dpDefaults.thruster_installed_kw * (liveDpThrusterPct / 100);
+  let propKw = liveDpPropKwPerShaft * 2;
+  let propGensetKw = (sp.eta_chain < 1.0) ? propKw / sp.eta_chain : propKw;
+  let avgLoadKw = thrusterKw + propGensetKw + liveDpHotelKw;
+  let peakLoadKw = dpDefaults.thruster_installed_kw + propGensetKw + liveDpHotelKw;
+
+  let batteryOn = document.getElementById('battery-toggle').checked &&
+                  BATTERY_SCOPE_IDS.includes(scopeId);
+
+  if (batteryOn) {
+    let count = Math.max(1, Math.ceil(avgLoadKw / (sp.genset_kw * 0.85)));
+    return Math.min(count, sp.genset_count);
+  } else {
+    let count = Math.max(1, Math.ceil(peakLoadKw / (sp.genset_kw * 0.85)));
+    return Math.min(Math.max(count, 2), sp.genset_count);
+  }
+}
+
+// DP/ROV fuel with forced battery state
+function calcDpRovFuelForced(scopeId, batteryOn) {
+  let sp = COMPARISON_DATA.scope_params[scopeId];
+  if (!sp || sp.dp_rov_hours === 0) return 0;
+  if (liveDpRovHours === 0) return 0;
+
+  let dpDefaults = COMPARISON_DATA.dp_rov_defaults;
+  let thrusterKw = dpDefaults.thruster_installed_kw * (liveDpThrusterPct / 100);
+  let propKw = liveDpPropKwPerShaft * 2;
+  let propGensetKw = (sp.eta_chain < 1.0) ? propKw / sp.eta_chain : propKw;
+  let avgLoadKw = thrusterKw + propGensetKw + liveDpHotelKw;
+  let peakLoadKw = dpDefaults.thruster_installed_kw + propGensetKw + liveDpHotelKw;
+
+  let gensetLoadKw = batteryOn ? avgLoadKw : peakLoadKw;
+  let nGensets = batteryOn ?
+    Math.min(Math.max(Math.ceil(gensetLoadKw / (sp.genset_kw * 0.85)), 1), sp.genset_count) :
+    Math.min(Math.max(Math.ceil(gensetLoadKw / (sp.genset_kw * 0.85)), 2), sp.genset_count);
+
+  let loadPerGenset = nGensets > 0 ? Math.min(gensetLoadKw / (nGensets * sp.genset_max_kw), 1.0) : 0;
+  let bsfc = interpolateBSFC(loadPerGenset, sp.genset_bsfc_curve);
+  let fuel = gensetLoadKw * bsfc * liveDpRovHours / 1_000_000;
+
+  return fuel;
+}
+
+// DP/ROV fuel
+function calcDpRovFuel(scopeId) {
+  let batteryOn = document.getElementById('battery-toggle').checked &&
+                  BATTERY_SCOPE_IDS.includes(scopeId);
+  return calcDpRovFuelForced(scopeId, batteryOn);
+}
+
+// Maintenance year 1
+function calcMaintenance(scopeId) {
+  let sp = COMPARISON_DATA.scope_params[scopeId];
+  if (!sp) return 0;
+
+  let total = 0;
+
+  // Survey
+  let surveyEngineMap = sp.engine_map?.survey;
+  if (surveyEngineMap) {
+    total += liveSurveyHours * (
+      (surveyEngineMap.prop_diesel_count || 0) * (sp.maint_prop_diesel_sek_per_h || 0) +
+      (surveyEngineMap.genset_count || 0) * (sp.maint_genset_sek_per_h || 0) +
+      (surveyEngineMap.electric_count || 0) * (sp.maint_electric_sek_per_h || 0)
+    );
+  }
+
+  // Transit
+  let transitEngineMap = sp.engine_map?.transit;
+  if (transitEngineMap) {
+    total += liveTransitHours * (
+      (transitEngineMap.prop_diesel_count || 0) * (sp.maint_prop_diesel_sek_per_h || 0) +
+      (transitEngineMap.genset_count || 0) * (sp.maint_genset_sek_per_h || 0) +
+      (transitEngineMap.electric_count || 0) * (sp.maint_electric_sek_per_h || 0)
+    );
+  }
+
+  // DP/ROV
+  let dpEngineMap = sp.engine_map?.dp_rov;
+  if (dpEngineMap && liveDpRovHours > 0) {
+    let dpGensetCount = calcDpGensetCount(scopeId);
+    total += liveDpRovHours * (
+      (dpEngineMap.prop_diesel_count || 0) * (sp.maint_prop_diesel_sek_per_h || 0) +
+      dpGensetCount * (sp.maint_genset_sek_per_h || 0) +
+      (dpEngineMap.electric_count || 0) * (sp.maint_electric_sek_per_h || 0)
+    );
+  }
+
+  // Apply scope-level maintenance factor (e.g. 1.15 for hybrid complexity)
+  let maintFactor = sp.maint_factor || 1.0;
+  return total * maintFactor;
+}
+
+// Year cost
+function yearCost(scopeId, yearIdx) {
+  let sp = COMPARISON_DATA.scope_params[scopeId];
+  if (!sp) return { fuel_tonnes: 0, fuel_cost_sek: 0, maintenance_cost_sek: 0, total_cost_sek: 0 };
+
+  let surveyFuel = liveSurveyFuel[scopeId] || 0;
+  let transitFuel = liveTransitFuel[scopeId] || 0;
+  let dpRovFuel = calcDpRovFuel(scopeId);
+  let totalFuelTonnes = surveyFuel + transitFuel + dpRovFuel;
+
+  let fuelEsc = Math.pow(1 + sp.fuel_escalation, yearIdx);
+  let maintEsc = Math.pow(1 + sp.maint_escalation, yearIdx);
+  let fuelPrice = COMPARISON_DATA.fuel_price_base * fuelMultiplier;
+
+  let fuelCost = fuelEnabled ? totalFuelTonnes * fuelPrice * fuelEsc : 0;
+  let maintCost = maintEnabled ? calcMaintenance(scopeId) * maintEsc : 0;
+
+  return {
+    fuel_tonnes: totalFuelTonnes,
+    fuel_cost_sek: fuelCost,
+    maintenance_cost_sek: maintCost,
+    total_cost_sek: fuelCost + maintCost
+  };
+}
+
+// CO₂ emissions (per year — fuel tonnes are constant each year)
+function calcCO2TonnesPerYear(scopeId) {
+  let year1 = yearCost(scopeId, 0);
+  let co2Factor = COMPARISON_DATA.co2_kg_per_kg_fuel || 3.206;
+  return year1.fuel_tonnes * co2Factor;
+}
+
+// Totals for period
+function totalFuelForPeriod(scopeId) {
+  return yearCost(scopeId, 0).fuel_tonnes * activePeriod;
+}
+
+function totalMaintForPeriod(scopeId) {
+  let sum = 0;
+  for (let i = 0; i < activePeriod; i++) {
+    sum += yearCost(scopeId, i).maintenance_cost_sek;
+  }
+  return sum;
+}
+
+// === ENGINE OVERHAUL (Fas C) ===
+
+function calcEngineHoursPerYear(scopeId) {
+  // Returns array of { engine_id, name, role, count, hours_per_motor, interval, cost, years_to_overhaul }
+  let sp = COMPARISON_DATA.scope_params[scopeId];
+  if (!sp || !sp.engine_groups) return [];
+
+  let surveyH = parseInt(document.getElementById('survey-hours-slider').value) || 0;
+  let transitH = parseInt(document.getElementById('transit-hours-slider').value) || 0;
+  let dpH = parseInt(document.getElementById('dp-hours-slider').value) || 0;
+
+  let results = [];
+  for (let g of sp.engine_groups) {
+    if (g.count === 0) continue;
+    let hours = 0;
+    hours += transitH * (g.modes.transit.running / g.count);
+    hours += surveyH * (g.modes.survey.running / g.count);
+    hours += dpH * (g.modes.dp_rov.running / g.count);
+    // dock = 0 running → contributes 0
+
+    let yearsToOverhaul = hours > 0 ? g.overhaul_interval_h / hours : Infinity;
+
+    let lifespan = g.lifespan_h || 30000;
+    let yearsToLifespan = hours > 0 ? lifespan / hours : Infinity;
+
+    results.push({
+      engine_id: g.engine_id,
+      name: g.name,
+      role: g.role,
+      count: g.count,
+      hours_per_motor: Math.round(hours),
+      interval: g.overhaul_interval_h,
+      cost: g.overhaul_cost_sek,
+      lifespan_h: lifespan,
+      lifespan_replacement_cost: g.lifespan_replacement_cost_sek || 0,
+      years_to_overhaul: yearsToOverhaul,
+      years_to_lifespan: yearsToLifespan,
+      accumulated_hours: 0,  // filled per period
+    });
+  }
+  return results;
+}
+
+function calcOverhaulCostInPeriod(scopeId, periodYears) {
+  let groups = calcEngineHoursPerYear(scopeId);
+  let totalCost = 0;
+  let totalEvents = 0;
+  let totalReplacements = 0;
+  let replacementCost = 0;
+
+  for (let g of groups) {
+    if (g.hours_per_motor === 0) continue;
+    let totalHoursInPeriod = g.hours_per_motor * periodYears;
+
+    // Reguljär överhalning (t.ex. Yanmar 15 000h)
+    let overhaulsPerMotor = Math.floor(totalHoursInPeriod / g.interval);
+    let events = overhaulsPerMotor * g.count;
+    totalCost += events * g.cost;
+    totalEvents += events;
+
+    // Livslängd-byte (t.ex. Yanmar 40 000h → 2× ny motor á 3 MSEK)
+    if (g.lifespan_replacement_cost > 0 && g.lifespan_h > 0) {
+      let replacementsPerMotor = Math.floor(totalHoursInPeriod / g.lifespan_h);
+      let replEvents = replacementsPerMotor * g.count;
+      replacementCost += replEvents * g.lifespan_replacement_cost;
+      totalReplacements += replEvents;
+    }
+  }
+  return { cost: totalCost + replacementCost, events: totalEvents, replacements: totalReplacements, replacement_cost: replacementCost, overhaul_cost: totalCost };
+}
+
+function calcOverhaulDetails(scopeId, periodYears) {
+  // Returns detailed overhaul timeline for display
+  let groups = calcEngineHoursPerYear(scopeId);
+  let details = [];
+
+  for (let g of groups) {
+    if (g.hours_per_motor === 0) continue;
+    let overhaulsPerMotor = Math.floor(g.hours_per_motor * periodYears / g.interval);
+    let firstYear = g.years_to_overhaul;
+
+    // Livslängd-byte
+    let replacementsPerMotor = g.lifespan_replacement_cost > 0 && g.lifespan_h > 0
+      ? Math.floor(g.hours_per_motor * periodYears / g.lifespan_h) : 0;
+
+    details.push({
+      name: g.name,
+      role: g.role,
+      count: g.count,
+      hours_per_motor: g.hours_per_motor,
+      years_to_overhaul: firstYear,
+      years_to_lifespan: g.years_to_lifespan,
+      lifespan_h: g.lifespan_h,
+      overhauls_per_motor: overhaulsPerMotor,
+      total_overhauls: overhaulsPerMotor * g.count,
+      cost_per_overhaul: g.cost,
+      total_cost: overhaulsPerMotor * g.count * g.cost,
+      replacements_per_motor: replacementsPerMotor,
+      total_replacements: replacementsPerMotor * g.count,
+      replacement_cost_per: g.lifespan_replacement_cost,
+      total_replacement_cost: replacementsPerMotor * g.count * g.lifespan_replacement_cost,
+    });
+  }
+  return details;
+}
+
+function calcOverhaulCostPerYear(scopeId, maxYears) {
+  // Returns array[year] = overhaul cost that falls in that year (0-indexed)
+  let sp = COMPARISON_DATA.scope_params[scopeId];
+  if (!sp || !sp.engine_groups) return new Array(maxYears).fill(0);
+
+  let groups = calcEngineHoursPerYear(scopeId);
+  let costs = new Array(maxYears).fill(0);
+
+  for (let g of groups) {
+    if (g.hours_per_motor === 0) continue;
+    for (let m = 0; m < g.count; m++) {
+      let accOH = 0;   // ackumulerade timmar för överhalning
+      let accLS = 0;   // ackumulerade timmar för livslängd-byte
+      for (let yr = 0; yr < maxYears; yr++) {
+        accOH += g.hours_per_motor;
+        accLS += g.hours_per_motor;
+        // Reguljär överhalning
+        while (accOH >= g.interval) {
+          costs[yr] += g.cost;
+          accOH -= g.interval;
+        }
+        // Livslängd-byte (hela motorn byts)
+        if (g.lifespan_replacement_cost > 0 && g.lifespan_h > 0) {
+          while (accLS >= g.lifespan_h) {
+            costs[yr] += g.lifespan_replacement_cost;
+            accLS -= g.lifespan_h;
+          }
+        }
+      }
+    }
+  }
+  return costs;
+}
+
+// === YANMAR OVERRIDE SYSTEM ===
+// Reads live Yanmar input controls and patches scope4-traditional engine_groups in-place
+function applyYanmarOverrides() {
+  let sp = COMPARISON_DATA.scope_params["scope4-traditional"];
+  if (!sp || !sp.engine_groups) return;
+
+  let ohInterval = parseInt(document.getElementById('yanmar-oh-interval')?.value) || 15000;
+  let ohCost     = (parseFloat(document.getElementById('yanmar-oh-cost')?.value) || 1000) * 1000; // kSEK → SEK
+  let lifespan   = parseInt(document.getElementById('yanmar-lifespan')?.value) || 40000;
+  let replCost   = (parseFloat(document.getElementById('yanmar-repl-cost')?.value) || 6000) * 1000; // kSEK → SEK
+  let svc500     = parseInt(document.getElementById('yanmar-svc500')?.value) || 9000;
+  let svc1000    = parseInt(document.getElementById('yanmar-svc1000')?.value) || 12000;
+
+  for (let g of sp.engine_groups) {
+    if (g.engine_id === "yanmar-750") {
+      g.overhaul_interval_h = ohInterval;
+      g.overhaul_cost_sek = ohCost;
+      g.lifespan_h = lifespan;
+      g.lifespan_replacement_cost_sek = replCost;
+    }
+  }
+
+  // Recalculate maint_prop_diesel_sek_per_h from service costs:
+  // 500h service every 500h + 1000h service every 1000h → blended per-hour rate
+  // Rate = svc500/500 + svc1000/1000
+  let blendedRate = svc500 / 500 + svc1000 / 1000;
+  sp.maint_prop_diesel_sek_per_h = blendedRate;
+}
+
+// === DYNAMIC CHART ANNOTATIONS ===
+// Generates annotation objects marking overhaul & lifespan events per scope
+function getOverhaulAnnotations() {
+  let annotations = {};
+  let idx = 0;
+
+  for (let scopeId of visibleScopes) {
+    let groups = calcEngineHoursPerYear(scopeId);
+    let color = SCOPE_COLORS[scopeId] || "#888";
+    let scope = COMPARISON_DATA.scopes[scopeId];
+    let shortName = scope ? scope.name.replace(/Scope \d+ — /, '').substring(0, 12) : scopeId;
+
+    for (let g of groups) {
+      if (g.hours_per_motor === 0) continue;
+
+      // Overhaul events
+      if (g.interval > 0) {
+        for (let m = 0; m < g.count; m++) {
+          let acc = 0;
+          for (let yr = 1; yr <= activePeriod; yr++) {
+            acc += g.hours_per_motor;
+            if (acc >= g.interval) {
+              // x position = yr (index in labels array, 0=Investering, 1=År 1, etc.)
+              let xVal = yr;  // "År {yr}" label index
+              let key = `oh_${scopeId}_${g.engine_id}_m${m}_yr${yr}`;
+              if (!annotations[key]) {
+                annotations[key] = {
+                  type: 'line',
+                  xMin: xVal,
+                  xMax: xVal,
+                  borderColor: color + 'AA',
+                  borderWidth: 1.5,
+                  borderDash: [4, 3],
+                  label: {
+                    display: true,
+                    content: `🔧 ${g.name.substring(0,10)}`,
+                    position: 'start',
+                    backgroundColor: color + 'DD',
+                    color: '#fff',
+                    font: { size: 9, weight: 'bold' },
+                    padding: { top: 2, bottom: 2, left: 4, right: 4 },
+                    rotation: -90,
+                    yAdjust: -10 - (idx % 3) * 18,  // stagger vertically
+                  }
+                };
+                idx++;
+              }
+              acc -= g.interval;
+            }
+          }
+        }
+      }
+
+      // Lifespan replacement events
+      if (g.lifespan_replacement_cost > 0 && g.lifespan_h > 0) {
+        for (let m = 0; m < g.count; m++) {
+          let acc = 0;
+          for (let yr = 1; yr <= activePeriod; yr++) {
+            acc += g.hours_per_motor;
+            if (acc >= g.lifespan_h) {
+              let xVal = yr;
+              let key = `ls_${scopeId}_${g.engine_id}_m${m}_yr${yr}`;
+              if (!annotations[key]) {
+                annotations[key] = {
+                  type: 'line',
+                  xMin: xVal,
+                  xMax: xVal,
+                  borderColor: '#dc3545CC',
+                  borderWidth: 2.5,
+                  borderDash: [6, 2],
+                  label: {
+                    display: true,
+                    content: `⛔ MOTORBYTE ${g.name.substring(0,8)}`,
+                    position: 'end',
+                    backgroundColor: '#dc3545EE',
+                    color: '#fff',
+                    font: { size: 9, weight: 'bold' },
+                    padding: { top: 2, bottom: 2, left: 4, right: 4 },
+                    rotation: -90,
+                    yAdjust: 10 + (idx % 3) * 18,
+                  }
+                };
+                idx++;
+              }
+              acc -= g.lifespan_h;
+            }
+          }
+        }
+      }
+    }
+  }
+  return annotations;
+}
+
+// Total for period
+function totalForPeriod(scopeId) {
+  let sum = 0;
+  for (let i = 0; i < activePeriod; i++) {
+    sum += yearCost(scopeId, i).total_cost_sek;
+  }
+  return sum;
+}
+
+// CAPEX
+function getCapex(scopeId) {
+  if (!capexEnabled) return 0;
+  return (liveCapex[scopeId] || 0) * 1_000_000;
+}
+
+// UI Toggles
+function toggleScope(scopeId) {
+  if (visibleScopes.has(scopeId)) {
+    visibleScopes.delete(scopeId);
+  } else {
+    visibleScopes.add(scopeId);
+  }
+  updateAll();
+}
+
+function toggleFuelCost(checked) {
+  fuelEnabled = checked;
+  updateAll();
+}
+
+function toggleMaintCost(checked) {
+  maintEnabled = checked;
+  updateAll();
+}
+
+function toggleCapex(checked) {
+  capexEnabled = checked;
+  let inputs = document.getElementById('capex-inputs');
+  if (inputs) {
+    if (capexEnabled) {
+      inputs.style.opacity = '1';
+      inputs.style.pointerEvents = 'auto';
+    } else {
+      inputs.style.opacity = '0.35';
+      inputs.style.pointerEvents = 'none';
+    }
+  }
+  updateAll();
+}
+
+function setPreset(presetName) {
+  let presets = COMPARISON_DATA.speed_presets;
+  if (presets[presetName]) {
+    speedFractions = [...presets[presetName]];
+    updateSpeedDisplay();
+    updateAll();
+  }
+}
+
+// Refresh cached fuel
+function refreshSurveyFuel() {
+  for (let scopeId of Object.keys(COMPARISON_DATA.scopes)) {
+    liveSurveyFuel[scopeId] = calcSurveyFuelTonnes(scopeId);
+  }
+}
+
+function refreshTransitFuel() {
+  for (let scopeId of Object.keys(COMPARISON_DATA.scopes)) {
+    liveTransitFuel[scopeId] = calcTransitFuelTonnes(scopeId);
+  }
+}
+
+// Hours clamping
+function clampHours() {
+  let total = liveSurveyHours + liveTransitHours + liveDpRovHours;
+  if (total > HOURS_PER_YEAR) {
+    let excess = total - HOURS_PER_YEAR;
+    if (liveDpRovHours > 0) {
+      liveDpRovHours = Math.max(0, liveDpRovHours - excess);
+      excess = liveSurveyHours + liveTransitHours + liveDpRovHours - HOURS_PER_YEAR;
+    }
+    if (excess > 0 && liveTransitHours > 0) {
+      liveTransitHours = Math.max(0, liveTransitHours - excess);
+      excess = liveSurveyHours + liveTransitHours + liveDpRovHours - HOURS_PER_YEAR;
+    }
+    if (excess > 0) {
+      liveSurveyHours = Math.max(0, liveSurveyHours - excess);
+    }
+  }
+}
+
+// Update displays
+function updateHoursDisplay() {
+  clampHours();
+  document.getElementById('survey-hours-display').textContent = formatNumber(liveSurveyHours);
+  document.getElementById('transit-hours-display').textContent = formatNumber(liveTransitHours);
+  document.getElementById('dp-hours-display').textContent = formatNumber(liveDpRovHours);
+
+  let used = liveSurveyHours + liveTransitHours + liveDpRovHours;
+  let kajHours = HOURS_PER_YEAR - used;
+  document.getElementById('kaj-hours-display').textContent = formatNumber(kajHours);
+  document.getElementById('total-hours-display').textContent = formatNumber(used);
+  document.getElementById('total-days-display').textContent = Math.round(used / 24);
+
+  document.getElementById('survey-hours-slider').value = liveSurveyHours;
+  document.getElementById('transit-hours-slider').value = liveTransitHours;
+  document.getElementById('dp-hours-slider').value = liveDpRovHours;
+}
+
+function updateDpLoadDisplay() {
+  document.getElementById('dp-thruster-display').textContent = liveDpThrusterPct + ' %';
+  document.getElementById('dp-prop-display').textContent = liveDpPropKwPerShaft + ' kW';
+  document.getElementById('dp-hotel-display').textContent = liveDpHotelKw + ' kW';
+
+  let dpDefaults = COMPARISON_DATA.dp_rov_defaults;
+  let thrusterKw = dpDefaults.thruster_installed_kw * (liveDpThrusterPct / 100);
+  let propKw = liveDpPropKwPerShaft * 2;
+  let totalDpLoad = thrusterKw + propKw + liveDpHotelKw;
+
+  document.getElementById('dp-total-load').textContent = Math.round(totalDpLoad);
+
+  // Update genset count (use first visible scope or baseline)
+  let scopeId = visibleScopes.values().next().value || BASELINE_ID;
+  document.getElementById('dp-genset-count').textContent = calcDpGensetCount(scopeId);
+}
+
+function updateSpeedDisplay() {
+  let container = document.getElementById('speed-rows');
+  if (!container) return;
+
+  let rows = container.querySelectorAll('.speed-row');
+  rows.forEach((row, idx) => {
+    if (idx < speedFractions.length) {
+      let slider = row.querySelector('input[type=range]');
+      let pctSpan = row.querySelector('.spct');
+      if (slider) slider.value = speedFractions[idx] * 100;
+      if (pctSpan) pctSpan.textContent = Math.round(speedFractions[idx] * 100) + '%';
+    }
+  });
+
+  let sum = speedFractions.reduce((a, b) => a + b, 0) * 100;
+  let sumRow = document.getElementById('speed-sum-row');
+  let sumSpan = document.getElementById('speed-sum');
+  if (sumSpan) sumSpan.textContent = Math.round(sum);
+
+  if (Math.abs(sum - 100) > 0.5) {
+    if (sumRow) sumRow.classList.add('warn');
+  } else {
+    if (sumRow) sumRow.classList.remove('warn');
+  }
+}
+
+// Build KPI cards
+function buildKpiCards() {
+  let grid = document.getElementById('kpi-grid');
+  grid.innerHTML = '';
+
+  for (let scopeId of visibleScopes) {
+    let scope = COMPARISON_DATA.scopes[scopeId];
+    let sp = COMPARISON_DATA.scope_params[scopeId];
+    if (!scope || !sp) continue;
+
+    let opex = totalForPeriod(scopeId);
+    let capex = getCapex(scopeId);
+    let ohKpi = calcOverhaulCostInPeriod(scopeId, activePeriod);
+    let tco = opex + capex + ohKpi.cost;
+
+    let year1 = yearCost(scopeId, 0);
+
+    let batteryOn = document.getElementById('battery-toggle').checked &&
+                    BATTERY_SCOPE_IDS.includes(scopeId);
+
+    let dpSaving = 0;
+    if (batteryOn && sp.battery_enabled) {
+      dpSaving = calcDpRovFuelForced(scopeId, false) - calcDpRovFuelForced(scopeId, true);
+    }
+
+    let card = document.createElement('div');
+    card.className = 'kpi-card';
+    card.style.borderLeftColor = SCOPE_COLORS[scopeId];
+
+    let batteryBadge = batteryOn && BATTERY_SCOPE_IDS.includes(scopeId) ?
+      '<span class="badge badge-battery">Batteri ON</span>' : '';
+
+    let baselineOrSaving = '';
+    if (scopeId === BASELINE_ID) {
+      baselineOrSaving = '<span class="badge badge-baseline">Baseline (TCO)</span>';
+    } else {
+      let baseOh = calcOverhaulCostInPeriod(BASELINE_ID, activePeriod);
+      let baseline = visibleScopes.has(BASELINE_ID) ? getCapex(BASELINE_ID) + totalForPeriod(BASELINE_ID) + baseOh.cost : tco;
+      let saving = ((baseline - tco) / baseline) * 100;
+      if (saving !== 0) {
+        baselineOrSaving = `<span class="badge badge-saving">${saving > 0 ? '-' : '+'}${Math.abs(saving).toFixed(1)}% TCO vs Trad.</span>`;
+      }
+    }
+
+    let surveiFuel = liveSurveyFuel[scopeId] || 0;
+    let dpFuel = calcDpRovFuel(scopeId);
+
+    let dpSavingTotal = dpSaving * activePeriod;
+    let dpSavingRow = dpSaving > 0 ? `<div class="kpi-row"><span class="label">DP batteri-besparing ${activePeriod} år</span><span class="val" style="color:#2a9d8f;">-${dpSavingTotal.toFixed(0)} ton</span></div>` : '';
+
+    // Overhaul data
+    let ohDetails = calcOverhaulDetails(scopeId, activePeriod);
+    let ohTotal = calcOverhaulCostInPeriod(scopeId, activePeriod);
+
+    // Engine hours rows with accumulated hours + lifespan warnings
+    let engineHoursHtml = '';
+    for (let d of ohDetails) {
+      let roleLabel = d.role === 'propulsion' ? 'prop' : 'genset';
+      let accum = d.hours_per_motor * activePeriod;
+      let lifespanH = d.lifespan_h || 30000;
+
+      // Overhaul annotation
+      let ohNote = d.total_overhauls > 0
+        ? ` <span style="color:#dc3545;font-size:11px;">(${d.total_overhauls} överh.)</span>`
+        : '';
+
+      // Lifespan warning
+      let lifespanWarn = '';
+      if (accum >= lifespanH) {
+        let lifespanYear = d.years_to_lifespan || (lifespanH / d.hours_per_motor);
+        lifespanWarn = ` <span style="color:#dc3545;font-size:11px;">⚠ Livslängd år ${lifespanYear.toFixed(1)}</span>`;
+      }
+
+      let totalAllMotors = d.hours_per_motor * d.count;
+      let accumAll = accum * d.count;
+      engineHoursHtml += `<div class="kpi-row"><span class="label">  ${d.count}× ${roleLabel}</span><span class="val">${d.hours_per_motor.toLocaleString('sv')} h/motor/år (tot ${totalAllMotors.toLocaleString('sv')} h/år)</span></div>`;
+      engineHoursHtml += `<div class="kpi-row"><span class="label">  </span><span class="val" style="font-size:11px;color:#6c757d;">Ack: <strong>${accum.toLocaleString('sv')} h/motor</strong> · ${accumAll.toLocaleString('sv')} h totalt /${activePeriod}år${ohNote}${lifespanWarn}</span></div>`;
+    }
+
+    // Overhaul cost rows — split into OH and lifespan replacement
+    let ohCostRow = '';
+    if (ohTotal.events > 0 || ohTotal.replacements > 0) {
+      if (ohTotal.overhaul_cost > 0) {
+        ohCostRow += `<div class="kpi-row"><span class="label">Överhalning ${activePeriod} år</span><span class="val" style="color:#dc3545;">${formatNumber(ohTotal.overhaul_cost)} kr (${ohTotal.events} st)</span></div>`;
+      }
+      if (ohTotal.replacement_cost > 0) {
+        ohCostRow += `<div class="kpi-row"><span class="label">Motorbyte (livslängd) ${activePeriod} år</span><span class="val" style="color:#dc3545;font-weight:700;">${formatNumber(ohTotal.replacement_cost)} kr (${ohTotal.replacements} st)</span></div>`;
+      }
+      ohCostRow += `<div class="kpi-row"><span class="label">Totalt renov. + byte</span><span class="val" style="color:#dc3545;font-weight:700;">${formatNumber(ohTotal.cost)} kr</span></div>`;
+    } else {
+      ohCostRow = `<div class="kpi-row"><span class="label">Överhalning/byte ${activePeriod} år</span><span class="val" style="color:#065f46;">0 kr</span></div>`;
+    }
+
+    // First overhaul warning
+    let firstOhYear = Infinity;
+    let firstLifespanYear = Infinity;
+    for (let d of ohDetails) {
+      if (d.years_to_overhaul < firstOhYear) firstOhYear = d.years_to_overhaul;
+      if (d.years_to_lifespan < firstLifespanYear) firstLifespanYear = d.years_to_lifespan;
+    }
+    let ohWarnRow = '';
+    if (firstOhYear <= activePeriod) {
+      ohWarnRow += `<div class="kpi-row"><span class="label">  Första överhalning</span><span class="val" style="color:#dc3545;">år ${firstOhYear.toFixed(1)}</span></div>`;
+    }
+    if (firstLifespanYear <= activePeriod && firstLifespanYear !== Infinity) {
+      ohWarnRow += `<div class="kpi-row"><span class="label">  Första motorbyte</span><span class="val" style="color:#dc3545;font-weight:700;">år ${firstLifespanYear.toFixed(1)}</span></div>`;
+    }
+
+    // DP/ROV capability badge
+    let dpCapBadge = sp.dp_rov_hours > 0
+      ? '<span class="badge" style="background:#dbeafe;color:#1e40af;font-size:10px;padding:1px 6px;margin-left:4px;">DP/ROV</span>'
+      : '<span class="badge" style="background:#fee2e2;color:#991b1b;font-size:10px;padding:1px 6px;margin-left:4px;">Ingen DP</span>';
+
+    card.innerHTML = `
+      <div class="scope-name">
+        ${scope.name}
+        ${batteryBadge}
+        ${dpCapBadge}
+      </div>
+      <div class="kpi-main">${formatNumber(tco)} kr</div>
+      <div class="kpi-sub">${capexEnabled ? 'TCO' : 'OPEX'} ${activePeriod} år (${capexEnabled ? 'CAPEX + OPEX + renovering' : 'OPEX + renovering'})</div>
+      <div class="kpi-rows">
+        ${capexEnabled ? `<div class="kpi-row"><span class="label">CAPEX (investering)</span><span class="val">${formatNumber(capex)} kr</span></div>` : ''}
+        <div class="kpi-row"><span class="label">OPEX ${activePeriod} år</span><span class="val">${formatNumber(opex)} kr</span></div>
+        <div class="kpi-row"><span class="label">Bränsle ${activePeriod} år (ton)</span><span class="val">${totalFuelForPeriod(scopeId).toFixed(0)}</span></div>
+        <div class="kpi-row"><span class="label">  varav sjömätning/år</span><span class="val">${(surveiFuel).toFixed(1)}</span></div>
+        <div class="kpi-row"><span class="label">  varav DP/ROV/år</span><span class="val">${(dpFuel).toFixed(1)}</span></div>
+        <div class="kpi-row"><span class="label">Bränslekostnad ${activePeriod} år</span><span class="val">${formatNumber(opex - totalMaintForPeriod(scopeId))} kr</span></div>
+        <div class="kpi-row"><span class="label">Underhåll ${activePeriod} år</span><span class="val">${formatNumber(totalMaintForPeriod(scopeId))} kr</span></div>
+        ${ohCostRow}
+        ${ohWarnRow}
+        <div class="kpi-row" style="border-top:1px solid #e9ecef;padding-top:4px;margin-top:4px;"><span class="label" style="font-weight:700;">Motordrift</span><span class="val" style="font-size:11px;color:#6c757d;">h/år · <strong>ackumulerat</strong></span></div>
+        ${engineHoursHtml}
+        <div class="kpi-row"><span class="label">CO₂ ${activePeriod} år</span><span class="val">${(calcCO2TonnesPerYear(scopeId) * activePeriod).toFixed(0)} ton</span></div>
+        ${dpSavingRow}
+      </div>
+      ${baselineOrSaving}
+    `;
+
+    grid.appendChild(card);
+  }
+}
+
+// Build TCO chart
+function buildTcoChart() {
+  let ctx = document.getElementById('chart-tco');
+  if (!ctx) return;
+
+  let labels = ['Investering'];
+  for (let i = 1; i <= activePeriod; i++) {
+    labels.push(`År ${i}`);
+  }
+
+  let datasets = [];
+
+  for (let scopeId of visibleScopes) {
+    let scope = COMPARISON_DATA.scopes[scopeId];
+    if (!scope) continue;
+
+    let capex = getCapex(scopeId);
+    let data = [Math.round(capex)];
+    let cumulative = capex;
+    let ohPerYear = calcOverhaulCostPerYear(scopeId, activePeriod);
+
+    for (let i = 0; i < activePeriod; i++) {
+      cumulative += yearCost(scopeId, i).total_cost_sek + ohPerYear[i];
+      data.push(Math.round(cumulative));
+    }
+
+    datasets.push({
+      label: scope.name,
+      data: data,
+      borderColor: SCOPE_COLORS[scopeId] || "#888",
+      backgroundColor: (SCOPE_COLORS[scopeId] || "#888") + "18",
+      borderWidth: 2.5,
+      pointRadius: 3,
+      tension: 0.15,
+      fill: false,
+    });
+  }
+
+  if (window.tcoChartInstance) {
+    window.tcoChartInstance.destroy();
+  }
+
+  let tcoAnnotations = getOverhaulAnnotations();
+
+  window.tcoChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: "bottom", labels: { boxWidth: 14, font: { size: 12 } } },
+        subtitle: { display: true, text: capexEnabled ? "År 0 = CAPEX. Kurvan ackumulerar OPEX + helrenovering per år." : "Ackumulerad OPEX + helrenovering per år. CAPEX exkluderat.", font: { size: 11 }, color: "#6c757d" },
+        annotation: { annotations: tcoAnnotations },
+      },
+      scales: {
+        y: { ticks: { font: { size: 11 }, callback: function(v) { return formatNumber(v) + " kr"; } }, grid: { color: "#f0f0f0" } },
+        x: { ticks: { font: { size: 11 } }, grid: { display: false } },
+      },
+    }
+  });
+}
+
+// Build cumulative chart
+function buildCumulativeChart() {
+  let ctx = document.getElementById('chart-cumulative');
+  if (!ctx) return;
+
+  let labels = ['Investering'];
+  for (let i = 1; i <= activePeriod; i++) {
+    labels.push(`År ${i}`);
+  }
+
+  let datasets = [];
+
+  for (let scopeId of visibleScopes) {
+    let scope = COMPARISON_DATA.scopes[scopeId];
+    if (!scope) continue;
+
+    let capex = getCapex(scopeId);
+    let data = [Math.round(capex)];
+    let cumulative = capex;
+    let ohPerYear = calcOverhaulCostPerYear(scopeId, activePeriod);
+
+    for (let i = 0; i < activePeriod; i++) {
+      cumulative += yearCost(scopeId, i).total_cost_sek + ohPerYear[i];
+      data.push(Math.round(cumulative));
+    }
+
+    datasets.push({
+      label: scope.name,
+      data: data,
+      borderColor: SCOPE_COLORS[scopeId] || "#888",
+      backgroundColor: (SCOPE_COLORS[scopeId] || "#888") + "18",
+      borderWidth: 2.5,
+      pointRadius: 3,
+      tension: 0.15,
+      fill: false,
+    });
+  }
+
+  if (window.cumulativeChartInstance) {
+    window.cumulativeChartInstance.destroy();
+  }
+
+  let cumAnnotations = getOverhaulAnnotations();
+
+  window.cumulativeChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: "bottom", labels: { boxWidth: 14, font: { size: 12 } } },
+        annotation: { annotations: cumAnnotations },
+      },
+      scales: {
+        y: { ticks: { font: { size: 11 }, callback: function(v) { return formatNumber(v) + " kr"; } }, grid: { color: "#f0f0f0" } },
+        x: { ticks: { font: { size: 11 } }, grid: { display: false } },
+      },
+    }
+  });
+}
+
+// Build annual chart
+function buildAnnualChart() {
+  let ctx = document.getElementById('chart-annual');
+  if (!ctx) return;
+
+  let labels = [];
+  for (let i = 1; i <= activePeriod; i++) {
+    labels.push(`År ${i}`);
+  }
+
+  let datasets = [];
+
+  for (let scopeId of visibleScopes) {
+    let scope = COMPARISON_DATA.scopes[scopeId];
+    if (!scope) continue;
+
+    // Fuel
+    let fuelData = [];
+    for (let i = 0; i < activePeriod; i++) {
+      fuelData.push(yearCost(scopeId, i).fuel_cost_sek);
+    }
+
+    datasets.push({
+      label: `${scope.name} - Bränsle`,
+      data: fuelData,
+      backgroundColor: SCOPE_COLORS[scopeId],
+      stack: scopeId
+    });
+
+    // Maintenance
+    let maintData = [];
+    for (let i = 0; i < activePeriod; i++) {
+      maintData.push(yearCost(scopeId, i).maintenance_cost_sek);
+    }
+
+    datasets.push({
+      label: `${scope.name} - Underhåll`,
+      data: maintData,
+      backgroundColor: SCOPE_COLORS[scopeId] + '80',
+      stack: scopeId
+    });
+
+    // Overhaul
+    let ohPerYear = calcOverhaulCostPerYear(scopeId, activePeriod);
+    let hasOh = ohPerYear.some(v => v > 0);
+    if (hasOh) {
+      datasets.push({
+        label: `${scope.name} - Helrenovering`,
+        data: ohPerYear,
+        backgroundColor: SCOPE_COLORS[scopeId] + '40',
+        stack: scopeId
+      });
+    }
+  }
+
+  if (window.annualChartInstance) {
+    window.annualChartInstance.destroy();
+  }
+
+  window.annualChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: "bottom", labels: { boxWidth: 14, font: { size: 12 } } },
+        tooltip: { callbacks: { label: function(ctx) { return ctx.dataset.label + ": " + formatNumber(ctx.parsed.y) + " kr"; } } },
+      },
+      scales: {
+        y: { stacked: true, ticks: { font: { size: 11 }, callback: function(v) { return formatNumber(v) + " kr"; } }, grid: { color: "#f0f0f0" } },
+        x: { stacked: true, ticks: { font: { size: 11 } }, grid: { display: false } },
+      }
+    }
+  });
+}
+
+// Build table
+function buildTable() {
+  let tbody = document.getElementById('summary-tbody');
+  tbody.innerHTML = '';
+
+  let baselineOh = calcOverhaulCostInPeriod(BASELINE_ID, activePeriod);
+  let baselineTco = visibleScopes.has(BASELINE_ID) ? getCapex(BASELINE_ID) + totalForPeriod(BASELINE_ID) + baselineOh.cost : 0;
+
+  for (let scopeId of visibleScopes) {
+    let scope = COMPARISON_DATA.scopes[scopeId];
+    let sp = COMPARISON_DATA.scope_params[scopeId];
+    if (!scope || !sp) continue;
+
+    let year1 = yearCost(scopeId, 0);
+    let opex = totalForPeriod(scopeId);
+    let capex = getCapex(scopeId);
+    let oh = calcOverhaulCostInPeriod(scopeId, activePeriod);
+    let tco = opex + capex + oh.cost;
+
+    let savingPct = baselineTco > 0 ? ((baselineTco - tco) / baselineTco) * 100 : 0;
+    let savingText = scopeId === BASELINE_ID ? 'Baseline' : (savingPct > 0 ? `-${savingPct.toFixed(1)}%` : `+${Math.abs(savingPct).toFixed(1)}%`);
+
+    let ohCountText = oh.events > 0 ? `${oh.events} st` : '0';
+    let ohCostClass = oh.events > 0 ? 'warn-cell' : '';
+
+    let tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="scope-cell"><span class="scope-dot" style="background:${SCOPE_COLORS[scopeId]};"></span>${scope.name}</td>
+      <td>${(year1.fuel_tonnes).toFixed(1)}</td>
+      <td>${calcCO2TonnesPerYear(scopeId).toFixed(0)}</td>
+      <td>${formatNumber(year1.fuel_cost_sek)} kr</td>
+      <td>${formatNumber(year1.maintenance_cost_sek)} kr</td>
+      <td>${formatNumber(year1.total_cost_sek)} kr</td>
+      <td>${formatNumber(opex)} kr</td>
+      <td>${ohCountText}</td>
+      <td class="${ohCostClass}">${formatNumber(oh.cost)} kr</td>
+      <td>${formatNumber(capex)} kr</td>
+      <td style="font-weight:700;">${formatNumber(tco)} kr</td>
+      <td class="saving-cell">${savingText}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+// Build toggles
+function buildToggles() {
+  let container = document.getElementById('scope-toggles');
+  container.innerHTML = '';
+
+  for (let scopeId in COMPARISON_DATA.scopes) {
+    let scope = COMPARISON_DATA.scopes[scopeId];
+    let btn = document.createElement('button');
+    btn.className = visibleScopes.has(scopeId) ? 'toggle-btn active' : 'toggle-btn inactive';
+    btn.style.backgroundColor = visibleScopes.has(scopeId) ? SCOPE_COLORS[scopeId] : '#fff';
+    btn.style.borderColor = SCOPE_COLORS[scopeId];
+    btn.style.color = visibleScopes.has(scopeId) ? '#fff' : '#495057';
+    btn.textContent = scope.name;
+    btn.onclick = () => toggleScope(scopeId);
+    container.appendChild(btn);
+  }
+}
+
+// Build CAPEX inputs
+function buildCapexInputs() {
+  let container = document.getElementById('capex-inputs');
+  container.innerHTML = '';
+
+  for (let scopeId in COMPARISON_DATA.scopes) {
+    let scope = COMPARISON_DATA.scopes[scopeId];
+    let sp = COMPARISON_DATA.scope_params[scopeId];
+    if (!sp) continue;
+
+    let wrap = document.createElement('div');
+    wrap.className = 'capex-input-wrap';
+
+    let label = document.createElement('label');
+    label.textContent = `${scope.name}:`;
+
+    let input = document.createElement('input');
+    input.type = 'number';
+    input.id = `capex-${scopeId}`;
+    input.value = (sp.capex_msek || 0).toFixed(1);
+    input.step = '0.1';
+    input.min = '0';
+    input.onchange = () => {
+      liveCapex[scopeId] = parseFloat(input.value) || 0;
+      updateAll();
+    };
+
+    let unit = document.createElement('span');
+    unit.className = 'capex-unit';
+    unit.textContent = 'MSEK';
+
+    wrap.appendChild(label);
+    wrap.appendChild(input);
+    wrap.appendChild(unit);
+    container.appendChild(wrap);
+  }
+}
+
+// Build speed rows
+function buildSpeedRows() {
+  let container = document.getElementById('speed-rows');
+  container.innerHTML = '';
+
+  for (let i = 0; i < COMPARISON_DATA.default_speed_distribution.length; i++) {
+    let speed = COMPARISON_DATA.default_speed_distribution[i];
+    let knop = speed.knop;
+
+    let trial = COMPARISON_DATA.sea_trial[knop.toFixed(1)];
+    let hint = trial ? `~${Math.round(trial.axel_kw)} kW/axel` : '';
+
+    let row = document.createElement('div');
+    row.className = 'speed-row';
+
+    let label = document.createElement('label');
+    label.textContent = `${knop} kn`;
+
+    let slider = document.createElement('input');
+    slider.type = 'range';
+    slider.min = '0';
+    slider.max = '100';
+    slider.step = '5';
+    slider.value = Math.round((speedFractions[i] || 0) * 100);
+    slider.style.width = '130px';
+    slider.dataset.knot = knop;
+    slider.onchange = () => {
+      speedFractions[i] = parseFloat(slider.value) / 100;
+      updateSpeedDisplay();
+      updateAll();
+    };
+
+    let pct = document.createElement('span');
+    pct.className = 'spct';
+    pct.textContent = Math.round((speedFractions[i] || 0) * 100) + '%';
+
+    let hintSpan = document.createElement('span');
+    hintSpan.className = 'hint';
+    hintSpan.textContent = hint;
+
+    row.appendChild(label);
+    row.appendChild(slider);
+    row.appendChild(pct);
+    row.appendChild(hintSpan);
+    container.appendChild(row);
+  }
+}
+
+// Initialize
+function init() {
+  let refP = COMPARISON_DATA.scope_params["scope2-mets-de"] || Object.values(COMPARISON_DATA.scope_params)[0];
+
+  liveSurveyHours = refP?.survey_hours || 2000;
+  liveTransitHours = refP?.transit_hours || 1000;
+  liveDpRovHours = refP?.dp_rov_hours || 1200;
+
+  let dpDefaults = COMPARISON_DATA.dp_rov_defaults;
+  liveDpThrusterPct = dpDefaults.thruster_avg_load_pct * 100;
+  liveDpPropKwPerShaft = dpDefaults.prop_kw_per_shaft;
+  liveDpHotelKw = dpDefaults.hotel_kw;
+
+  speedFractions = COMPARISON_DATA.default_speed_distribution.map(s => s.fraction);
+
+  // Event listeners
+  document.getElementById('fuel-slider').addEventListener('input', (e) => {
+    fuelMultiplier = parseFloat(e.target.value) / COMPARISON_DATA.fuel_price_base;
+    document.getElementById('fuel-display').textContent = formatNumber(parseFloat(e.target.value));
+    updateAll();
+  });
+
+  document.getElementById('period-slider').addEventListener('input', (e) => {
+    activePeriod = parseInt(e.target.value);
+    document.getElementById('period-display').textContent = activePeriod;
+    document.getElementById('tco-title').textContent = `Total Cost of Ownership — CAPEX + Ackumulerad OPEX (${activePeriod} år)`;
+    document.getElementById('th-opex-n').textContent = `Ackumulerad OPEX ${activePeriod} år`;
+    document.getElementById('th-tco-n').textContent = `TCO ${activePeriod} år`;
+    updateAll();
+  });
+
+  document.getElementById('battery-toggle').addEventListener('change', updateAll);
+
+  document.getElementById('survey-hours-slider').addEventListener('input', (e) => {
+    liveSurveyHours = parseInt(e.target.value);
+    updateHoursDisplay();
+    updateAll();
+  });
+
+  document.getElementById('transit-hours-slider').addEventListener('input', (e) => {
+    liveTransitHours = parseInt(e.target.value);
+    updateHoursDisplay();
+    updateAll();
+  });
+
+  document.getElementById('dp-hours-slider').addEventListener('input', (e) => {
+    liveDpRovHours = parseInt(e.target.value);
+    updateHoursDisplay();
+    updateAll();
+  });
+
+  document.getElementById('dp-thruster-slider').addEventListener('input', (e) => {
+    liveDpThrusterPct = parseInt(e.target.value);
+    updateDpLoadDisplay();
+    updateAll();
+  });
+
+  document.getElementById('dp-prop-slider').addEventListener('input', (e) => {
+    liveDpPropKwPerShaft = parseInt(e.target.value);
+    updateDpLoadDisplay();
+    updateAll();
+  });
+
+  document.getElementById('dp-hotel-slider').addEventListener('input', (e) => {
+    liveDpHotelKw = parseInt(e.target.value);
+    updateDpLoadDisplay();
+    updateAll();
+  });
+
+  // Yanmar Scope 4 input listeners
+  ['yanmar-oh-interval','yanmar-oh-cost','yanmar-lifespan','yanmar-repl-cost','yanmar-svc500','yanmar-svc1000'].forEach(id => {
+    let el = document.getElementById(id);
+    if (el) el.addEventListener('input', updateAll);
+  });
+
+  buildToggles();
+  buildCapexInputs();
+  buildSpeedRows();
+  updateHoursDisplay();
+  updateDpLoadDisplay();
+  updateSpeedDisplay();
+
+  updateAll();
+}
+
+// Master update
+function updateAll() {
+  applyYanmarOverrides();
+  refreshSurveyFuel();
+  refreshTransitFuel();
+  updateDpLoadDisplay();
+  buildKpiCards();
+  buildTcoChart();
+  buildCumulativeChart();
+  buildAnnualChart();
+  buildTable();
+}
+
+// On load
+document.addEventListener('DOMContentLoaded', init);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,35 @@
+# ─── Njord Pages .gitignore ───
+# Skyddsnät mot att känsliga filer hamnar i det publika repot
+
+# Dokument (ska aldrig publiceras)
+*.docx
+*.xlsx
+*.xls
+*.pdf
+*.pptx
+*.csv
+
+# Miljöfiler och hemligheter
+.env
+.env.*
+*.key
+*.pem
+credentials.*
+
+# Deploy-instruktioner (ska stanna i njord-repot)
+DEPLOY-INSTRUCTIONS.md
+deploy.sh
+
+# OS-filer
+.DS_Store
+Thumbs.db
+
+# Editor-filer
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Node (om det skulle dyka upp)
+node_modules/

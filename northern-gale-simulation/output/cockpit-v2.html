@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Northern Gale — Mission Control v2</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f0f2f5;
+  --surface: #ffffff;
+  --surface2: #f7f8fa;
+  --border: #e2e5ea;
+  --border-light: #eef0f3;
+  --text: #1a1d27;
+  --text-dim: #6b7280;
+  --text-muted: #9ca3af;
+  --accent: #2563eb;
+  --accent-light: #dbeafe;
+
+  --s1: #e65100; --s1-bg: #fff3e0; --s1-border: #ffcc80;
+  --s2: #00796b; --s2-bg: #e0f2f1; --s2-border: #80cbc4;
+  --s3: #283593; --s3-bg: #e8eaf6; --s3-border: #9fa8da;
+  --s4: #546e7a; --s4-bg: #eceff1; --s4-border: #b0bec5;
+  --green: #16a34a;
+  --red: #dc2626;
+  --amber: #d97706;
+}
+
+body { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); font-size: 12px; line-height: 1.45; height: 100vh; overflow: hidden; }
+
+/* === LAYOUT === */
+.app { display: grid; grid-template-columns: 300px 1fr; grid-template-rows: 44px 1fr; height: 100vh; }
+
+/* === TOP BAR === */
+.topbar { grid-column: 1 / -1; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-shadow: 0 1px 3px rgba(0,0,0,.04); z-index: 10; }
+.topbar-left { display: flex; align-items: center; gap: 14px; }
+.topbar-logo { font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--text-muted); }
+.topbar-logo span { color: var(--accent); }
+.topbar-vessel { font-size: 15px; font-weight: 700; color: var(--text); }
+.topbar-right { display: flex; align-items: center; gap: 20px; }
+.topbar-stat { text-align: right; }
+.topbar-stat .lb { font-size: 9px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); }
+.topbar-stat .vl { font-size: 13px; font-weight: 700; }
+.topbar-stat .vl.best { color: var(--green); }
+
+/* Scope pill strip */
+.scope-pills { display: flex; gap: 4px; }
+.scope-pill { padding: 3px 10px; border-radius: 4px; font-size: 10px; font-weight: 700; cursor: pointer; border: 2px solid; transition: all .15s; user-select: none; }
+.scope-pill.on { color: #fff; }
+.scope-pill.off { opacity: .3; background: transparent !important; }
+
+/* === SIDEBAR === */
+.sidebar { background: var(--surface); border-right: 1px solid var(--border); overflow-y: auto; overflow-x: hidden; }
+.sidebar::-webkit-scrollbar { width: 5px; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* Panels */
+.pnl { border-bottom: 1px solid var(--border-light); }
+.pnl-hd { display: flex; align-items: center; gap: 6px; padding: 7px 12px; cursor: pointer; user-select: none; transition: background .1s; }
+.pnl-hd:hover { background: var(--surface2); }
+.pnl-num { width: 18px; height: 18px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: #fff; flex-shrink: 0; }
+.pnl-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--text-dim); flex: 1; }
+.pnl-sum { font-size: 10px; color: var(--text-muted); max-width: 90px; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pnl-chev { color: var(--text-muted); font-size: 8px; transition: transform .2s; margin-left: 2px; }
+.pnl.closed .pnl-chev { transform: rotate(-90deg); }
+.pnl.closed .pnl-bd { display: none; }
+.pnl-bd { padding: 4px 12px 10px; }
+
+/* Input styles */
+.r { display: flex; align-items: center; gap: 5px; margin-bottom: 4px; min-height: 22px; }
+.r .lb { font-size: 11px; color: var(--text-dim); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.r .vl { font-size: 11px; font-weight: 700; min-width: 48px; text-align: right; }
+.r .un { font-size: 9px; color: var(--text-muted); min-width: 28px; }
+
+.sl { -webkit-appearance: none; appearance: none; width: 72px; height: 3px; border-radius: 2px; background: var(--border); outline: none; flex-shrink: 0; }
+.sl::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid #fff; box-shadow: 0 0 0 1px var(--border); }
+
+.ni { width: 56px; padding: 2px 5px; background: var(--surface2); border: 1px solid var(--border); border-radius: 3px; color: var(--text); font-size: 11px; font-weight: 600; text-align: right; font-family: inherit; }
+.ni:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 2px var(--accent-light); }
+.ni.mod { background: #fffbeb; border-color: var(--amber); }
+
+.sel { padding: 2px 4px; background: var(--surface2); border: 1px solid var(--border); border-radius: 3px; color: var(--text); font-size: 10px; font-family: inherit; max-width: 150px; cursor: pointer; }
+.sel:focus { border-color: var(--accent); outline: none; }
+
+.sep { height: 1px; background: var(--border-light); margin: 6px 0; }
+.sub { font-size: 10px; font-weight: 700; color: var(--text); margin: 6px 0 3px; padding-bottom: 2px; border-bottom: 1px dotted var(--border); }
+
+/* Scope color bars in sidebar */
+.scope-bar { padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+.scope-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+
+/* Read-only display values */
+.ro { font-size: 11px; color: var(--text); font-weight: 600; }
+
+/* BSFC compact grid */
+.bsfc-grid { display: flex; flex-wrap: wrap; gap: 2px; }
+.bsfc-pt { display: flex; align-items: center; gap: 1px; font-size: 9px; color: var(--text-dim); }
+.bsfc-pt input { width: 36px; padding: 1px 3px; border: 1px solid var(--border); border-radius: 2px; font-size: 9px; text-align: center; background: var(--surface2); font-family: inherit; }
+.bsfc-pt input:focus { border-color: var(--accent); outline: none; }
+
+/* === MAIN AREA === */
+.main { overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+.main::-webkit-scrollbar { width: 5px; }
+.main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* KPI strip */
+.kpi-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; flex-shrink: 0; }
+.kpi { background: var(--surface); border-radius: 8px; padding: 12px 14px; border-left: 4px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,.05); position: relative; }
+.kpi .kn { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; }
+.kpi .km { font-size: 24px; font-weight: 800; line-height: 1.1; color: var(--text); }
+.kpi .ks { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+.kpi .kb { position: absolute; top: 10px; right: 10px; font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 4px; }
+.kpi .kb.win { background: #dcfce7; color: var(--green); }
+.kpi .kb.diff { background: var(--surface2); color: var(--text-muted); }
+.kpi-details { margin-top: 6px; border-top: 1px solid var(--border-light); padding-top: 5px; }
+.kd { display: flex; justify-content: space-between; font-size: 10px; padding: 1px 0; }
+.kd .dl { color: var(--text-muted); }
+.kd .dv { font-weight: 600; }
+
+/* Charts */
+.charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex: 1; min-height: 0; }
+.chart-box { background: var(--surface); border-radius: 8px; padding: 10px 14px; box-shadow: 0 1px 3px rgba(0,0,0,.05); display: flex; flex-direction: column; min-height: 180px; }
+.chart-box.fw { grid-column: 1 / -1; }
+.chart-box h3 { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text-dim); margin-bottom: 4px; flex-shrink: 0; }
+.cw { flex: 1; position: relative; min-height: 0; }
+
+/* Detail table */
+.dt { width: 100%; border-collapse: collapse; font-size: 11px; }
+.dt th { text-align: left; padding: 4px 8px; color: var(--text-muted); font-size: 9px; text-transform: uppercase; letter-spacing: .06em; border-bottom: 1px solid var(--border); font-weight: 700; }
+.dt td { padding: 4px 8px; border-bottom: 1px solid var(--border-light); }
+.dt .nm { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+.dt tr:hover td { background: var(--surface2); }
+
+@media (max-width: 1100px) {
+  .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+  .charts-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div id="njord-password-gate">
+  <div class="njord-gate-box">
+    <div class="ns-logo">NS</div>
+    <h2>Njord Survey — Internal</h2>
+    <form onsubmit="return njordCheckPass()">
+      <input type="password" id="njord-gate-pwd" class="njord-gate-input"
+             placeholder="Enter password" autocomplete="off">
+      <button type="submit" class="njord-gate-btn">Open</button>
+    </form>
+    <div id="njord-gate-err" class="njord-gate-err">Incorrect password</div>
+  </div>
+</div>
+
+<div class="app">
+
+<!-- ====== TOP BAR ====== -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo"><span>▲</span> NJORD SURVEY</div>
+    <div class="topbar-vessel">Northern Gale — Propulsion Analysis</div>
+  </div>
+  <div class="topbar-right">
+    <div class="scope-pills" id="scope-pills"></div>
+    <div class="topbar-stat"><div class="lb">Period</div><div class="vl" id="tb-period">10 år</div></div>
+    <div class="topbar-stat"><div class="lb">Drift</div><div class="vl" id="tb-hours">4 200 h</div></div>
+    <div class="topbar-stat"><div class="lb">Billigast</div><div class="vl best" id="tb-best">—</div></div>
+  </div>
+</div>
+
+<!-- ====== SIDEBAR ====== -->
+<div class="sidebar">
+
+<!-- 1. Fartygsdata -->
+<div class="pnl closed">
+  <div class="pnl-hd" onclick="tp(this)">
+    <div class="pnl-num" style="background:var(--accent)">1</div>
+    <div class="pnl-title">Fartygsdata</div>
+    <div class="pnl-sum">Northern Gale</div>
+    <div class="pnl-chev">▼</div>
+  </div>
+  <div class="pnl-bd">
+    <div class="r"><span class="lb">Fartyg</span><span class="ro">Northern Gale</span></div>
+    <div class="r"><span class="lb">Typ</span><span class="ro">Catamaran survey</span></div>
+    <div class="r"><span class="lb">Längd</span><span class="ro">39.9 m</span></div>
+    <div class="r"><span class="lb">Deplacement</span><span class="ro">~350 ton</span></div>
+    <div class="sep"></div>
+    <div class="r"><span class="lb">Hotelllast</span>
+      <input type="number" class="ni" id="hotel-kw" value="80" min="20" max="200" step="5">
+      <span class="un">kW</span>
+    </div>
+    <div class="r"><span class="lb">Däckslast</span>
+      <input type="number" class="ni" id="deck-kw" value="45" min="0" max="150" step="5">
+      <span class="un">kW</span>
+    </div>
+    <div class="r"><span class="lb">Sea trial</span><span class="ro">Nov 2024</span></div>
+  </div>
+</div>
+
+<!-- 2. Motordata & BSFC -->
+<div class="pnl closed">
+  <div class="pnl-hd" onclick="tp(this)">
+    <div class="pnl-num" style="background:#d97706">2</div>
+    <div class="pnl-title">Motordata & BSFC</div>
+    <div class="pnl-sum">8 motorer</div>
+    <div class="pnl-chev">▼</div>
+  </div>
+  <div class="pnl-bd" id="engine-panel">
+    <!-- Built by JS -->
+  </div>
+</div>
+
+<!-- 3. Överhalning -->
+<div class="pnl closed">
+  <div class="pnl-hd" onclick="tp(this)">
+    <div class="pnl-num" style="background:#7c3aed">3</div>
+    <div class="pnl-title">Överhalning & Livslängd</div>
+    <div class="pnl-sum">5 motorer</div>
+    <div class="pnl-chev">▼</div>
+  </div>
+  <div class="pnl-bd" id="oh-panel">
+    <!-- Built by JS -->
+  </div>
+</div>
+
+<!-- 4. Framdrivningskoncept -->
+<div class="pnl">
+  <div class="pnl-hd" onclick="tp(this)">
+    <div class="pnl-num" style="background:var(--s1)">4</div>
+    <div class="pnl-title">Framdrivningskoncept</div>
+    <div class="pnl-sum">4 scopes</div>
+    <div class="pnl-chev">▼</div>
+  </div>
+  <div class="pnl-bd" id="scope-config-panel">
+    <!-- Built by JS -->
+  </div>
+</div>
+
+<!-- 5. Driftsprofil -->
+<div class="pnl">
+  <div class="pnl-hd" onclick="tp(this)">
+    <div class="pnl-num" style="background:var(--green)">5</div>
+    <div class="pnl-title">Driftsprofil</div>
+    <div class="pnl-sum" id="sum-hours">4 200 h</div>
+    <div class="pnl-chev">▼</div>
+  </div>
+  <div class="pnl-bd">
+    <div class="r">
+      <span class="lb">Survey</span>
+      <input type="range" class="sl" id="sl-survey" min="500" max="4000" step="100" value="2000">
+      <span class="vl" id="vl-survey">2 000</span>
+      <span class="un">h/år</span>
+    </div>
+    <div class="r">
+      <span class="lb">Transit</span>
+      <input type="range" class="sl" id="sl-transit" min="200" max="3000" step="100" value="1000">
+      <span class="vl" id="vl-transit">1 000</span>
+      <span class="un">h/år</span>
+    </div>
+    <div class="r">
+      <span class="lb">DP/ROV</span>
+      <input type="range" class="sl" id="sl-dp" min="200" max="3000" step="100" value="1200">
+      <span class="vl" id="vl-dp">1 200</span>
+      <span class="un">h/år</span>
+    </div>
+    <div class="sep"></div>
+    <div class="r"><span class="lb" style="font-weight:700;color:var(--text)">Totalt</span><span class="vl" id="vl-tot" style="color:var(--green)">4 200</span><span class="un">h/år</span></div>
+  </div>
+</div>
+
+<!-- 6. Bränsle & Eskalering -->
+<div class="pnl">
+  <div class="pnl-hd" onclick="tp(this)">
+    <div class="pnl-num" style="background:var(--amber)">6</div>
+    <div class="pnl-title">Bränsle & Eskalering</div>
+    <div class="pnl-sum" id="sum-fuel">12 000 kr</div>
+    <div class="pnl-chev">▼</div>
+  </div>
+  <div class="pnl-bd">
+    <div class="r">
+      <span class="lb">MGO-pris</span>
+      <input type="range" class="sl" id="sl-fuel" min="6000" max="24000" step="500" value="12000">
+      <span class="vl" id="vl-fuel">12 000</span>
+      <span class="un">kr/t</span>
+    </div>
+    <div class="r">
+      <span class="lb">Bränsle-esk.</span>
+      <input type="range" class="sl" id="sl-fesc" min="0" max="10" step="0.5" value="3">
+      <span class="vl" id="vl-fesc">3.0</span>
+      <span class="un">%/år</span>
+    </div>
+    <div class="r">
+      <span class="lb">Underhålls-esk.</span>
+      <input type="range" class="sl" id="sl-mesc" min="0" max="10" step="0.5" value="2">
+      <span class="vl" id="vl-mesc">2.0</span>
+      <span class="un">%/år</span>
+    </div>
+    <div class="r">
+      <span class="lb">CO₂-faktor</span>
+      <input type="number" class="ni" id="co2-factor" value="3.206" min="1" max="5" step="0.001" style="width:52px;">
+      <span class="un">kg/kg</span>
+    </div>
+  </div>
+</div>
+
+<!-- 7. Underhållsmodell -->
+<div class="pnl closed">
+  <div class="pnl-hd" onclick="tp(this)">
+    <div class="pnl-num" style="background:var(--s2)">7</div>
+    <div class="pnl-title">Underhållsmodell</div>
+    <div class="pnl-sum">SEK/h</div>
+    <div class="pnl-chev">▼</div>
+  </div>
+  <div class="pnl-bd" id="maint-model-panel">
+    <!-- Built by JS -->
+  </div>
+</div>
+
+<!-- 8. Batteri -->
+<div class="pnl closed">
+  <div class="pnl-hd" onclick="tp(this)">
+    <div class="pnl-num" style="background:#0ea5e9">8</div>
+    <div class="pnl-title">Batteri & Peak Shaving</div>
+    <div class="pnl-sum">150 kWh</div>
+    <div class="pnl-chev">▼</div>
+  </div>
+  <div class="pnl-bd">
+    <div class="r"><span class="lb">Tillämpas på</span><span class="ro" id="batt-applies">Scope 1 (Hybrid)</span></div>
+    <div class="r">
+      <span class="lb">Kapacitet</span>
+      <input type="number" class="ni" value="150" min="50" max="500" step="10">
+      <span class="un">kWh</span>
+    </div>
+    <div class="r">
+      <span class="lb">Max urladdning</span>
+      <input type="number" class="ni" value="200" min="50" max="500" step="10">
+      <span class="un">kW</span>
+    </div>
+    <div class="r">
+      <span class="lb">Roundtrip η</span>
+      <input type="number" class="ni" value="0.90" min="0.5" max="1.0" step="0.01" style="width:48px;">
+    </div>
+  </div>
+</div>
+
+<!-- 9. Analys & CAPEX -->
+<div class="pnl">
+  <div class="pnl-hd" onclick="tp(this)">
+    <div class="pnl-num" style="background:var(--red)">9</div>
+    <div class="pnl-title">Analys & CAPEX</div>
+    <div class="pnl-sum" id="sum-period">10 år</div>
+    <div class="pnl-chev">▼</div>
+  </div>
+  <div class="pnl-bd">
+    <div class="r">
+      <span class="lb">Period</span>
+      <input type="range" class="sl" id="sl-period" min="5" max="20" step="1" value="10">
+      <span class="vl" id="vl-period">10</span>
+      <span class="un">år</span>
+    </div>
+    <div class="r">
+      <span class="lb">Inkludera CAPEX</span>
+      <input type="checkbox" id="capex-toggle" checked style="accent-color:var(--accent);width:14px;height:14px;cursor:pointer;">
+    </div>
+    <div class="sep"></div>
+    <div id="capex-inputs"></div>
+  </div>
+</div>
+
+</div><!-- /sidebar -->
+
+<!-- ====== MAIN AREA ====== -->
+<div class="main">
+
+  <!-- KPI -->
+  <div class="kpi-strip" id="kpi-strip"></div>
+
+  <!-- Charts row 1: TCO -->
+  <div class="chart-box fw" style="min-height:220px;">
+    <h3>Ackumulerad TCO (CAPEX + OPEX + Renovering)</h3>
+    <div class="cw"><canvas id="ch-tco"></canvas></div>
+  </div>
+
+  <!-- Charts row 2 -->
+  <div class="charts-row">
+    <div class="chart-box">
+      <h3>Årlig kostnad år 1 — Bränsle vs Underhåll</h3>
+      <div class="cw"><canvas id="ch-annual"></canvas></div>
+    </div>
+    <div class="chart-box">
+      <h3>Bränsleförbrukning (ton/år)</h3>
+      <div class="cw"><canvas id="ch-fuel"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="chart-box" style="flex-shrink:0;min-height:auto;">
+    <h3>Scope-jämförelse — Detaljdata</h3>
+    <table class="dt" id="tbl"></table>
+  </div>
+
+</div>
+
+</div><!-- /app -->
+
+<script>
+// =====================================================
+// SCOPE DATA — from comparison_results.json
+// =====================================================
+const S = {
+  s1: { id:'s1', name:'Scania DW6 Hybrid', short:'Scope 1 — Hybrid', tag:'S1',
+    type:'hybrid', c:'#e65100', bg:'#fff3e0', bc:'#ffcc80',
+    capex:21.9, fuelT:687.85, fuelK:8254156, maintK:664700,
+    prop:'Scania DW6 440kW', propId:'scania-dw6-440', genset:'Scania DW6 Genset', gensetId:'scania-dw6-440-genset',
+    elmotor:'Danfoss 295kW', elmotorId:'danfoss-295', vis:true },
+  s2: { id:'s2', name:'METS Diesel-Elektrisk', short:'Scope 2 — METS DE', tag:'S2',
+    type:'diesel_electric', c:'#00796b', bg:'#e0f2f1', bc:'#80cbc4',
+    capex:27.7, fuelT:696.18, fuelK:8354172, maintK:474900,
+    prop:'Danfoss 600kW', propId:'danfoss-600', genset:'Scania DW6 Genset', gensetId:'scania-dw6-440-genset',
+    elmotor:null, elmotorId:null, vis:true },
+  s3: { id:'s3', name:'ZEM Diesel-Elektrisk', short:'Scope 3 — ZEM DE', tag:'S3',
+    type:'diesel_electric', c:'#283593', bg:'#e8eaf6', bc:'#9fa8da',
+    capex:21.2, fuelT:704.88, fuelK:8458557, maintK:362300,
+    prop:'Danfoss 750kW', propId:'danfoss-750', genset:'Volvo D13 380kW', gensetId:'penta-d13-380',
+    elmotor:null, elmotorId:null, vis:true },
+  s4: { id:'s4', name:'Traditionell Mekanisk', short:'Scope 4 — Traditionell', tag:'S4',
+    type:'diesel', c:'#546e7a', bg:'#eceff1', bc:'#b0bec5',
+    capex:11.8, fuelT:690.65, fuelK:8287800, maintK:468000,
+    prop:'Yanmar 750kW', propId:'yanmar-750', genset:'75kW hotellgenset', gensetId:'genset-75kw',
+    elmotor:null, elmotorId:null, vis:true }
+};
+
+const ENGINES = {
+  'scania-dw6-440':        { name:'Scania DW6 440kW', type:'diesel', kw:440, maint:155.50, bsfc:{25:225,50:210,75:205,85:208,100:215} },
+  'scania-dw6-440-genset': { name:'Scania DW6 440kW Genset', type:'genset', kw:440, maint:155.50, bsfc:{25:228,50:212,75:207,85:210,100:218} },
+  'yanmar-750':            { name:'Yanmar 750kW', type:'diesel', kw:750, maint:112.50, bsfc:{25:220,50:205,75:200,85:203,100:210} },
+  'penta-d13-380':         { name:'Volvo Penta D13 380kW', type:'genset', kw:380, maint:85.42, bsfc:{25:230,50:215,75:208,85:212,100:220} },
+  'danfoss-295':           { name:'Danfoss 295kW', type:'electric_motor', kw:295, maint:25.00, bsfc:{} },
+  'danfoss-600':           { name:'Danfoss 600kW', type:'electric_motor', kw:600, maint:25.00, bsfc:{} },
+  'danfoss-750':           { name:'Danfoss 750kW', type:'electric_motor', kw:750, maint:25.00, bsfc:{} },
+  'genset-75kw':           { name:'Generisk 75kW', type:'genset', kw:75, maint:45.00, bsfc:{50:240,75:225,100:230} }
+};
+
+const OH_DATA = {
+  'scania-dw6-440':        { interval:15000, cost:850000, lifespan:45000, repl:4200000 },
+  'scania-dw6-440-genset': { interval:15000, cost:850000, lifespan:45000, repl:4200000 },
+  'yanmar-750':            { interval:12000, cost:1200000, lifespan:36000, repl:6500000 },
+  'penta-d13-380':         { interval:12000, cost:650000, lifespan:36000, repl:3200000 },
+  'genset-75kw':           { interval:8000, cost:120000, lifespan:24000, repl:350000 }
+};
+
+// Live state
+let fuelPrice=12000, fuelEsc=0.03, maintEsc=0.02;
+let survH=2000, tranH=1000, dpH=1200;
+let period=10, capexOn=true;
+let liveCapex={s1:21.9,s2:27.7,s3:21.2,s4:11.8};
+
+// Charts
+let chTco,chAnn,chFuel;
+
+// =====================================================
+// CALC
+// =====================================================
+function fmt(n){ return Math.round(n).toLocaleString('sv-SE').replace(/\u00a0/g,' '); }
+function fmtM(n){ return (n/1e6).toFixed(1); }
+
+function calc(s){
+  let hf=(survH+tranH+dpH)/4200;
+  let pf=fuelPrice/12000;
+  let fy=s.fuelT*hf, fc=s.fuelK*hf*pf, mc=s.maintK*hf;
+  let cx=(liveCapex[s.id]??s.capex)*1e6;
+  let yrs=[], cumF=0, cumM=0, cumT=capexOn?cx:0;
+  for(let y=1;y<=period;y++){
+    let fe=Math.pow(1+fuelEsc,y-1), me=Math.pow(1+maintEsc,y-1);
+    let f=fc*fe, m=mc*me; cumF+=f; cumM+=m; cumT+=f+m;
+    yrs.push({y,fuel:f,maint:m,cum:cumT,ft:fy});
+  }
+  return {...s,cx,fy,fc,mc,yrs,cumF,cumM,tco:cumT,opex:cumF+cumM};
+}
+
+// =====================================================
+// RENDER: KPI
+// =====================================================
+function renderKpi(){
+  let el=document.getElementById('kpi-strip'); el.innerHTML='';
+  let res={}, minT=Infinity, minId='';
+  for(let s of Object.values(S)){
+    if(!s.vis)continue; let r=calc(s); res[s.id]=r;
+    if(r.tco<minT){minT=r.tco;minId=s.id;}
+  }
+  for(let[id,r]of Object.entries(res)){
+    let diff=id!==minId?((r.tco-minT)/1e6).toFixed(1):null;
+    let k=document.createElement('div'); k.className='kpi'; k.style.borderLeftColor=r.c;
+    k.innerHTML=`
+      <div class="kn" style="color:${r.c}">${r.tag} ${r.type}</div>
+      <div class="km">${fmtM(r.tco)} <span style="font-size:11px;font-weight:600;color:var(--text-dim)">MSEK</span></div>
+      <div class="ks">${capexOn?'TCO':'OPEX'} ${period} år</div>
+      ${id===minId?'<div class="kb win">BILLIGAST</div>':diff?`<div class="kb diff">+${diff}M</div>`:''}
+      <div class="kpi-details">
+        ${capexOn?`<div class="kd"><span class="dl">CAPEX</span><span class="dv">${fmtM(r.cx)}M</span></div>`:''}
+        <div class="kd"><span class="dl">Bränsle ${period}år</span><span class="dv">${fmtM(r.cumF)}M</span></div>
+        <div class="kd"><span class="dl">Underhåll ${period}år</span><span class="dv">${fmtM(r.cumM)}M</span></div>
+        <div class="kd"><span class="dl">Bränsle/år</span><span class="dv">${fmt(r.fy)} ton</span></div>
+      </div>`;
+    el.appendChild(k);
+  }
+  document.getElementById('tb-best').textContent=res[minId]?.tag||'—';
+}
+
+// =====================================================
+// RENDER: CHARTS
+// =====================================================
+const cDef={responsive:true,maintainAspectRatio:false,
+  plugins:{legend:{labels:{boxWidth:10,padding:6,font:{size:10},color:'#6b7280'}}},
+  scales:{x:{grid:{color:'#eef0f3'},ticks:{color:'#9ca3af',font:{size:9}}},
+          y:{grid:{color:'#eef0f3'},ticks:{color:'#9ca3af',font:{size:9},callback:v=>(v/1e6).toFixed(0)+'M'}}}};
+
+function buildTco(){
+  let lb=Array.from({length:period},(_,i)=>'År '+(i+1)), ds=[];
+  for(let s of Object.values(S)){
+    if(!s.vis)continue; let r=calc(s);
+    ds.push({label:s.tag,data:r.yrs.map(y=>y.cum),borderColor:s.c,backgroundColor:s.bg,borderWidth:2.5,pointRadius:0,fill:false,tension:.3});
+  }
+  if(chTco){chTco.data.labels=lb;chTco.data.datasets=ds;chTco.update();return;}
+  chTco=new Chart(document.getElementById('ch-tco'),{type:'line',data:{labels:lb,datasets:ds},
+    options:{...cDef,plugins:{...cDef.plugins,legend:{...cDef.plugins.legend,position:'right'}}}});
+}
+
+function buildAnn(){
+  let lb=[],fd=[],md=[];
+  for(let s of Object.values(S)){if(!s.vis)continue;let r=calc(s);lb.push(s.tag);fd.push(r.fc);md.push(r.mc);}
+  let ds=[{label:'Bränsle',data:fd,backgroundColor:'rgba(217,119,6,.65)',borderRadius:3},{label:'Underhåll',data:md,backgroundColor:'rgba(37,99,235,.55)',borderRadius:3}];
+  if(chAnn){chAnn.data.labels=lb;chAnn.data.datasets=ds;chAnn.update();return;}
+  chAnn=new Chart(document.getElementById('ch-annual'),{type:'bar',data:{labels:lb,datasets:ds},
+    options:{...cDef,scales:{...cDef.scales,x:{...cDef.scales.x,stacked:true},y:{...cDef.scales.y,stacked:true}}}});
+}
+
+function buildFuel(){
+  let lb=[],d=[],cl=[];
+  for(let s of Object.values(S)){if(!s.vis)continue;let r=calc(s);lb.push(s.tag);d.push(r.fy);cl.push(s.c+'cc');}
+  let ds=[{data:d,backgroundColor:cl,borderRadius:3}];
+  if(chFuel){chFuel.data.labels=lb;chFuel.data.datasets=ds;chFuel.update();return;}
+  chFuel=new Chart(document.getElementById('ch-fuel'),{type:'bar',data:{labels:lb,datasets:ds},
+    options:{...cDef,plugins:{...cDef.plugins,legend:{display:false}},scales:{...cDef.scales,y:{...cDef.scales.y,ticks:{...cDef.scales.y.ticks,callback:v=>v.toFixed(0)+'t'}}}}});
+}
+
+// =====================================================
+// RENDER: TABLE
+// =====================================================
+function buildTbl(){
+  let t=document.getElementById('tbl'), vs=Object.values(S).filter(s=>s.vis);
+  let h='<thead><tr><th></th>'; for(let s of vs) h+=`<th class="nm" style="color:${s.c}">${s.tag}</th>`; h+='</tr></thead><tbody>';
+  let rows=[
+    ['Typ',s=>s.type],['CAPEX',s=>fmtM(calc(s).cx)+'M'],
+    ['Bränsle år 1',s=>fmt(calc(s).fy)+' ton'],['Bränslekostnad år 1',s=>fmt(calc(s).fc)+' kr'],
+    ['Underhåll år 1',s=>fmt(calc(s).mc)+' kr'],[`OPEX ${period}år`,s=>fmtM(calc(s).opex)+'M'],
+    [`TCO ${period}år`,s=>fmtM(calc(s).tco)+'M'],['Framdrivning',s=>s.prop],['Genset',s=>s.genset]
+  ];
+  for(let[l,fn]of rows){h+=`<tr><td style="color:var(--text-dim)">${l}</td>`;for(let s of vs)h+=`<td class="nm">${fn(s)}</td>`;h+='</tr>';}
+  t.innerHTML=h+'</tbody>';
+}
+
+// =====================================================
+// SIDEBAR BUILDERS
+// =====================================================
+function buildPills(){
+  let c=document.getElementById('scope-pills'); c.innerHTML='';
+  for(let s of Object.values(S)){
+    let p=document.createElement('div'); p.className=`scope-pill ${s.vis?'on':'off'}`;
+    p.style.borderColor=s.c; if(s.vis) p.style.background=s.c;
+    p.textContent=s.tag; p.onclick=()=>{s.vis=!s.vis;updateAll();}; c.appendChild(p);
+  }
+}
+
+function buildEnginePanel(){
+  let el=document.getElementById('engine-panel'); el.innerHTML='';
+  for(let[eid,eng]of Object.entries(ENGINES)){
+    let usedBy=Object.values(S).filter(s=>s.propId===eid||s.gensetId===eid||s.elmotorId===eid);
+    let usageDots=usedBy.map(s=>`<span class="scope-dot" style="background:${s.c}" title="${s.tag}"></span>`).join('');
+    let typeBadge=eng.type==='diesel'?'🔶':eng.type==='genset'?'🔷':'🟢';
+
+    let html=`<div class="sub">${typeBadge} ${eng.name} <span style="color:var(--text-muted);font-weight:400">${eng.kw}kW</span></div>`;
+    html+=`<div class="r"><span class="lb">Används i</span><span style="display:flex;gap:3px;">${usageDots||'<span style="color:var(--text-muted)">—</span>'}</span></div>`;
+    html+=`<div class="r"><span class="lb">Underhåll</span><span class="ro">${eng.maint.toFixed(2)} kr/h</span></div>`;
+
+    if(Object.keys(eng.bsfc).length>0){
+      html+=`<div class="r" style="flex-wrap:wrap;"><span class="lb" style="flex-basis:100%;margin-bottom:2px;">BSFC (g/kWh)</span>`;
+      html+=`<div class="bsfc-grid">`;
+      for(let[load,val]of Object.entries(eng.bsfc)){
+        html+=`<div class="bsfc-pt"><span>${load}%</span><input type="number" value="${val}" min="150" max="400" step="5"></div>`;
+      }
+      html+=`</div></div>`;
+    }
+    html+=`<div class="sep"></div>`;
+    el.insertAdjacentHTML('beforeend',html);
+  }
+}
+
+function buildOhPanel(){
+  let el=document.getElementById('oh-panel'); el.innerHTML='';
+  for(let[eid,oh]of Object.entries(OH_DATA)){
+    let eng=ENGINES[eid]; if(!eng) continue;
+    let html=`<div class="sub">${eng.name}</div>`;
+    html+=`<div class="r"><span class="lb">OH-intervall</span><input type="number" class="ni" value="${oh.interval}" min="5000" max="60000" step="1000"><span class="un">h</span></div>`;
+    html+=`<div class="r"><span class="lb">OH-kostnad</span><input type="number" class="ni" value="${oh.cost}" min="50000" max="5000000" step="50000"><span class="un">kr</span></div>`;
+    html+=`<div class="r"><span class="lb">Livslängd</span><input type="number" class="ni" value="${oh.lifespan}" min="10000" max="80000" step="1000"><span class="un">h</span></div>`;
+    html+=`<div class="r"><span class="lb">Byteskostnad</span><input type="number" class="ni" value="${oh.repl}" min="0" max="20000000" step="100000"><span class="un">kr</span></div>`;
+    html+=`<div class="sep"></div>`;
+    el.insertAdjacentHTML('beforeend',html);
+  }
+}
+
+function buildScopeConfig(){
+  let el=document.getElementById('scope-config-panel'); el.innerHTML='';
+  for(let s of Object.values(S)){
+    let html=`<div class="scope-bar" style="background:${s.bg};border-left:3px solid ${s.c};">`;
+    html+=`<span class="scope-dot" style="background:${s.c}"></span><strong>${s.tag}</strong> <span style="color:var(--text-dim);font-weight:400">${s.type}</span></div>`;
+
+    // Propulsion select
+    let propType=s.type==='diesel'?['diesel']:['electric_motor'];
+    let propOptions=Object.entries(ENGINES).filter(([_,e])=>propType.includes(e.type));
+    html+=`<div class="r"><span class="lb">Framdrift</span><select class="sel" data-scope="${s.id}" data-slot="prop">`;
+    for(let[eid,eng]of propOptions){
+      html+=`<option value="${eid}"${eid===s.propId?' selected':''}>${eng.name}</option>`;
+    }
+    html+=`</select></div>`;
+
+    // Genset select
+    let gsOptions=Object.entries(ENGINES).filter(([_,e])=>e.type==='genset');
+    html+=`<div class="r"><span class="lb">Genset</span><select class="sel" data-scope="${s.id}" data-slot="gs">`;
+    for(let[eid,eng]of gsOptions){
+      html+=`<option value="${eid}"${eid===s.gensetId?' selected':''}>${eng.name}</option>`;
+    }
+    html+=`</select></div>`;
+
+    // Electric motor (hybrid only)
+    if(s.type==='hybrid'){
+      let elOptions=Object.entries(ENGINES).filter(([_,e])=>e.type==='electric_motor');
+      html+=`<div class="r"><span class="lb">Elmotor</span><select class="sel" data-scope="${s.id}" data-slot="el">`;
+      for(let[eid,eng]of elOptions){
+        html+=`<option value="${eid}"${eid===s.elmotorId?' selected':''}>${eng.name}</option>`;
+      }
+      html+=`</select></div>`;
+    }
+    html+=`<div class="sep"></div>`;
+    el.insertAdjacentHTML('beforeend',html);
+  }
+}
+
+function buildCapex(){
+  let el=document.getElementById('capex-inputs'); el.innerHTML='';
+  for(let s of Object.values(S)){
+    let html=`<div class="r"><span class="lb"><span class="scope-dot" style="background:${s.c}"></span>${s.tag}</span>`;
+    html+=`<input type="number" class="ni" value="${liveCapex[s.id].toFixed(1)}" step="0.5" min="0" data-capex="${s.id}">`;
+    html+=`<span class="un">MSEK</span></div>`;
+    el.insertAdjacentHTML('beforeend',html);
+  }
+  el.querySelectorAll('[data-capex]').forEach(inp=>{
+    inp.addEventListener('change',e=>{liveCapex[e.target.dataset.capex]=parseFloat(e.target.value)||0;updateAll();});
+  });
+}
+
+function buildMaintModel(){
+  let el=document.getElementById('maint-model-panel'); el.innerHTML='';
+  for(let[eid,eng]of Object.entries(ENGINES)){
+    if(eng.maint<=0)continue;
+    el.insertAdjacentHTML('beforeend',
+      `<div class="r"><span class="lb">${eng.name}</span><span class="ro">${eng.maint.toFixed(2)} kr/h</span></div>`);
+  }
+}
+
+// =====================================================
+// WIRING
+// =====================================================
+function updateAll(){
+  renderKpi(); buildTco(); buildAnn(); buildFuel(); buildTbl(); buildPills(); updateSums();
+}
+
+function updateSums(){
+  let tot=survH+tranH+dpH;
+  document.getElementById('sum-hours').textContent=fmt(tot)+' h';
+  document.getElementById('sum-fuel').textContent=fmt(fuelPrice)+' kr';
+  document.getElementById('sum-period').textContent=period+' år';
+  document.getElementById('tb-period').textContent=period+' år';
+  document.getElementById('tb-hours').textContent=fmt(tot)+' h';
+}
+
+function tp(hd){hd.parentElement.classList.toggle('closed');}
+
+function wire(slId,vlId,setter,isFrac){
+  let sl=document.getElementById(slId),vl=document.getElementById(vlId);
+  sl.addEventListener('input',()=>{
+    let v=parseFloat(sl.value); setter(v);
+    vl.textContent=isFrac?v.toFixed(1):fmt(v);
+    updateAll();
+  });
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  wire('sl-survey','vl-survey',v=>{survH=v;document.getElementById('vl-tot').textContent=fmt(v+tranH+dpH);});
+  wire('sl-transit','vl-transit',v=>{tranH=v;document.getElementById('vl-tot').textContent=fmt(survH+v+dpH);});
+  wire('sl-dp','vl-dp',v=>{dpH=v;document.getElementById('vl-tot').textContent=fmt(survH+tranH+v);});
+  wire('sl-fuel','vl-fuel',v=>fuelPrice=v);
+  wire('sl-fesc','vl-fesc',v=>fuelEsc=v/100,true);
+  wire('sl-mesc','vl-mesc',v=>maintEsc=v/100,true);
+  wire('sl-period','vl-period',v=>period=v);
+  document.getElementById('capex-toggle').addEventListener('change',e=>{capexOn=e.target.checked;updateAll();});
+
+  buildEnginePanel();
+  buildOhPanel();
+  buildScopeConfig();
+  buildCapex();
+  buildMaintModel();
+  updateAll();
+});
+</script>
+</body>
+</html>

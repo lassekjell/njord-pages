@@ -1,0 +1,1968 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI & Claude | Njord Survey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --njord-red: #da2129;
+    --njord-dark-red: #84160e;
+    --njord-navy: #0a1e2a;
+    --njord-teal: #21bdbe;
+    --njord-blue: #244b67;
+    --njord-dark: #293133;
+    --njord-light: #f5f5f5;
+    --njord-white: #ffffff;
+    --njord-gray: #6b7280;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  /* ─── PASSWORD GATE ─── */
+  #password-gate {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background: var(--njord-navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+  }
+  #password-gate.unlocked {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .gate-box {
+    text-align: center;
+    max-width: 380px;
+    width: 90%;
+  }
+  .gate-box img {
+    width: 180px;
+    margin-bottom: 2rem;
+    opacity: 0.95;
+  }
+  .gate-box h2 {
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    opacity: 0.8;
+  }
+  .gate-input-wrap {
+    position: relative;
+    margin-bottom: 1rem;
+  }
+  .gate-input-wrap input {
+    width: 100%;
+    padding: 0.85rem 1.2rem;
+    border: 2px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    background: rgba(255,255,255,0.07);
+    color: white;
+    font-family: inherit;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .gate-input-wrap input::placeholder {
+    color: rgba(255,255,255,0.35);
+  }
+  .gate-input-wrap input:focus {
+    border-color: var(--njord-teal);
+  }
+  .gate-input-wrap.error input {
+    border-color: var(--njord-red);
+    animation: gate-shake 0.4s ease;
+  }
+  .gate-btn {
+    width: 100%;
+    padding: 0.85rem;
+    border: none;
+    border-radius: 10px;
+    background: var(--njord-red);
+    color: white;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .gate-btn:hover { background: var(--njord-dark-red); }
+  .gate-btn:active { transform: scale(0.98); }
+  .gate-error-msg {
+    color: var(--njord-red);
+    font-size: 0.8rem;
+    margin-top: 0.75rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .gate-error-msg.visible { opacity: 1; }
+  @keyframes gate-shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-5px); }
+    80% { transform: translateX(5px); }
+  }
+
+  html {
+    scroll-behavior: smooth;
+    font-size: 16px;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--njord-dark);
+    background: var(--njord-white);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ─── LANGUAGE TOGGLE ─── */
+  [data-lang="en"] { display: none; }
+  body.lang-en [data-lang="en"] { display: initial; }
+  body.lang-en [data-lang="sv"] { display: none; }
+  /* For block elements */
+  div[data-lang="en"], p[data-lang="en"], span[data-lang="en"],
+  h1[data-lang="en"], h2[data-lang="en"], h3[data-lang="en"], h4[data-lang="en"],
+  li[data-lang="en"], small[data-lang="en"] { display: none; }
+  body.lang-en div[data-lang="en"], body.lang-en p[data-lang="en"],
+  body.lang-en span[data-lang="en"], body.lang-en h1[data-lang="en"],
+  body.lang-en h2[data-lang="en"], body.lang-en h3[data-lang="en"],
+  body.lang-en h4[data-lang="en"], body.lang-en li[data-lang="en"],
+  body.lang-en small[data-lang="en"] { display: initial; }
+  body.lang-en div[data-lang="sv"], body.lang-en p[data-lang="sv"],
+  body.lang-en span[data-lang="sv"], body.lang-en h1[data-lang="sv"],
+  body.lang-en h2[data-lang="sv"], body.lang-en h3[data-lang="sv"],
+  body.lang-en h4[data-lang="sv"], body.lang-en li[data-lang="sv"],
+  body.lang-en small[data-lang="sv"] { display: none; }
+  /* block display overrides */
+  div[data-lang="en"] { display: none !important; }
+  body.lang-en div[data-lang="en"] { display: block !important; }
+  body.lang-en div[data-lang="sv"] { display: none !important; }
+  p[data-lang="en"] { display: none !important; }
+  body.lang-en p[data-lang="en"] { display: block !important; }
+  body.lang-en p[data-lang="sv"] { display: none !important; }
+
+  .lang-switch {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: rgba(0,0,0,0.04);
+    border-radius: 6px;
+    padding: 2px;
+    margin-left: 1.5rem;
+  }
+  .lang-switch button {
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.3rem 0.7rem;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--njord-gray);
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+  }
+  .lang-switch button.active {
+    background: var(--njord-red);
+    color: white;
+  }
+
+  /* ─── NAV ─── */
+  .nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    padding: 0.75rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: transform 0.3s ease;
+  }
+  /* nav always visible */
+  .nav-logo { height: 28px; }
+  .nav-right { display: flex; align-items: center; }
+  .nav-links { display: flex; gap: 1.5rem; }
+  .nav-links a {
+    color: var(--njord-dark);
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+  }
+  .nav-links a:hover, .nav-links a.active { opacity: 1; color: var(--njord-red); }
+
+  /* ─── SECTIONS ─── */
+  section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 6rem 2rem;
+    position: relative;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  /* ─── HERO ─── */
+  .hero {
+    background: var(--njord-navy);
+    color: var(--njord-white);
+    text-align: center;
+    overflow: hidden;
+    position: relative;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -25%;
+    width: 150%;
+    height: 200%;
+    background: radial-gradient(ellipse at 30% 50%, rgba(218,33,41,0.15) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 80%, rgba(33,189,190,0.1) 0%, transparent 50%);
+    animation: drift 20s ease-in-out infinite alternate;
+  }
+  @keyframes drift {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    100% { transform: translate(30px, -20px) rotate(2deg); }
+  }
+  .hero .container { position: relative; z-index: 2; }
+  .hero-logo { height: 48px; margin-bottom: 3rem; filter: brightness(0) invert(1); }
+  .hero-label {
+    display: inline-block;
+    background: var(--njord-red);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.4rem 1rem;
+    border-radius: 2px;
+    margin-bottom: 2rem;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.02em;
+  }
+  .hero h1 span { color: var(--njord-red); }
+  .hero p {
+    font-size: 1.2rem;
+    opacity: 0.7;
+    max-width: 600px;
+    margin: 0 auto 2rem;
+    font-weight: 300;
+  }
+  .hero-meta {
+    font-size: 0.85rem;
+    opacity: 0.4;
+    margin-top: 3rem;
+  }
+
+  /* ─── WAVE DIVIDER ─── */
+  .wave-divider {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 80px;
+    overflow: hidden;
+  }
+  .wave-divider svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* ─── SECTION STYLES ─── */
+  .section-label {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--njord-red);
+    margin-bottom: 1rem;
+  }
+  .section-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: var(--njord-red);
+    color: white;
+    font-size: 0.8rem;
+    font-weight: 700;
+    border-radius: 50%;
+    margin-right: 0.75rem;
+    vertical-align: middle;
+  }
+
+  h2 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin-bottom: 1.5rem;
+  }
+  h2 span { color: var(--njord-red); }
+
+  h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+  }
+
+  .lead {
+    font-size: 1.15rem;
+    color: var(--njord-gray);
+    line-height: 1.7;
+    max-width: 700px;
+    margin-bottom: 2.5rem;
+  }
+
+  /* ─── CARDS ─── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+  .card {
+    background: var(--njord-white);
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: 12px;
+    padding: 2rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+  }
+  .card-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(218,33,41,0.08);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+  .card h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+  .card p { font-size: 0.9rem; color: var(--njord-gray); line-height: 1.6; }
+
+  /* ─── CODE BLOCK ─── */
+  .code-block {
+    background: var(--njord-navy);
+    color: #e2e8f0;
+    border-radius: 12px;
+    padding: 2rem;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 0.85rem;
+    line-height: 1.8;
+    overflow-x: auto;
+    position: relative;
+    margin: 1.5rem 0;
+  }
+  .code-block::before {
+    content: attr(data-title);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255,255,255,0.05);
+    padding: 0.5rem 1.25rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--njord-teal);
+    border-radius: 12px 12px 0 0;
+    font-family: 'Inter', sans-serif;
+  }
+  .code-block[data-title] { padding-top: 3.5rem; }
+  .code-comment { color: #64748b; }
+  .code-key { color: var(--njord-teal); }
+  .code-value { color: #fbbf24; }
+  .code-string { color: #86efac; }
+
+  /* ─── SPLIT LAYOUT ─── */
+  .split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+  }
+  @media (max-width: 768px) {
+    .split { grid-template-columns: 1fr; gap: 2rem; }
+  }
+
+  /* ─── HIGHLIGHT BOX ─── */
+  .highlight-box {
+    background: linear-gradient(135deg, var(--njord-red), var(--njord-dark-red));
+    color: white;
+    border-radius: 16px;
+    padding: 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .highlight-box::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -25%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 50%;
+  }
+  .highlight-box h3 { font-size: 1.5rem; margin-bottom: 1rem; }
+  .highlight-box p { opacity: 0.9; line-height: 1.7; }
+  .highlight-box .stat {
+    font-size: 3rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+  }
+  .highlight-box .stat-label {
+    font-size: 0.85rem;
+    opacity: 0.7;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* ─── TIMELINE ─── */
+  .timeline {
+    position: relative;
+    padding-left: 3rem;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 14px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--njord-red), var(--njord-teal));
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 2.5rem;
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -2.35rem;
+    top: 0.5rem;
+    width: 12px;
+    height: 12px;
+    background: var(--njord-red);
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 0 0 2px var(--njord-red);
+  }
+  .timeline-item h4 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+  .timeline-item p {
+    font-size: 0.9rem;
+    color: var(--njord-gray);
+  }
+
+  /* ─── FOLDER TREE ─── */
+  .folder-tree {
+    background: var(--njord-navy);
+    color: #e2e8f0;
+    border-radius: 12px;
+    padding: 2rem;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 0.85rem;
+    line-height: 2;
+  }
+  .folder-tree .folder { color: var(--njord-teal); font-weight: 600; }
+  .folder-tree .file { color: #94a3b8; }
+  .folder-tree .highlight-file { color: #fbbf24; font-weight: 600; }
+  .folder-tree .comment { color: #64748b; font-style: italic; }
+
+  /* ─── ALTERNATING BG ─── */
+  .bg-light { background: var(--njord-light); }
+  .bg-navy { background: var(--njord-navy); color: var(--njord-white); }
+  .bg-navy .lead { color: rgba(255,255,255,0.6); }
+  .bg-navy .section-label { color: var(--njord-teal); }
+  .bg-navy .card {
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(255,255,255,0.08);
+  }
+  .bg-navy .card h3 { color: white; }
+  .bg-navy .card p { color: rgba(255,255,255,0.6); }
+  .bg-navy .card-icon { background: rgba(33,189,190,0.15); }
+
+  /* ─── TAG LIST ─── */
+  .tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+  }
+  .tag {
+    display: inline-block;
+    padding: 0.35rem 0.85rem;
+    background: rgba(218,33,41,0.06);
+    color: var(--njord-red);
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 6px;
+    border: 1px solid rgba(218,33,41,0.12);
+  }
+  .bg-navy .tag {
+    background: rgba(33,189,190,0.1);
+    color: var(--njord-teal);
+    border-color: rgba(33,189,190,0.2);
+  }
+
+  /* ─── EXAMPLE SHOWCASE ─── */
+  .showcase-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    margin-top: 2rem;
+  }
+  @media (max-width: 768px) {
+    .showcase-grid { grid-template-columns: 1fr; }
+  }
+  .showcase-item {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .showcase-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+  }
+  .showcase-preview {
+    height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+  }
+  .showcase-preview.red { background: linear-gradient(135deg, var(--njord-red), var(--njord-dark-red)); }
+  .showcase-preview.navy { background: linear-gradient(135deg, var(--njord-navy), var(--njord-blue)); }
+  .showcase-preview.teal { background: linear-gradient(135deg, var(--njord-teal), #1a9b9c); }
+  .showcase-info { padding: 1.25rem; }
+  .showcase-info h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.25rem; }
+  .showcase-info p { font-size: 0.8rem; color: var(--njord-gray); }
+
+  /* ─── QUOTE ─── */
+  .quote {
+    font-size: 1.4rem;
+    font-weight: 300;
+    font-style: italic;
+    line-height: 1.6;
+    color: var(--njord-dark);
+    border-left: 4px solid var(--njord-red);
+    padding-left: 1.5rem;
+    margin: 2rem 0;
+    max-width: 700px;
+  }
+
+  /* ─── STATS ROW ─── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin: 2.5rem 0;
+  }
+  @media (max-width: 768px) {
+    .stats-row { grid-template-columns: 1fr; }
+  }
+  .stat-item { text-align: center; }
+  .stat-item .number {
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--njord-red);
+    line-height: 1;
+  }
+  .stat-item .label {
+    font-size: 0.85rem;
+    color: var(--njord-gray);
+    margin-top: 0.5rem;
+  }
+  .bg-navy .stat-item .number { color: var(--njord-teal); }
+  .bg-navy .stat-item .label { color: rgba(255,255,255,0.5); }
+
+  /* ─── MOCKUP CARDS ─── */
+  .mockup-card {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.08);
+    background: white;
+    transition: transform 0.3s, box-shadow 0.3s;
+    cursor: pointer;
+  }
+  .mockup-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.12);
+  }
+  .mockup-card.expanded {
+    transform: scale(1.5);
+    z-index: 50;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.25);
+    position: relative;
+  }
+  .mockup-topbar {
+    background: #2d2d2d;
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .mockup-dots {
+    display: flex;
+    gap: 4px;
+  }
+  .mockup-dots span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+  .mockup-dots span:nth-child(1) { background: #ff5f56; }
+  .mockup-dots span:nth-child(2) { background: #ffbd2e; }
+  .mockup-dots span:nth-child(3) { background: #27c93f; }
+  .mockup-title {
+    font-size: 0.65rem;
+    color: #999;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+  .mockup-body {
+    padding: 12px;
+    min-height: 180px;
+  }
+  .mockup-caption {
+    padding: 1rem 1.25rem;
+    border-top: 1px solid rgba(0,0,0,0.06);
+  }
+  .mockup-caption h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.25rem; }
+  .mockup-caption p { font-size: 0.8rem; color: var(--njord-gray); line-height: 1.5; }
+  .demo-badge {
+    display: inline-block;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+  .demo-badge.live {
+    background: rgba(34,197,94,0.1);
+    color: #22c55e;
+    border: 1px solid rgba(34,197,94,0.25);
+  }
+  .demo-badge.file {
+    background: rgba(107,114,128,0.1);
+    color: var(--njord-gray);
+    border: 1px solid rgba(107,114,128,0.2);
+  }
+  a.mockup-card:hover .demo-badge.live {
+    background: #22c55e;
+    color: white;
+  }
+
+  @media (max-width: 768px) {
+    .mockup-card.expanded { transform: scale(1.1); }
+  }
+
+  /* ─── CTA SECTION ─── */
+  .cta-section {
+    background: linear-gradient(135deg, var(--njord-navy) 0%, var(--njord-blue) 100%);
+    color: white;
+    text-align: center;
+  }
+  .cta-section h2 { color: white; }
+  .cta-section h2 span { color: var(--njord-teal); }
+  .cta-btn {
+    display: inline-block;
+    background: var(--njord-red);
+    color: white;
+    padding: 1rem 2.5rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1rem;
+    text-decoration: none;
+    margin-top: 2rem;
+    transition: background 0.2s, transform 0.2s;
+  }
+  .cta-btn:hover { background: var(--njord-dark-red); transform: translateY(-2px); }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: var(--njord-dark);
+    color: rgba(255,255,255,0.4);
+    padding: 2rem;
+    text-align: center;
+    font-size: 0.8rem;
+  }
+  footer img { height: 24px; filter: brightness(0) invert(1); opacity: 0.4; margin-bottom: 0.75rem; }
+
+  /* ─── SCROLL ANIMATIONS ─── */
+  .fade-up {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .fade-up.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ─── PROGRESS BAR ─── */
+  .progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    background: var(--njord-red);
+    z-index: 200;
+    transition: width 0.1s linear;
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 768px) {
+    section { padding: 4rem 1.25rem; }
+    .nav-links { display: none; }
+    .split { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ─── PASSWORD GATE ─── -->
+<div id="password-gate">
+  <div class="gate-box">
+    <img src="logo-white.svg" alt="Njord Survey">
+    <h2>AI & Claude — Intern presentation</h2>
+    <form id="gate-form" onsubmit="return checkPass()">
+      <div class="gate-input-wrap" id="gate-wrap">
+        <input type="password" id="gate-pwd" placeholder="Ange lösenord..." autocomplete="off" autofocus>
+      </div>
+      <button type="submit" class="gate-btn">Öppna presentation →</button>
+      <div class="gate-error-msg" id="gate-err">Fel lösenord — försök igen</div>
+    </form>
+  </div>
+</div>
+<script>
+function checkPass() {
+  var p = document.getElementById('gate-pwd').value;
+  if (p === 'njord2026') {
+    document.getElementById('password-gate').classList.add('unlocked');
+    sessionStorage.setItem('njord-unlocked', '1');
+    return false;
+  }
+  document.getElementById('gate-wrap').classList.add('error');
+  document.getElementById('gate-err').classList.add('visible');
+  setTimeout(function() {
+    document.getElementById('gate-wrap').classList.remove('error');
+  }, 500);
+  return false;
+}
+// Auto-unlock if already authenticated in this tab session
+if (sessionStorage.getItem('njord-unlocked') === '1') {
+  document.getElementById('password-gate').classList.add('unlocked');
+}
+</script>
+
+<!-- Progress bar -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Navigation -->
+<nav class="nav" id="mainNav">
+  <img src="logo.svg" alt="Njord Survey" class="nav-logo">
+  <div class="nav-right">
+    <div class="nav-links">
+      <a href="#intro" data-lang="sv">Intro</a>
+      <a href="#intro" data-lang="en">Intro</a>
+      <a href="#why-ai">AI</a>
+      <a href="#architecture" data-lang="sv">Arkitektur</a>
+      <a href="#architecture" data-lang="en">Architecture</a>
+      <a href="#methodology" data-lang="sv">Metodik</a>
+      <a href="#methodology" data-lang="en">Method</a>
+      <a href="#markdown">Markdown</a>
+      <a href="#examples" data-lang="sv">Exempel</a>
+      <a href="#examples" data-lang="en">Examples</a>
+      <a href="#workflow">Workflow</a>
+      <a href="#inspiration">Inspiration</a>
+      <a href="#next">Start</a>
+    </div>
+    <div class="lang-switch">
+      <button id="btnSV" class="active" onclick="setLang('sv')">SV</button>
+      <button id="btnEN" onclick="setLang('en')">EN</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════════════════
+     SECTION 1: HERO
+     ════════════════════════════════════════════ -->
+<section class="hero" id="intro">
+  <div class="container">
+    <img src="logo.svg" alt="Njord Survey" class="hero-logo">
+    <div class="hero-label" data-lang="sv">Internpresentation 2026</div>
+    <div class="hero-label" data-lang="en">Internal Presentation 2026</div>
+
+    <h1 data-lang="sv">AI som <span>arbetsverktyg</span><br>hos Njord Survey</h1>
+    <h1 data-lang="en">AI as a <span>work tool</span><br>at Njord Survey</h1>
+
+    <p data-lang="sv">Hur vi använder Claude för att arbeta smartare, dokumentera bättre och bygga struktur som skalar.</p>
+    <p data-lang="en">How we use Claude to work smarter, document better and build scalable structure.</p>
+
+    <div class="hero-meta">Lasse Kjellerup &middot; Technical Superintendent &middot; April 2026</div>
+  </div>
+  <div class="wave-divider">
+    <svg viewBox="0 0 1440 80" preserveAspectRatio="none">
+      <path fill="#ffffff" d="M0,40 C360,80 720,0 1440,40 L1440,80 L0,80 Z"/>
+    </svg>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     SECTION 2: VARFÖR AI?
+     ════════════════════════════════════════════ -->
+<section id="why-ai">
+  <div class="container">
+    <div class="split">
+      <div class="fade-up">
+        <div data-lang="sv">
+          <span class="section-label"><span class="section-number">1</span> Bakgrund</span>
+          <h2>Varför <span>AI</span>?</h2>
+          <p class="lead">Vi lever i en tid där AI inte längre är framtidsteknik &mdash; det är ett vardagligt arbetsverktyg. För oss i maritim industri innebär det en möjlighet att jobba snabbare, mer strukturerat och med högre kvalitet.</p>
+        </div>
+        <div data-lang="en">
+          <span class="section-label"><span class="section-number">1</span> Background</span>
+          <h2>Why <span>AI</span>?</h2>
+          <p class="lead">We live in an era where AI is no longer future tech &mdash; it's an everyday work tool. For us in the maritime industry, this means an opportunity to work faster, more structured and with higher quality.</p>
+        </div>
+        <div class="quote">
+          "We bring smart and cost-effective solutions to the market by pushing boundaries."
+        </div>
+      </div>
+      <div class="fade-up" style="transition-delay: 0.15s;">
+        <div class="stats-row" style="grid-template-columns: 1fr 1fr;">
+          <div class="stat-item">
+            <div class="number">10x</div>
+            <div class="label" data-lang="sv">Snabbare dokumentation</div>
+            <div class="label" data-lang="en">Faster documentation</div>
+          </div>
+          <div class="stat-item">
+            <div class="number">24/7</div>
+            <div class="label" data-lang="sv">Alltid tillgänglig</div>
+            <div class="label" data-lang="en">Always available</div>
+          </div>
+          <div class="stat-item">
+            <div class="number">100%</div>
+            <div class="label" data-lang="sv">Konsekvent kvalitet</div>
+            <div class="label" data-lang="en">Consistent quality</div>
+          </div>
+          <div class="stat-item">
+            <div class="number">0</div>
+            <div class="label" data-lang="sv">Missade detaljer</div>
+            <div class="label" data-lang="en">Missed details</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     SECTION 3: VAD ÄR CLAUDE?
+     ════════════════════════════════════════════ -->
+<section class="bg-light" id="what-is-claude">
+  <div class="container">
+    <div class="fade-up" style="text-align:center; margin-bottom: 3rem;">
+      <div data-lang="sv">
+        <span class="section-label"><span class="section-number">2</span> Verktyget</span>
+        <h2>Vad är <span>Claude</span>?</h2>
+        <p class="lead" style="margin:0 auto;">Claude är en AI-assistent från Anthropic. Inte en chatbot &mdash; utan en sparringpartner som förstår kontext, följer instruktioner och producerar professionellt material.</p>
+      </div>
+      <div data-lang="en">
+        <span class="section-label"><span class="section-number">2</span> The Tool</span>
+        <h2>What is <span>Claude</span>?</h2>
+        <p class="lead" style="margin:0 auto;">Claude is an AI assistant by Anthropic. Not a chatbot &mdash; but a thinking partner that understands context, follows instructions and produces professional material.</p>
+      </div>
+    </div>
+    <div class="card-grid fade-up" style="transition-delay:0.15s;">
+      <div class="card">
+        <div class="card-icon">&#x1f9e0;</div>
+        <h3 data-lang="sv">Förstår kontext</h3>
+        <h3 data-lang="en">Understands context</h3>
+        <p data-lang="sv">Claude läser dina filer, förstår din mappstruktur och anpassar sina svar till ditt projekt och din roll.</p>
+        <p data-lang="en">Claude reads your files, understands your folder structure and adapts its answers to your project and role.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#x1f4c4;</div>
+        <h3 data-lang="sv">Skapar dokument</h3>
+        <h3 data-lang="en">Creates documents</h3>
+        <p data-lang="sv">Från Word-dokument och Excel till HTML-presentationer. Professionella deliverables &mdash; inte bara text i en chatt.</p>
+        <p data-lang="en">From Word documents and Excel to HTML presentations. Professional deliverables &mdash; not just text in a chat.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#x1f527;</div>
+        <h3 data-lang="sv">Kör kod &amp; verktyg</h3>
+        <h3 data-lang="en">Runs code &amp; tools</h3>
+        <p data-lang="sv">Analyserar data, bygger automatiseringar, genererar rapporter och kopplingar till externa system.</p>
+        <p data-lang="en">Analyzes data, builds automations, generates reports and integrations with external systems.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#x1f4a1;</div>
+        <h3 data-lang="sv">Tänker med dig</h3>
+        <h3 data-lang="en">Thinks with you</h3>
+        <p data-lang="sv">Brainstorma lösningar, analysera risker, skriva RFQ:er. Claude är en sparringpartner som aldrig är upptagen.</p>
+        <p data-lang="en">Brainstorm solutions, analyze risks, write RFQs. Claude is a sparring partner that's never busy.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     SECTION 4: ARKITEKTUR & STRUKTUR
+     ════════════════════════════════════════════ -->
+<section class="bg-navy" id="architecture">
+  <div class="container">
+    <div class="split">
+      <div class="fade-up">
+        <div data-lang="sv">
+          <span class="section-label"><span class="section-number">3</span> Grunden</span>
+          <h2 style="color:white;">Arkitektur &amp; <span style="color:var(--njord-teal);">Struktur</span></h2>
+          <p class="lead">Det viktigaste jag lärt mig: <strong style="color:white;">strukturen är allt</strong>. En välorganiserad mappstruktur gör att Claude förstår sammanhanget och levererar relevant material direkt.</p>
+        </div>
+        <div data-lang="en">
+          <span class="section-label"><span class="section-number">3</span> Foundation</span>
+          <h2 style="color:white;">Architecture &amp; <span style="color:var(--njord-teal);">Structure</span></h2>
+          <p class="lead">The most important lesson: <strong style="color:white;">structure is everything</strong>. A well-organized folder structure lets Claude understand context and deliver relevant material immediately.</p>
+        </div>
+
+        <!-- Principle list SV -->
+        <div data-lang="sv">
+          <div style="padding: 1.25rem 0; border-bottom: 1px solid rgba(255,255,255,0.08); display:flex; gap:1.25rem; align-items:flex-start;">
+            <span style="font-size:1.5rem; font-weight:800; color:var(--njord-teal); flex-shrink:0; width:40px;">01</span>
+            <div>
+              <strong style="color:white; display:block; margin-bottom:0.25rem;">CLAUDE.md</strong>
+              <span style="font-size:0.9rem; color:rgba(255,255,255,0.5);">En instruktionsfil i roten. Talar om för Claude vem du är, vilka system du jobbar med, och hur du vill ha dina svar.</span>
+            </div>
+          </div>
+          <div style="padding: 1.25rem 0; border-bottom: 1px solid rgba(255,255,255,0.08); display:flex; gap:1.25rem; align-items:flex-start;">
+            <span style="font-size:1.5rem; font-weight:800; color:var(--njord-teal); flex-shrink:0; width:40px;">02</span>
+            <div>
+              <strong style="color:white; display:block; margin-bottom:0.25rem;">Mappstruktur</strong>
+              <span style="font-size:0.9rem; color:rgba(255,255,255,0.5);">Organisera per projekt, fartyg eller tema. Claude navigerar och förstår hierarkin automatiskt.</span>
+            </div>
+          </div>
+          <div style="padding: 1.25rem 0; border-bottom: 1px solid rgba(255,255,255,0.08); display:flex; gap:1.25rem; align-items:flex-start;">
+            <span style="font-size:1.5rem; font-weight:800; color:var(--njord-teal); flex-shrink:0; width:40px;">03</span>
+            <div>
+              <strong style="color:white; display:block; margin-bottom:0.25rem;">Skills &amp; Templates</strong>
+              <span style="font-size:0.9rem; color:rgba(255,255,255,0.5);">Fördefinierade instruktioner för specifika uppgifter &mdash; som att skapa Excel, presentationer eller analysera data.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Principle list EN -->
+        <div data-lang="en">
+          <div style="padding: 1.25rem 0; border-bottom: 1px solid rgba(255,255,255,0.08); display:flex; gap:1.25rem; align-items:flex-start;">
+            <span style="font-size:1.5rem; font-weight:800; color:var(--njord-teal); flex-shrink:0; width:40px;">01</span>
+            <div>
+              <strong style="color:white; display:block; margin-bottom:0.25rem;">CLAUDE.md</strong>
+              <span style="font-size:0.9rem; color:rgba(255,255,255,0.5);">An instruction file in the root. Tells Claude who you are, what systems you work with, and how you want your answers.</span>
+            </div>
+          </div>
+          <div style="padding: 1.25rem 0; border-bottom: 1px solid rgba(255,255,255,0.08); display:flex; gap:1.25rem; align-items:flex-start;">
+            <span style="font-size:1.5rem; font-weight:800; color:var(--njord-teal); flex-shrink:0; width:40px;">02</span>
+            <div>
+              <strong style="color:white; display:block; margin-bottom:0.25rem;">Folder Structure</strong>
+              <span style="font-size:0.9rem; color:rgba(255,255,255,0.5);">Organize by project, vessel or topic. Claude navigates and understands the hierarchy automatically.</span>
+            </div>
+          </div>
+          <div style="padding: 1.25rem 0; border-bottom: 1px solid rgba(255,255,255,0.08); display:flex; gap:1.25rem; align-items:flex-start;">
+            <span style="font-size:1.5rem; font-weight:800; color:var(--njord-teal); flex-shrink:0; width:40px;">03</span>
+            <div>
+              <strong style="color:white; display:block; margin-bottom:0.25rem;">Skills &amp; Templates</strong>
+              <span style="font-size:0.9rem; color:rgba(255,255,255,0.5);">Predefined instructions for specific tasks &mdash; like creating Excel files, presentations or analyzing data.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fade-up" style="transition-delay:0.15s;">
+        <div class="folder-tree">
+          <span class="folder">&#x1f4c1; njord/</span><br>
+          &nbsp;&nbsp;<span class="highlight-file">&#x1f4cb; CLAUDE.md</span> <span class="comment" data-lang="sv">&larr; Instruktioner till Claude</span><span class="comment" data-lang="en">&larr; Instructions for Claude</span><br>
+          &nbsp;&nbsp;<span class="folder">&#x1f4c1; branding/</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">&#x1f3a8; Brand Guidelines.pdf</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">&#x1f5bc; Logotyper/</span><br>
+          &nbsp;&nbsp;<span class="folder">&#x1f4c1; fleet/</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="folder">&#x1f4c1; northern-gale/</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">&#x1f4c4; HANDOVER.docx</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">&#x1f4c4; Hybrid Conversion/</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="folder">&#x1f4c1; northern-storm/</span><br>
+          &nbsp;&nbsp;<span class="folder">&#x1f4c1; operations/</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">&#x1f4c4; Routines &amp; Procedures</span><br>
+          &nbsp;&nbsp;<span class="folder">&#x1f4c1; regelverk/</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">&#x1f4dc; SOLAS, MCA, Workboat Code</span><br>
+          &nbsp;&nbsp;<span class="folder">&#x1f4c1; ai-presentation/</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="highlight-file">&#x1f310; index.html</span> <span class="comment" data-lang="sv">&larr; Den här presentationen!</span><span class="comment" data-lang="en">&larr; This presentation!</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     SECTION 5: CLAUDE.md DEEP DIVE
+     ════════════════════════════════════════════ -->
+<section id="claudemd">
+  <div class="container">
+    <div class="split">
+      <div class="fade-up">
+        <div class="code-block" data-title="CLAUDE.md &mdash; Njord Survey">
+<span class="code-comment"># Njord Survey Fleet Management</span>
+
+<span class="code-key">## Who I Am</span>
+Lasse Kjellerup, Technical Superintendent.
+Responsible for technical management of
+a fleet of <span class="code-value">5 marine survey vessels</span>.
+
+<span class="code-key">## The Fleet</span>
+- <span class="code-string">Northern Gale</span> &ndash; Hybrid conversion
+- <span class="code-string">Northern Storm</span> &ndash; Operational
+- <span class="code-string">Northern Breeze</span> &ndash; TWE project
+
+<span class="code-key">## Key Systems</span>
+- <span class="code-string">CCOM X</span> &ndash; Maintenance management
+- <span class="code-string">Microsoft 365</span> &ndash; Comms &amp; files
+
+<span class="code-key">## What I Need from Claude</span>
+- Think through technical problems
+- Draft professional emails
+- Create structured documentation
+- Analyze technical data
+- <span class="code-value">Be concise and technical</span>
+        </div>
+      </div>
+      <div class="fade-up" style="transition-delay: 0.15s;">
+        <div data-lang="sv">
+          <span class="section-label"><span class="section-number">4</span> Nyckelkonceptet</span>
+          <h2>CLAUDE.md &mdash; din <span>manual</span> till AI</h2>
+          <p class="lead">Tänk dig att du får en ny kollega. Vad behöver den veta för att vara effektiv från dag ett? Det är exakt det CLAUDE.md gör.</p>
+        </div>
+        <div data-lang="en">
+          <span class="section-label"><span class="section-number">4</span> Key Concept</span>
+          <h2>CLAUDE.md &mdash; your <span>manual</span> for AI</h2>
+          <p class="lead">Imagine getting a new colleague. What do they need to know to be effective from day one? That's exactly what CLAUDE.md does.</p>
+        </div>
+        <div class="highlight-box">
+          <h3 data-lang="sv">Resultatet?</h3>
+          <h3 data-lang="en">The result?</h3>
+          <p data-lang="sv">Claude förstår <strong>vem jag är</strong>, vilka <strong>fartyg</strong> vi har, vilka <strong>system</strong> vi använder, och <strong>hur</strong> jag vill ha mina dokument formaterade. Varje gång. Utan att jag behöver förklara igen.</p>
+          <p data-lang="en">Claude understands <strong>who I am</strong>, what <strong>vessels</strong> we have, what <strong>systems</strong> we use, and <strong>how</strong> I want my documents formatted. Every time. Without me having to explain again.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     SECTION 5b: MIN METODIK — TRE LAGER
+     ════════════════════════════════════════════ -->
+<section class="bg-navy" id="methodology">
+  <div class="container">
+    <div class="fade-up" style="text-align:center; margin-bottom:3rem;">
+      <div data-lang="sv">
+        <span class="section-label" style="color:var(--njord-teal);"><span class="section-number" style="background:var(--njord-teal);">5</span> Metodiken</span>
+        <h2 style="color:white;">Tre lager av <span style="color:var(--njord-teal);">kontext</span></h2>
+        <p class="lead" style="margin:0 auto;">Det som avgör om AI levererar 50% eller 99% rätt är inte prompten &mdash; det är strukturen runt den.</p>
+      </div>
+      <div data-lang="en">
+        <span class="section-label" style="color:var(--njord-teal);"><span class="section-number" style="background:var(--njord-teal);">5</span> The Method</span>
+        <h2 style="color:white;">Three layers of <span style="color:var(--njord-teal);">context</span></h2>
+        <p class="lead" style="margin:0 auto;">What determines whether AI delivers 50% or 99% accuracy isn't the prompt &mdash; it's the structure around it.</p>
+      </div>
+    </div>
+
+    <!-- Three layers -->
+    <div class="fade-up" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:1.5rem; margin-bottom:3rem;">
+
+      <!-- Layer 1 -->
+      <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:2rem; position:relative; overflow:hidden;">
+        <div style="position:absolute; top:0; left:0; right:0; height:3px; background:var(--njord-red);"></div>
+        <div style="font-size:2.5rem; font-weight:800; color:rgba(255,255,255,0.06); position:absolute; top:8px; right:16px;">01</div>
+        <div style="font-size:0.65rem; font-weight:700; color:var(--njord-red); text-transform:uppercase; letter-spacing:0.12em; margin-bottom:0.75rem;" data-lang="sv">Permanent identitet</div>
+        <div style="font-size:0.65rem; font-weight:700; color:var(--njord-red); text-transform:uppercase; letter-spacing:0.12em; margin-bottom:0.75rem;" data-lang="en">Permanent identity</div>
+        <p style="font-size:0.9rem; color:rgba(255,255,255,0.75); line-height:1.65;" data-lang="sv">Huvudprojektet <strong style="color:white;">"Njord"</strong> har en CLAUDE.md som alltid är aktiv. Den beskriver vem jag är, min befattning, mina beslutsvägar och hur Claude ska arbeta: <strong style="color:var(--njord-teal);">alltid i planeringsläge först, alltid som arkitekt</strong> &mdash; inga antaganden utan mitt godkännande.</p>
+        <p style="font-size:0.9rem; color:rgba(255,255,255,0.75); line-height:1.65;" data-lang="en">The main project <strong style="color:white;">"Njord"</strong> has a CLAUDE.md that's always active. It describes who I am, my role, my decision paths and how Claude should work: <strong style="color:var(--njord-teal);">always in planning mode first, always as architect</strong> &mdash; no assumptions without my approval.</p>
+      </div>
+
+      <!-- Layer 2 -->
+      <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:2rem; position:relative; overflow:hidden;">
+        <div style="position:absolute; top:0; left:0; right:0; height:3px; background:var(--njord-teal);"></div>
+        <div style="font-size:2.5rem; font-weight:800; color:rgba(255,255,255,0.06); position:absolute; top:8px; right:16px;">02</div>
+        <div style="font-size:0.65rem; font-weight:700; color:var(--njord-teal); text-transform:uppercase; letter-spacing:0.12em; margin-bottom:0.75rem;" data-lang="sv">Projektkatalog</div>
+        <div style="font-size:0.65rem; font-weight:700; color:var(--njord-teal); text-transform:uppercase; letter-spacing:0.12em; margin-bottom:0.75rem;" data-lang="en">Project directory</div>
+        <p style="font-size:0.9rem; color:rgba(255,255,255,0.75); line-height:1.65;" data-lang="sv">Separata kataloger under Njord: <strong style="color:white;">branding</strong> (typsnitt, färger, templates), <strong style="color:white;">en per fartyg</strong> med teknisk detalj, <strong style="color:white;">en per projekt</strong>. Varje katalog har sin egen CLAUDE.md som pekar till rätt Markdown-filer: <em>"för propelleranalys, läs denna fil"</em>, <em>"motordata och sjöprov ligger här"</em>.</p>
+        <p style="font-size:0.9rem; color:rgba(255,255,255,0.75); line-height:1.65;" data-lang="en">Separate directories under Njord: <strong style="color:white;">branding</strong> (fonts, colors, templates), <strong style="color:white;">one per vessel</strong> with technical detail, <strong style="color:white;">one per project</strong>. Each directory has its own CLAUDE.md pointing to the right Markdown files: <em>"for propeller analysis, read this file"</em>, <em>"engine data and sea trials are here"</em>.</p>
+      </div>
+
+      <!-- Layer 3 -->
+      <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:2rem; position:relative; overflow:hidden;">
+        <div style="position:absolute; top:0; left:0; right:0; height:3px; background:#f59e0b;"></div>
+        <div style="font-size:2.5rem; font-weight:800; color:rgba(255,255,255,0.06); position:absolute; top:8px; right:16px;">03</div>
+        <div style="font-size:0.65rem; font-weight:700; color:#f59e0b; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:0.75rem;" data-lang="sv">Sessionsdisciplin</div>
+        <div style="font-size:0.65rem; font-weight:700; color:#f59e0b; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:0.75rem;" data-lang="en">Session discipline</div>
+        <p style="font-size:0.9rem; color:rgba(255,255,255,0.75); line-height:1.65;" data-lang="sv">Jag ber <strong style="color:white;">aldrig</strong> Claude att söka information själv &mdash; det är tidsödande och blir lätt fel. Istället matar jag in <strong style="color:var(--njord-teal);">verifierad dokumentation</strong>. Vi börjar alltid i planeringsfas: förstå problemet, kartlägg behoven, bygg strukturen. <em>Först därefter producerar vi.</em></p>
+        <p style="font-size:0.9rem; color:rgba(255,255,255,0.75); line-height:1.65;" data-lang="en">I <strong style="color:white;">never</strong> ask Claude to search for information itself &mdash; it's time-consuming and error-prone. Instead I feed <strong style="color:var(--njord-teal);">verified documentation</strong>. We always start in planning phase: understand the problem, map the needs, build the structure. <em>Only then do we produce.</em></p>
+      </div>
+    </div>
+
+    <!-- THE KEY PRINCIPLE: Output vs Source -->
+    <div class="fade-up" style="max-width:900px; margin:0 auto;">
+      <div style="background:linear-gradient(135deg, rgba(218,33,41,0.12), rgba(218,33,41,0.04)); border:1px solid rgba(218,33,41,0.25); border-radius:16px; padding:2.5rem; position:relative;">
+        <div style="position:absolute; top:-14px; left:24px; background:var(--njord-red); color:white; font-size:0.65rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; padding:4px 14px; border-radius:4px;" data-lang="sv">Viktigaste principen</div>
+        <div style="position:absolute; top:-14px; left:24px; background:var(--njord-red); color:white; font-size:0.65rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; padding:4px 14px; border-radius:4px;" data-lang="en">The key principle</div>
+
+        <div data-lang="sv">
+          <h3 style="color:white; font-size:1.3rem; margin-bottom:1rem; margin-top:0.5rem;">Filer är output &mdash; Markdown är sanningen</h3>
+          <p style="font-size:0.95rem; color:rgba(255,255,255,0.7); line-height:1.7; margin-bottom:1.25rem;">Alla AI-verktyg kan producera en Excel-fil med mängder av data ur sitt minne efter en enda prompt. Men när du vill ändra en cell, en kolumn, en formel &mdash; då går det ofta helt fel. Du får börja om.</p>
+          <p style="font-size:0.95rem; color:rgba(255,255,255,0.7); line-height:1.7; margin-bottom:1.25rem;">Min lösning: <strong style="color:white;">Excel-filen är bara en output.</strong> All data, alla antaganden, alla beräkningsgrunder ligger i Markdown-filer som Claude läser som källdata. Filen är ett <em>resultat</em> &mdash; inte källan.</p>
+        </div>
+        <div data-lang="en">
+          <h3 style="color:white; font-size:1.3rem; margin-bottom:1rem; margin-top:0.5rem;">Files are output &mdash; Markdown is the truth</h3>
+          <p style="font-size:0.95rem; color:rgba(255,255,255,0.7); line-height:1.7; margin-bottom:1.25rem;">Any AI tool can produce an Excel file with tons of data from memory after a single prompt. But when you want to change a cell, a column, a formula &mdash; it often goes completely wrong. You have to start over.</p>
+          <p style="font-size:0.95rem; color:rgba(255,255,255,0.7); line-height:1.7; margin-bottom:1.25rem;">My solution: <strong style="color:white;">The Excel file is just an output.</strong> All data, all assumptions, all calculation bases live in Markdown files that Claude reads as source data. The file is a <em>result</em> &mdash; not the source.</p>
+        </div>
+
+        <!-- Visual diagram -->
+        <div style="display:flex; align-items:center; gap:12px; justify-content:center; margin-top:1rem;">
+          <div style="background:rgba(33,189,190,0.15); border:1px solid rgba(33,189,190,0.3); border-radius:8px; padding:10px 16px; text-align:center;">
+            <div style="font-size:1.2rem;">&#x1f4dd;</div>
+            <div style="font-size:0.7rem; font-weight:700; color:var(--njord-teal);">data.md</div>
+            <div style="font-size:0.6rem; color:rgba(255,255,255,0.4);" data-lang="sv">Läsbar, spårbar</div>
+            <div style="font-size:0.6rem; color:rgba(255,255,255,0.4);" data-lang="en">Readable, traceable</div>
+          </div>
+          <div style="color:var(--njord-teal); font-size:1.2rem;">&#x2192;</div>
+          <div style="background:rgba(33,189,190,0.15); border:1px solid rgba(33,189,190,0.3); border-radius:8px; padding:10px 16px; text-align:center;">
+            <div style="font-size:1.2rem;">&#x1f916;</div>
+            <div style="font-size:0.7rem; font-weight:700; color:var(--njord-teal);">Claude</div>
+            <div style="font-size:0.6rem; color:rgba(255,255,255,0.4);" data-lang="sv">Läser &amp; beräknar</div>
+            <div style="font-size:0.6rem; color:rgba(255,255,255,0.4);" data-lang="en">Reads &amp; calculates</div>
+          </div>
+          <div style="color:var(--njord-teal); font-size:1.2rem;">&#x2192;</div>
+          <div style="background:rgba(34,197,94,0.12); border:1px solid rgba(34,197,94,0.25); border-radius:8px; padding:10px 16px; text-align:center;">
+            <div style="font-size:1.2rem;">&#x1f4ca;</div>
+            <div style="font-size:0.7rem; font-weight:700; color:#22c55e;">output.xlsx</div>
+            <div style="font-size:0.6rem; color:rgba(255,255,255,0.4);" data-lang="sv">Resultat, återskapbar</div>
+            <div style="font-size:0.6rem; color:rgba(255,255,255,0.4);" data-lang="en">Result, reproducible</div>
+          </div>
+        </div>
+
+        <div style="margin-top:1.25rem; background:rgba(255,255,255,0.04); border-radius:8px; padding:12px 16px; display:flex; gap:12px; align-items:flex-start;">
+          <div style="font-size:1rem; flex-shrink:0;">&#x1f4ac;</div>
+          <div>
+            <p style="font-size:0.85rem; color:rgba(255,255,255,0.8); line-height:1.6; font-style:italic;" data-lang="sv">"Var fick du 536 kronor ifrån?" &mdash; Claude hänvisar till md-filen som är läsbar och enkel att förstå. Sen kan den skapa hur många Excel-filer som helst, när som helst, utan att något går fel.</p>
+            <p style="font-size:0.85rem; color:rgba(255,255,255,0.8); line-height:1.6; font-style:italic;" data-lang="en">"Where did the 536 SEK come from?" &mdash; Claude references the .md file that's readable and easy to understand. Then it can create as many Excel files as needed, anytime, without anything breaking.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Result strip -->
+      <div class="fade-up" style="display:flex; gap:1rem; margin-top:1.5rem; justify-content:center;">
+        <div style="background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.2); border-radius:8px; padding:12px 20px; text-align:center;">
+          <div style="font-size:1.5rem; font-weight:800; color:#22c55e;">&#x2713;</div>
+          <div style="font-size:0.7rem; color:rgba(255,255,255,0.5);" data-lang="sv">Spårbara beräkningar</div>
+          <div style="font-size:0.7rem; color:rgba(255,255,255,0.5);" data-lang="en">Traceable calculations</div>
+        </div>
+        <div style="background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.2); border-radius:8px; padding:12px 20px; text-align:center;">
+          <div style="font-size:1.5rem; font-weight:800; color:#22c55e;">&#x2713;</div>
+          <div style="font-size:0.7rem; color:rgba(255,255,255,0.5);" data-lang="sv">Felsök utan att börja om</div>
+          <div style="font-size:0.7rem; color:rgba(255,255,255,0.5);" data-lang="en">Debug without starting over</div>
+        </div>
+        <div style="background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.2); border-radius:8px; padding:12px 20px; text-align:center;">
+          <div style="font-size:1.5rem; font-weight:800; color:#22c55e;">&#x2713;</div>
+          <div style="font-size:0.7rem; color:rgba(255,255,255,0.5);" data-lang="sv">Rätt svar varje gång</div>
+          <div style="font-size:0.7rem; color:rgba(255,255,255,0.5);" data-lang="en">Correct answers every time</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     SECTION 6: MARKDOWN
+     ════════════════════════════════════════════ -->
+<section class="bg-light" id="markdown">
+  <div class="container">
+    <div class="fade-up" style="text-align:center; margin-bottom: 3rem;">
+      <div data-lang="sv">
+        <span class="section-label"><span class="section-number">5</span> Arbetsspråket</span>
+        <h2>Markdown &mdash; <span>enkelt &amp; kraftfullt</span></h2>
+        <p class="lead" style="margin: 0 auto;">Markdown är en enkel textsyntax som gör att du kan fokusera på <em>innehållet</em> istället för formatering. Det är Claudes naturliga språk &mdash; och det borde vara ditt också.</p>
+      </div>
+      <div data-lang="en">
+        <span class="section-label"><span class="section-number">5</span> The Language</span>
+        <h2>Markdown &mdash; <span>simple &amp; powerful</span></h2>
+        <p class="lead" style="margin: 0 auto;">Markdown is a simple text syntax that lets you focus on <em>content</em> instead of formatting. It's Claude's native language &mdash; and it should be yours too.</p>
+      </div>
+    </div>
+    <div class="split fade-up" style="transition-delay: 0.15s;">
+      <div>
+        <div class="code-block" data-title="Markdown syntax">
+<span class="code-key"># Heading 1</span>
+<span class="code-key">## Heading 2</span>
+
+Regular text with <span class="code-string">**bold**</span> and <span class="code-string">*italic*</span>.
+
+<span class="code-key">- Bullet list</span>
+<span class="code-key">- With sub-items</span>
+<span class="code-key">  - Like this</span>
+
+<span class="code-key">| Column A | Column B |</span>
+<span class="code-key">|----------|----------|</span>
+<span class="code-key">| Data 1   | Data 2   |</span>
+
+<span class="code-value">Status: &#x2705; Done  &#x1f534; Critical  &#x23f3; In progress</span>
+        </div>
+      </div>
+      <div>
+        <div data-lang="sv">
+          <h3>Varför Markdown?</h3>
+          <div class="card" style="margin-bottom: 1rem;">
+            <h3 style="color: var(--njord-red);">Versionshanterat</h3>
+            <p>Textfiler kan enkelt spåras, jämföras och säkerhetskopieras. Du ser alltid vad som ändrats.</p>
+          </div>
+          <div class="card" style="margin-bottom: 1rem;">
+            <h3 style="color: var(--njord-red);">Konverterbart</h3>
+            <p>Från .md till Word, PDF, HTML, PowerPoint. Ett format &mdash; många outputs.</p>
+          </div>
+          <div class="card">
+            <h3 style="color: var(--njord-red);">AI-optimerat</h3>
+            <p>Claude läser och skriver Markdown nativt. Det ger bäst resultat och snabbast arbetsflöde.</p>
+          </div>
+        </div>
+        <div data-lang="en">
+          <h3>Why Markdown?</h3>
+          <div class="card" style="margin-bottom: 1rem;">
+            <h3 style="color: var(--njord-red);">Version controlled</h3>
+            <p>Text files can be easily tracked, compared and backed up. You always see what changed.</p>
+          </div>
+          <div class="card" style="margin-bottom: 1rem;">
+            <h3 style="color: var(--njord-red);">Convertible</h3>
+            <p>From .md to Word, PDF, HTML, PowerPoint. One format &mdash; many outputs.</p>
+          </div>
+          <div class="card">
+            <h3 style="color: var(--njord-red);">AI-optimized</h3>
+            <p>Claude reads and writes Markdown natively. It gives the best results and fastest workflow.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     SECTION 7: FRÅN DATA TILL BESLUTSSTÖD
+     ════════════════════════════════════════════ -->
+<section class="bg-light" id="data-to-tools">
+  <div class="container">
+    <div class="fade-up" style="text-align:center; margin-bottom: 3rem;">
+      <div data-lang="sv">
+        <span class="section-label"><span class="section-number">6</span> Från data till verktyg</span>
+        <h2>Data in &rarr; <span>Beslutsstöd</span> ut</h2>
+        <p class="lead" style="margin:0 auto;">Vi matade Claude med riktig fartygsdata &mdash; sea trial-mätningar, Seapath-loggar, motorspecifikationer och bränsleförbrukning. Resultatet? Interaktiva verktyg som stödjer riktiga beslut.</p>
+      </div>
+      <div data-lang="en">
+        <span class="section-label"><span class="section-number">6</span> From data to tools</span>
+        <h2>Data in &rarr; <span>Decision support</span> out</h2>
+        <p class="lead" style="margin:0 auto;">We fed Claude real vessel data &mdash; sea trial measurements, Seapath logs, engine specifications and fuel consumption. The result? Interactive tools that support real decisions.</p>
+      </div>
+    </div>
+
+    <!-- Data sources row -->
+    <div class="fade-up" style="display:grid; grid-template-columns: repeat(4, 1fr); gap:1rem; margin-bottom:3rem;">
+      <div style="background:white; border-radius:10px; padding:1.25rem; border:1px solid rgba(0,0,0,0.06); text-align:center;">
+        <div style="font-size:1.5rem; margin-bottom:0.5rem;">&#x1f4ca;</div>
+        <div style="font-size:0.75rem; font-weight:700; color:var(--njord-dark); text-transform:uppercase; letter-spacing:0.05em;">Sea Trial Data</div>
+        <div style="font-size:0.7rem; color:var(--njord-gray); margin-top:0.25rem;" data-lang="sv">Axeleffekt, fart, förbrukning</div>
+        <div style="font-size:0.7rem; color:var(--njord-gray); margin-top:0.25rem;" data-lang="en">Shaft power, speed, consumption</div>
+      </div>
+      <div style="background:white; border-radius:10px; padding:1.25rem; border:1px solid rgba(0,0,0,0.06); text-align:center;">
+        <div style="font-size:1.5rem; margin-bottom:0.5rem;">&#x1f30a;</div>
+        <div style="font-size:0.75rem; font-weight:700; color:var(--njord-dark); text-transform:uppercase; letter-spacing:0.05em;">Seapath 320</div>
+        <div style="font-size:0.7rem; color:var(--njord-gray); margin-top:0.25rem;" data-lang="sv">Roll, pitch, heave-loggar</div>
+        <div style="font-size:0.7rem; color:var(--njord-gray); margin-top:0.25rem;" data-lang="en">Roll, pitch, heave logs</div>
+      </div>
+      <div style="background:white; border-radius:10px; padding:1.25rem; border:1px solid rgba(0,0,0,0.06); text-align:center;">
+        <div style="font-size:1.5rem; margin-bottom:0.5rem;">&#x2699;&#xfe0f;</div>
+        <div style="font-size:0.75rem; font-weight:700; color:var(--njord-dark); text-transform:uppercase; letter-spacing:0.05em;">Scania DW6</div>
+        <div style="font-size:0.7rem; color:var(--njord-gray); margin-top:0.25rem;" data-lang="sv">Motorspecifikationer, EPS-hybrid</div>
+        <div style="font-size:0.7rem; color:var(--njord-gray); margin-top:0.25rem;" data-lang="en">Engine specs, EPS hybrid</div>
+      </div>
+      <div style="background:white; border-radius:10px; padding:1.25rem; border:1px solid rgba(0,0,0,0.06); text-align:center;">
+        <div style="font-size:1.5rem; margin-bottom:0.5rem;">&#x1f4b0;</div>
+        <div style="font-size:0.75rem; font-weight:700; color:var(--njord-dark); text-transform:uppercase; letter-spacing:0.05em;">CAPEX / OPEX</div>
+        <div style="font-size:0.7rem; color:var(--njord-gray); margin-top:0.25rem;" data-lang="sv">Offerter, bränslepriser, underhåll</div>
+        <div style="font-size:0.7rem; color:var(--njord-gray); margin-top:0.25rem;" data-lang="en">Quotes, fuel prices, maintenance</div>
+      </div>
+    </div>
+
+    <!-- Arrow -->
+    <div class="fade-up" style="text-align:center; font-size:2rem; color:var(--njord-red); margin-bottom:2rem;">&#x25BC;</div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     SECTION 7b: PRAKTISKA EXEMPEL - MOCKUPS
+     ════════════════════════════════════════════ -->
+<section id="examples" style="padding-top:3rem;">
+  <div class="container">
+    <div class="fade-up" style="text-align:center; margin-bottom: 3rem;">
+      <div data-lang="sv">
+        <h2>Verktyg vi <span>byggt</span></h2>
+        <p class="lead" style="margin:0 auto;">Fyra interaktiva verktyg &mdash; alla skapade med Claude i konversation. Klicka för att förstora.</p>
+      </div>
+      <div data-lang="en">
+        <h2>Tools we've <span>built</span></h2>
+        <p class="lead" style="margin:0 auto;">Four interactive tools &mdash; all created with Claude in conversation. Click to enlarge.</p>
+      </div>
+    </div>
+
+    <!-- Mockup grid — 2x2 -->
+    <div class="fade-up" style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
+
+      <!-- MOCKUP 1: Cockpit Beslutsstöd -->
+      <a href="demos/cockpit-beslutsstod.html" target="_blank" class="mockup-card" style="text-decoration:none; color:inherit;">
+        <div class="mockup-topbar">
+          <div class="mockup-dots"><span></span><span></span><span></span></div>
+          <div class="mockup-title">cockpit-beslutsstod.html</div>
+        </div>
+        <div class="mockup-body" style="background:#0a0e1a; color:#e2e8f0;">
+          <!-- KPI strip -->
+          <div style="display:flex; gap:6px; margin-bottom:10px;">
+            <div style="flex:1; background:rgba(255,255,255,0.04); border-left:3px solid #06b6d4; border-radius:4px; padding:6px 8px;">
+              <div style="font-size:6px; color:#64748b; text-transform:uppercase; letter-spacing:0.08em;">TCO 15 år</div>
+              <div style="font-size:14px; font-weight:800; color:#06b6d4;">24 850 kSEK</div>
+              <div style="font-size:6px; color:#22c55e;">&#x25BC; -18% vs baseline</div>
+            </div>
+            <div style="flex:1; background:rgba(255,255,255,0.04); border-left:3px solid #22c55e; border-radius:4px; padding:6px 8px;">
+              <div style="font-size:6px; color:#64748b; text-transform:uppercase; letter-spacing:0.08em;">Payback</div>
+              <div style="font-size:14px; font-weight:800; color:#22c55e;">4.2 år</div>
+              <div style="font-size:6px; color:#64748b;">vs Scope 1</div>
+            </div>
+            <div style="flex:1; background:rgba(255,255,255,0.04); border-left:3px solid #f59e0b; border-radius:4px; padding:6px 8px;">
+              <div style="font-size:6px; color:#64748b; text-transform:uppercase; letter-spacing:0.08em;">Bränsle/år</div>
+              <div style="font-size:14px; font-weight:800; color:#f59e0b;">142 ton</div>
+              <div style="font-size:6px; color:#22c55e;">&#x25BC; -23%</div>
+            </div>
+            <div style="flex:1; background:rgba(255,255,255,0.04); border-left:3px solid #a855f7; border-radius:4px; padding:6px 8px;">
+              <div style="font-size:6px; color:#64748b; text-transform:uppercase; letter-spacing:0.08em;">CO&#x2082; 15 år</div>
+              <div style="font-size:14px; font-weight:800; color:#a855f7;">580 ton</div>
+              <div style="font-size:6px; color:#22c55e;">&#x25BC; sparat</div>
+            </div>
+          </div>
+          <!-- Charts area -->
+          <div style="display:flex; gap:8px;">
+            <div style="flex:2; background:rgba(255,255,255,0.03); border-radius:6px; padding:8px; border:1px solid rgba(255,255,255,0.06);">
+              <div style="font-size:7px; font-weight:700; color:#06b6d4; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:6px;">Ackumulerad TCO</div>
+              <!-- Fake chart bars -->
+              <div style="display:flex; align-items:flex-end; gap:3px; height:60px; padding-top:8px;">
+                <div style="flex:1; display:flex; flex-direction:column; justify-content:flex-end; gap:1px;">
+                  <div style="background:#06b6d4; height:25px; border-radius:2px 2px 0 0; opacity:0.7;"></div>
+                  <div style="background:#f59e0b; height:35px; border-radius:0;opacity:0.7;"></div>
+                  <div style="background:#a855f7; height:15px; border-radius:0 0 2px 2px;opacity:0.7;"></div>
+                </div>
+                <div style="flex:1; display:flex; flex-direction:column; justify-content:flex-end; gap:1px;">
+                  <div style="background:#06b6d4; height:20px; border-radius:2px 2px 0 0; opacity:0.7;"></div>
+                  <div style="background:#f59e0b; height:25px; border-radius:0;opacity:0.7;"></div>
+                  <div style="background:#a855f7; height:12px; border-radius:0 0 2px 2px;opacity:0.7;"></div>
+                </div>
+                <div style="flex:1; display:flex; flex-direction:column; justify-content:flex-end; gap:1px;">
+                  <div style="background:#06b6d4; height:18px; border-radius:2px 2px 0 0; opacity:0.7;"></div>
+                  <div style="background:#f59e0b; height:20px; border-radius:0;opacity:0.7;"></div>
+                  <div style="background:#a855f7; height:10px; border-radius:0 0 2px 2px;opacity:0.7;"></div>
+                </div>
+              </div>
+              <div style="display:flex; justify-content:space-around; font-size:5px; color:#64748b; margin-top:3px;">
+                <span>Scope 1</span><span>Scope 2</span><span>Scope 3</span>
+              </div>
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column; gap:6px;">
+              <div style="background:rgba(255,255,255,0.03); border-radius:6px; padding:6px 8px; border:1px solid rgba(255,255,255,0.06); flex:1;">
+                <div style="font-size:6px; font-weight:700; color:#f59e0b; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:4px;">Känslighetsanalys</div>
+                <div style="display:flex; align-items:center; gap:3px; margin-bottom:3px;">
+                  <div style="width:30px; font-size:5px; color:#94a3b8;">Bränsle</div>
+                  <div style="flex:1; height:6px; background:rgba(255,255,255,0.06); border-radius:3px; overflow:hidden;"><div style="width:85%; height:100%; background:#f59e0b; border-radius:3px;"></div></div>
+                </div>
+                <div style="display:flex; align-items:center; gap:3px; margin-bottom:3px;">
+                  <div style="width:30px; font-size:5px; color:#94a3b8;">CAPEX</div>
+                  <div style="flex:1; height:6px; background:rgba(255,255,255,0.06); border-radius:3px; overflow:hidden;"><div style="width:60%; height:100%; background:#06b6d4; border-radius:3px;"></div></div>
+                </div>
+                <div style="display:flex; align-items:center; gap:3px;">
+                  <div style="width:30px; font-size:5px; color:#94a3b8;">Timmar</div>
+                  <div style="flex:1; height:6px; background:rgba(255,255,255,0.06); border-radius:3px; overflow:hidden;"><div style="width:40%; height:100%; background:#a855f7; border-radius:3px;"></div></div>
+                </div>
+              </div>
+              <div style="background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.2); border-radius:6px; padding:6px 8px; text-align:center;">
+                <div style="font-size:5px; color:#22c55e; text-transform:uppercase; font-weight:700; letter-spacing:0.08em;">Rekommendation</div>
+                <div style="font-size:11px; font-weight:800; color:#22c55e;">Scope 2</div>
+                <div style="font-size:5px; color:#86efac;">Diesel-elektrisk hybrid</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mockup-caption">
+          <h4 data-lang="sv">Cockpit Beslutsstöd <span class="demo-badge live">&#x25B6; Öppna demo</span></h4>
+          <h4 data-lang="en">Cockpit Decision Support <span class="demo-badge live">&#x25B6; Open demo</span></h4>
+          <p data-lang="sv">Interaktivt TCO-verktyg med känslighetsanalys, payback-matris och scope-jämförelse. Alla parametrar justerbara i realtid.</p>
+          <p data-lang="en">Interactive TCO tool with sensitivity analysis, payback matrix and scope comparison. All parameters adjustable in real-time.</p>
+        </div>
+      </a>
+
+      <!-- MOCKUP 2: Vessel Motion Simulation -->
+      <a href="demos/vessel-motion-simulation.html" target="_blank" class="mockup-card" style="text-decoration:none; color:inherit;">
+        <div class="mockup-topbar">
+          <div class="mockup-dots"><span></span><span></span><span></span></div>
+          <div class="mockup-title">vessel_motion_simulation.html</div>
+        </div>
+        <div class="mockup-body" style="background:#0a0e1a; color:#e2e8f0;">
+          <!-- Header -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div>
+              <div style="font-size:9px; font-weight:800; color:white; letter-spacing:0.02em;">Northern Gale &mdash; Motion Simulation</div>
+              <div style="font-size:5px; color:#64748b;">Seapath 320 log &bull; Beaufort 3&ndash;4, 0.5m waves &bull; 53&deg;40'N 003&deg;07'W</div>
+            </div>
+            <div style="display:flex; gap:4px;">
+              <div style="background:rgba(218,33,41,0.15); border:1px solid rgba(218,33,41,0.3); border-radius:4px; padding:3px 6px; text-align:center;">
+                <div style="font-size:5px; color:var(--njord-red);">Roll</div>
+                <div style="font-size:10px; font-weight:800; color:var(--njord-red);">&plusmn;6.5&deg;</div>
+              </div>
+              <div style="background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.2); border-radius:4px; padding:3px 6px; text-align:center;">
+                <div style="font-size:5px; color:#22c55e;">Pitch</div>
+                <div style="font-size:10px; font-weight:800; color:#22c55e;">&plusmn;1.8&deg;</div>
+              </div>
+              <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.2); border-radius:4px; padding:3px 6px; text-align:center;">
+                <div style="font-size:5px; color:#f59e0b;">Heave</div>
+                <div style="font-size:10px; font-weight:800; color:#f59e0b;">0.12m</div>
+              </div>
+            </div>
+          </div>
+          <!-- 3D vessel mockup -->
+          <div style="background:linear-gradient(180deg, #0f172a 0%, #1e293b 100%); border-radius:6px; height:55px; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; border:1px solid rgba(255,255,255,0.06); margin-bottom:8px;">
+            <!-- Water line -->
+            <div style="position:absolute; bottom:0; left:0; right:0; height:20px; background:linear-gradient(180deg, rgba(6,182,212,0.1), rgba(6,182,212,0.02));"></div>
+            <!-- Vessel shape -->
+            <div style="width:80px; height:16px; background:linear-gradient(90deg, transparent 0%, #334155 10%, #475569 50%, #334155 90%, transparent 100%); border-radius:8px 8px 4px 4px; transform:rotate(-4deg); position:relative;">
+              <div style="position:absolute; top:-6px; left:30%; width:20px; height:6px; background:#475569; border-radius:2px 2px 0 0;"></div>
+            </div>
+            <div style="position:absolute; bottom:4px; right:8px; font-size:5px; color:rgba(255,255,255,0.2);">3D Motion &bull; Amplified 3&times;</div>
+          </div>
+          <!-- Findings -->
+          <div style="display:flex; gap:4px;">
+            <div style="flex:1; background:rgba(245,158,11,0.08); border-left:2px solid #f59e0b; border-radius:3px; padding:4px 6px;">
+              <div style="font-size:5px; color:#f59e0b; font-weight:700;">&#x26a0; FINDING</div>
+              <div style="font-size:5px; color:#94a3b8;">Roll period ~3.8s. Short = snappy motion. Crew fatigue risk.</div>
+            </div>
+            <div style="flex:1; background:rgba(34,197,94,0.08); border-left:2px solid #22c55e; border-radius:3px; padding:4px 6px;">
+              <div style="font-size:5px; color:#22c55e; font-weight:700;">&#x2705; OK</div>
+              <div style="font-size:5px; color:#94a3b8;">Pitch is benign &mdash; classic catamaran response.</div>
+            </div>
+            <div style="flex:1; background:rgba(99,102,241,0.08); border-left:2px solid #6366f1; border-radius:3px; padding:4px 6px;">
+              <div style="font-size:5px; color:#6366f1; font-weight:700;">&#x1f4a1; GYRO EFFECT</div>
+              <div style="font-size:5px; color:#94a3b8;">50&ndash;70% roll reduction with stabilizer.</div>
+            </div>
+          </div>
+        </div>
+        <div class="mockup-caption">
+          <h4 data-lang="sv">Vessel Motion Simulation <span class="demo-badge live">&#x25B6; Öppna demo</span></h4>
+          <h4 data-lang="en">Vessel Motion Simulation <span class="demo-badge live">&#x25B6; Open demo</span></h4>
+          <p data-lang="sv">3D-visualisering av roll, pitch &amp; heave baserad på Seapath 320-data. Gyrostabilisatoreffekt simulerbar. ISO 2631 komfortanalys.</p>
+          <p data-lang="en">3D visualization of roll, pitch &amp; heave based on Seapath 320 data. Gyro stabilizer effect simulatable. ISO 2631 comfort analysis.</p>
+        </div>
+      </a>
+
+      <!-- MOCKUP 3: Vessel Energy Flow / DP -->
+      <a href="demos/vessel-energy-flow.html" target="_blank" class="mockup-card" style="text-decoration:none; color:inherit;">
+        <div class="mockup-topbar">
+          <div class="mockup-dots"><span></span><span></span><span></span></div>
+          <div class="mockup-title">vessel.html</div>
+        </div>
+        <div class="mockup-body" style="background:#0a0e1a; color:#e2e8f0;">
+          <div style="font-size:9px; font-weight:800; color:white; margin-bottom:6px;">Northern Gale &mdash; Energy Flow</div>
+          <!-- Mode selector -->
+          <div style="display:flex; gap:3px; margin-bottom:8px;">
+            <div style="background:rgba(6,182,212,0.15); border:1px solid rgba(6,182,212,0.3); border-radius:4px; padding:2px 8px; font-size:6px; font-weight:600; color:#06b6d4;">Transit</div>
+            <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:4px; padding:2px 8px; font-size:6px; color:#64748b;">DP Survey</div>
+            <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:4px; padding:2px 8px; font-size:6px; color:#64748b;">Port</div>
+            <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:4px; padding:2px 8px; font-size:6px; color:#64748b;">Hybrid Boost</div>
+          </div>
+          <!-- Vessel top-down view -->
+          <div style="background:linear-gradient(180deg, #0f172a 0%, #1e293b 100%); border-radius:6px; padding:8px; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.06); height:60px; position:relative;">
+            <!-- Simplified vessel top-down -->
+            <div style="width:70px; height:24px; border:2px solid #334155; border-radius:12px 12px 6px 6px; position:relative; background:rgba(255,255,255,0.02);">
+              <!-- Engines -->
+              <div style="position:absolute; top:4px; left:8px; width:5px; height:5px; background:#22c55e; border-radius:50%; box-shadow:0 0 4px #22c55e;"></div>
+              <div style="position:absolute; top:4px; right:8px; width:5px; height:5px; background:#22c55e; border-radius:50%; box-shadow:0 0 4px #22c55e;"></div>
+              <div style="position:absolute; bottom:4px; left:8px; width:5px; height:5px; background:#22c55e; border-radius:50%; box-shadow:0 0 4px #22c55e;"></div>
+              <div style="position:absolute; bottom:4px; right:8px; width:5px; height:5px; background:#22c55e; border-radius:50%; box-shadow:0 0 4px #22c55e;"></div>
+              <!-- Center label -->
+              <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:4px; color:#64748b; font-weight:600;">4&times;DW6</div>
+            </div>
+            <!-- Flow arrows -->
+            <div style="position:absolute; top:4px; right:8px; font-size:5px; color:#06b6d4;">
+              &#x26a1; 4&times;115 kW = 460 kW
+            </div>
+            <div style="position:absolute; bottom:4px; left:8px; display:flex; gap:3px; align-items:center;">
+              <div style="width:14px; height:8px; background:linear-gradient(90deg, #22c55e, #86efac); border-radius:2px;"></div>
+              <span style="font-size:5px; color:#86efac;">Battery 85%</span>
+            </div>
+          </div>
+          <!-- Stats -->
+          <div style="display:flex; gap:4px; margin-top:6px;">
+            <div style="flex:1; background:rgba(255,255,255,0.03); border-radius:4px; padding:4px 6px; text-align:center; border:1px solid rgba(255,255,255,0.06);">
+              <div style="font-size:5px; color:#64748b;">Propulsion</div>
+              <div style="font-size:9px; font-weight:700; color:#06b6d4;">340 kW</div>
+            </div>
+            <div style="flex:1; background:rgba(255,255,255,0.03); border-radius:4px; padding:4px 6px; text-align:center; border:1px solid rgba(255,255,255,0.06);">
+              <div style="font-size:5px; color:#64748b;">Hotel</div>
+              <div style="font-size:9px; font-weight:700; color:#f59e0b;">45 kW</div>
+            </div>
+            <div style="flex:1; background:rgba(255,255,255,0.03); border-radius:4px; padding:4px 6px; text-align:center; border:1px solid rgba(255,255,255,0.06);">
+              <div style="font-size:5px; color:#64748b;">Survey</div>
+              <div style="font-size:9px; font-weight:700; color:#a855f7;">75 kW</div>
+            </div>
+            <div style="flex:1; background:rgba(34,197,94,0.08); border-radius:4px; padding:4px 6px; text-align:center; border:1px solid rgba(34,197,94,0.15);">
+              <div style="font-size:5px; color:#22c55e;">Fuel/h</div>
+              <div style="font-size:9px; font-weight:700; color:#22c55e;">38 L/h</div>
+            </div>
+          </div>
+        </div>
+        <div class="mockup-caption">
+          <h4 data-lang="sv">Vessel Energy Flow &amp; DP <span class="demo-badge live">▶ Öppna demo</span></h4>
+          <h4 data-lang="en">Vessel Energy Flow &amp; DP <span class="demo-badge live">▶ Open demo</span></h4>
+          <p data-lang="sv">Animerad fartygsvy med energiflöde per driftläge: transit, DP survey, port, hybrid boost. Visar realtidslast, batteristatus och bränsleförbrukning.</p>
+          <p data-lang="en">Animated vessel view with energy flow per operating mode: transit, DP survey, port, hybrid boost. Shows real-time load, battery status and fuel consumption.</p>
+        </div>
+      </a>
+
+      <!-- MOCKUP 4: Scope Analysis Excel (no link — not browser-viewable) -->
+      <div class="mockup-card" style="cursor:default;">
+        <div class="mockup-topbar" style="background:#1e6e3e;">
+          <div class="mockup-dots"><span></span><span></span><span></span></div>
+          <div class="mockup-title" style="color:white;">SCOPE_ANALYS_FINAL.xlsx</div>
+        </div>
+        <div class="mockup-body" style="background:#f0f0f0; color:#1a1a1a; padding:0; overflow:hidden;">
+          <!-- Excel tab bar -->
+          <div style="display:flex; background:#e0e0e0; border-bottom:1px solid #ccc;">
+            <div style="font-size:6px; font-weight:600; padding:3px 10px; background:white; border-right:1px solid #ccc; color:#1e6e3e;">Sammanfattning</div>
+            <div style="font-size:6px; padding:3px 10px; border-right:1px solid #ccc; color:#666;">TCO</div>
+            <div style="font-size:6px; padding:3px 10px; border-right:1px solid #ccc; color:#666;">Genset</div>
+            <div style="font-size:6px; padding:3px 10px; border-right:1px solid #ccc; color:#666;">Prestanda</div>
+            <div style="font-size:6px; padding:3px 10px; color:#666;">För/Nackdelar</div>
+          </div>
+          <!-- Excel grid -->
+          <div style="padding:6px; background:white;">
+            <table style="width:100%; border-collapse:collapse; font-size:6px;">
+              <thead>
+                <tr style="background:#1e6e3e; color:white;">
+                  <th style="padding:3px 4px; text-align:left; font-weight:600;"></th>
+                  <th style="padding:3px 4px; text-align:right; font-weight:600;">Scope 1</th>
+                  <th style="padding:3px 4px; text-align:right; font-weight:600;">Scope 2</th>
+                  <th style="padding:3px 4px; text-align:right; font-weight:600;">Scope 3</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="background:#f8f8f8;">
+                  <td style="padding:2px 4px; font-weight:600;">CAPEX (kSEK)</td>
+                  <td style="padding:2px 4px; text-align:right;">8 200</td>
+                  <td style="padding:2px 4px; text-align:right;">12 500</td>
+                  <td style="padding:2px 4px; text-align:right;">15 800</td>
+                </tr>
+                <tr>
+                  <td style="padding:2px 4px; font-weight:600;">OPEX/år (kSEK)</td>
+                  <td style="padding:2px 4px; text-align:right;">1 850</td>
+                  <td style="padding:2px 4px; text-align:right;">1 420</td>
+                  <td style="padding:2px 4px; text-align:right; color:#1e6e3e; font-weight:700;">1 180</td>
+                </tr>
+                <tr style="background:#f8f8f8;">
+                  <td style="padding:2px 4px; font-weight:600;">TCO 15 år (kSEK)</td>
+                  <td style="padding:2px 4px; text-align:right;">35 950</td>
+                  <td style="padding:2px 4px; text-align:right; color:#1e6e3e; font-weight:700;">33 800</td>
+                  <td style="padding:2px 4px; text-align:right;">33 500</td>
+                </tr>
+                <tr>
+                  <td style="padding:2px 4px; font-weight:600;">Payback (år)</td>
+                  <td style="padding:2px 4px; text-align:right; color:#999;">&mdash;</td>
+                  <td style="padding:2px 4px; text-align:right; color:#1e6e3e; font-weight:700;">4.2</td>
+                  <td style="padding:2px 4px; text-align:right;">6.8</td>
+                </tr>
+                <tr style="background:#f8f8f8;">
+                  <td style="padding:2px 4px; font-weight:600;">Bränsle (ton/år)</td>
+                  <td style="padding:2px 4px; text-align:right;">185</td>
+                  <td style="padding:2px 4px; text-align:right;">142</td>
+                  <td style="padding:2px 4px; text-align:right; color:#1e6e3e; font-weight:700;">118</td>
+                </tr>
+                <tr>
+                  <td style="padding:2px 4px; font-weight:600;">CO&#x2082; (ton/år)</td>
+                  <td style="padding:2px 4px; text-align:right;">580</td>
+                  <td style="padding:2px 4px; text-align:right;">445</td>
+                  <td style="padding:2px 4px; text-align:right; color:#1e6e3e; font-weight:700;">370</td>
+                </tr>
+              </tbody>
+            </table>
+            <!-- Mini bar chart -->
+            <div style="margin-top:6px; padding-top:6px; border-top:1px solid #eee;">
+              <div style="font-size:5px; font-weight:700; color:#1e6e3e; text-transform:uppercase; margin-bottom:4px;">TCO-jämförelse (kSEK)</div>
+              <div style="display:flex; align-items:flex-end; gap:8px; height:30px;">
+                <div style="flex:1; text-align:center;">
+                  <div style="background:#c0392b; height:30px; border-radius:2px 2px 0 0; margin:0 6px;"></div>
+                  <div style="font-size:5px; color:#666; margin-top:2px;">S1</div>
+                </div>
+                <div style="flex:1; text-align:center;">
+                  <div style="background:#1e6e3e; height:26px; border-radius:2px 2px 0 0; margin:0 6px;"></div>
+                  <div style="font-size:5px; color:#1e6e3e; font-weight:700; margin-top:2px;">S2 &#x2605;</div>
+                </div>
+                <div style="flex:1; text-align:center;">
+                  <div style="background:#2980b9; height:25px; border-radius:2px 2px 0 0; margin:0 6px;"></div>
+                  <div style="font-size:5px; color:#666; margin-top:2px;">S3</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mockup-caption">
+          <h4 data-lang="sv">Scope-analys Excel <span class="demo-badge file">📄 Excel-fil</span></h4>
+          <h4 data-lang="en">Scope Analysis Excel <span class="demo-badge file">📄 Excel file</span></h4>
+          <p data-lang="sv">5-flikars arbetsbok: sammanfattning, TCO-beräkning, genset-dimensionering, prestanda och för/nackdelar per scope.</p>
+          <p data-lang="en">5-tab workbook: summary, TCO calculation, genset sizing, performance and pros/cons per scope.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Additional examples row -->
+    <div class="fade-up" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:1rem; margin-top:2rem;">
+      <div style="background:white; border-radius:10px; padding:1.5rem; border:1px solid rgba(0,0,0,0.06);">
+        <div style="font-size:1.3rem; margin-bottom:0.5rem;">&#x1f4da;</div>
+        <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.25rem;" data-lang="sv">CCOM Utbildning</h4>
+        <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.25rem;" data-lang="en">CCOM Training</h4>
+        <p style="font-size:0.8rem; color:var(--njord-gray);" data-lang="sv">13 moduler, 47 lektioner, Canva-ready</p>
+        <p style="font-size:0.8rem; color:var(--njord-gray);" data-lang="en">13 modules, 47 lessons, Canva-ready</p>
+      </div>
+      <div style="background:white; border-radius:10px; padding:1.5rem; border:1px solid rgba(0,0,0,0.06);">
+        <div style="font-size:1.3rem; margin-bottom:0.5rem;">&#x1f4e7;</div>
+        <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.25rem;" data-lang="sv">Leverantörsmail</h4>
+        <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.25rem;" data-lang="en">Supplier Emails</h4>
+        <p style="font-size:0.8rem; color:var(--njord-gray);" data-lang="sv">Scania, Lyngå, COMAP, ZF</p>
+        <p style="font-size:0.8rem; color:var(--njord-gray);" data-lang="en">Scania, Lyngå, COMAP, ZF</p>
+      </div>
+      <div style="background:white; border-radius:10px; padding:1.5rem; border:1px solid rgba(0,0,0,0.06);">
+        <div style="font-size:1.3rem; margin-bottom:0.5rem;">&#x26a0;&#xfe0f;</div>
+        <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.25rem;" data-lang="sv">Riskmatriser</h4>
+        <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.25rem;" data-lang="en">Risk Matrices</h4>
+        <p style="font-size:0.8rem; color:var(--njord-gray);" data-lang="sv">5&times;5 bedömningar, färgkodade</p>
+        <p style="font-size:0.8rem; color:var(--njord-gray);" data-lang="en">5&times;5 assessments, color-coded</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     SECTION 8: ARBETSFLÖDE
+     ════════════════════════════════════════════ -->
+<section class="bg-navy" id="workflow">
+  <div class="container">
+    <div class="split">
+      <div class="fade-up">
+        <div data-lang="sv">
+          <span class="section-label"><span class="section-number">7</span> Arbetsflöde</span>
+          <h2 style="color:white;">Hur ser en <span style="color:var(--njord-teal);">session</span> ut?</h2>
+          <p class="lead">Från idé till leverans &mdash; typiskt arbetsflöde när jag jobbar med Claude.</p>
+        </div>
+        <div data-lang="en">
+          <span class="section-label"><span class="section-number">7</span> Workflow</span>
+          <h2 style="color:white;">What does a <span style="color:var(--njord-teal);">session</span> look like?</h2>
+          <p class="lead">From idea to delivery &mdash; typical workflow when I work with Claude.</p>
+        </div>
+
+        <div class="timeline" data-lang="sv">
+          <div class="timeline-item">
+            <h4 style="color:white;">1. Öppna projektet</h4>
+            <p style="color:rgba(255,255,255,0.5);">Peka Claude på rätt mapp. CLAUDE.md laddar automatiskt &mdash; kontexten är satt.</p>
+          </div>
+          <div class="timeline-item">
+            <h4 style="color:white;">2. Beskriv uppgiften</h4>
+            <p style="color:rgba(255,255,255,0.5);">Kort och konkret: "Skapa en riskmatris för hybridinstallationen" eller "Skriv mail till Scania om DW6-leverans".</p>
+          </div>
+          <div class="timeline-item">
+            <h4 style="color:white;">3. Claude arbetar</h4>
+            <p style="color:rgba(255,255,255,0.5);">Läser relevanta filer, ställer klargörande frågor, producerar materialet med rätt formatering.</p>
+          </div>
+          <div class="timeline-item">
+            <h4 style="color:white;">4. Iterera &amp; förfina</h4>
+            <p style="color:rgba(255,255,255,0.5);">"Lägg till en kolumn för kostnad" eller "Gör tonen mer formell". Snabba justeringar.</p>
+          </div>
+          <div class="timeline-item">
+            <h4 style="color:white;">5. Leverera</h4>
+            <p style="color:rgba(255,255,255,0.5);">Färdigt dokument sparas direkt i projektet. Klart att använda, skicka eller dela.</p>
+          </div>
+        </div>
+
+        <div class="timeline" data-lang="en">
+          <div class="timeline-item">
+            <h4 style="color:white;">1. Open the project</h4>
+            <p style="color:rgba(255,255,255,0.5);">Point Claude to the right folder. CLAUDE.md loads automatically &mdash; context is set.</p>
+          </div>
+          <div class="timeline-item">
+            <h4 style="color:white;">2. Describe the task</h4>
+            <p style="color:rgba(255,255,255,0.5);">Short and concrete: "Create a risk matrix for the hybrid installation" or "Write an email to Scania about DW6 delivery".</p>
+          </div>
+          <div class="timeline-item">
+            <h4 style="color:white;">3. Claude works</h4>
+            <p style="color:rgba(255,255,255,0.5);">Reads relevant files, asks clarifying questions, produces the material with correct formatting.</p>
+          </div>
+          <div class="timeline-item">
+            <h4 style="color:white;">4. Iterate &amp; refine</h4>
+            <p style="color:rgba(255,255,255,0.5);">"Add a column for cost" or "Make the tone more formal". Quick adjustments.</p>
+          </div>
+          <div class="timeline-item">
+            <h4 style="color:white;">5. Deliver</h4>
+            <p style="color:rgba(255,255,255,0.5);">Finished document saved directly in the project. Ready to use, send or share.</p>
+          </div>
+        </div>
+      </div>
+      <div class="fade-up" style="transition-delay:0.15s;">
+        <div class="highlight-box" style="background: linear-gradient(135deg, rgba(33,189,190,0.15), rgba(36,75,103,0.3)); border: 1px solid rgba(33,189,190,0.2); margin-bottom: 1.5rem;">
+          <div class="stat" style="color: var(--njord-teal);">5 min</div>
+          <div class="stat-label" data-lang="sv">Typisk tid för ett komplett dokument</div>
+          <div class="stat-label" data-lang="en">Typical time for a complete document</div>
+        </div>
+        <div class="highlight-box" style="background: linear-gradient(135deg, rgba(33,189,190,0.15), rgba(36,75,103,0.3)); border: 1px solid rgba(33,189,190,0.2); margin-bottom: 1.5rem;">
+          <div class="stat" style="color: var(--njord-teal);">1 prompt</div>
+          <div class="stat-label" data-lang="sv">Ofta räcker en enda instruktion</div>
+          <div class="stat-label" data-lang="en">Often one single instruction is enough</div>
+        </div>
+        <div class="highlight-box" style="background: linear-gradient(135deg, rgba(218,33,41,0.2), rgba(132,22,14,0.3)); border: 1px solid rgba(218,33,41,0.2);">
+          <h3 data-lang="sv">Nyckelinsikt</h3>
+          <h3 data-lang="en">Key insight</h3>
+          <p data-lang="sv">Ju bättre din CLAUDE.md och mappstruktur är, desto mindre behöver du förklara. Claude läser kontexten och levererar &mdash; som en kollega som verkligen känner projektet.</p>
+          <p data-lang="en">The better your CLAUDE.md and folder structure, the less you need to explain. Claude reads the context and delivers &mdash; like a colleague who truly knows the project.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     SECTION 9: INSPIRATION / MÖJLIGHETER
+     ════════════════════════════════════════════ -->
+<section id="inspiration">
+  <div class="container">
+    <div class="fade-up" style="text-align:center; margin-bottom: 3rem;">
+      <div data-lang="sv">
+        <span class="section-label"><span class="section-number">8</span> Inspiration</span>
+        <h2>Vad kan <span>du</span> göra?</h2>
+        <p class="lead" style="margin:0 auto;">Oavsett roll finns det kraft att hämta. Här är exempel på vad olika roller kan använda Claude till.</p>
+      </div>
+      <div data-lang="en">
+        <span class="section-label"><span class="section-number">8</span> Inspiration</span>
+        <h2>What can <span>you</span> do?</h2>
+        <p class="lead" style="margin:0 auto;">Regardless of role, there's power to unlock. Here are examples of what different roles can use Claude for.</p>
+      </div>
+    </div>
+    <div class="card-grid fade-up" style="transition-delay:0.15s;">
+      <div class="card">
+        <div class="card-icon">&#x2693;</div>
+        <h3>Chief Engineer</h3>
+        <p data-lang="sv">Rotorsaksanalys med "5 Why", checklistor för delegering, servicerapporter i CCOM-format, felsökningsguider.</p>
+        <p data-lang="en">Root cause analysis with "5 Why", delegation checklists, service reports in CCOM format, troubleshooting guides.</p>
+        <div class="tag-list">
+          <span class="tag" data-lang="sv">Felsökning</span>
+          <span class="tag" data-lang="en">Troubleshooting</span>
+          <span class="tag">CCOM</span>
+          <span class="tag" data-lang="sv">Rapporter</span>
+          <span class="tag" data-lang="en">Reports</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#x1f6a2;</div>
+        <h3>Master / Captain</h3>
+        <p data-lang="sv">Säkerhetsbriefings, ISM-dokumentation, voyage planning, besättningsscheman, incidentrapporter.</p>
+        <p data-lang="en">Safety briefings, ISM documentation, voyage planning, crew schedules, incident reports.</p>
+        <div class="tag-list">
+          <span class="tag" data-lang="sv">Säkerhet</span>
+          <span class="tag" data-lang="en">Safety</span>
+          <span class="tag">ISM</span>
+          <span class="tag" data-lang="sv">Planering</span>
+          <span class="tag" data-lang="en">Planning</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#x1f4bc;</div>
+        <h3>Project Manager</h3>
+        <p data-lang="sv">Scope-analyser, budgetuppföljning, leverantörskommunikation, tidplaner, statusrapporter.</p>
+        <p data-lang="en">Scope analyses, budget tracking, supplier communication, timelines, status reports.</p>
+        <div class="tag-list">
+          <span class="tag" data-lang="sv">Projekt</span>
+          <span class="tag" data-lang="en">Projects</span>
+          <span class="tag">Budget</span>
+          <span class="tag">RFQ</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#x1f4ca;</div>
+        <h3>Fleet Director</h3>
+        <p data-lang="sv">Strategiska beslutsunderlag, KPI-dashboards, presentationsmaterial, investeringskalkyler.</p>
+        <p data-lang="en">Strategic decision support, KPI dashboards, presentation material, investment calculations.</p>
+        <div class="tag-list">
+          <span class="tag" data-lang="sv">Strategi</span>
+          <span class="tag" data-lang="en">Strategy</span>
+          <span class="tag">KPI</span>
+          <span class="tag" data-lang="sv">Beslut</span>
+          <span class="tag" data-lang="en">Decisions</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     SECTION 10: NÄSTA STEG
+     ════════════════════════════════════════════ -->
+<section class="cta-section" id="next">
+  <div class="container fade-up">
+    <div data-lang="sv">
+      <span class="section-label" style="color: var(--njord-teal);"><span class="section-number" style="background: var(--njord-teal);">&#x2192;</span> Kom igång</span>
+      <h2>Pushing Boundaries<br><span>med AI</span></h2>
+      <p class="lead" style="color: rgba(255,255,255,0.6); max-width: 600px; margin: 0 auto;">Du behöver inte vara tekniker för att börja använda Claude. Börja smått, bygg struktur, och låt AI göra det tunga lyftet.</p>
+    </div>
+    <div data-lang="en">
+      <span class="section-label" style="color: var(--njord-teal);"><span class="section-number" style="background: var(--njord-teal);">&#x2192;</span> Get started</span>
+      <h2>Pushing Boundaries<br><span>with AI</span></h2>
+      <p class="lead" style="color: rgba(255,255,255,0.6); max-width: 600px; margin: 0 auto;">You don't need to be a tech person to start using Claude. Start small, build structure, and let AI do the heavy lifting.</p>
+    </div>
+
+    <div class="stats-row" style="margin: 3rem auto; max-width: 700px;">
+      <div class="stat-item">
+        <div class="number" style="color: var(--njord-teal);">01</div>
+        <div class="label" style="color: rgba(255,255,255,0.5);" data-lang="sv">Skapa en CLAUDE.md</div>
+        <div class="label" style="color: rgba(255,255,255,0.5);" data-lang="en">Create a CLAUDE.md</div>
+      </div>
+      <div class="stat-item">
+        <div class="number" style="color: var(--njord-teal);">02</div>
+        <div class="label" style="color: rgba(255,255,255,0.5);" data-lang="sv">Organisera dina filer</div>
+        <div class="label" style="color: rgba(255,255,255,0.5);" data-lang="en">Organize your files</div>
+      </div>
+      <div class="stat-item">
+        <div class="number" style="color: var(--njord-teal);">03</div>
+        <div class="label" style="color: rgba(255,255,255,0.5);" data-lang="sv">Börja med en uppgift</div>
+        <div class="label" style="color: rgba(255,255,255,0.5);" data-lang="en">Start with one task</div>
+      </div>
+    </div>
+
+    <a href="#intro" class="cta-btn" data-lang="sv">Tillbaka till start &#x2191;</a>
+    <a href="#intro" class="cta-btn" data-lang="en">Back to top &#x2191;</a>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <img src="logo.svg" alt="Njord Survey"><br>
+  Njord Survey &copy; 2026 &middot; Pushing Boundaries &middot;
+  <span data-lang="sv">Skapad med Claude AI</span>
+  <span data-lang="en">Created with Claude AI</span>
+</footer>
+
+<!-- ═══ JAVASCRIPT ═══ -->
+<script>
+  // ─── Language switcher ───
+  function setLang(lang) {
+    if (lang === 'en') {
+      document.body.classList.add('lang-en');
+      document.documentElement.lang = 'en';
+    } else {
+      document.body.classList.remove('lang-en');
+      document.documentElement.lang = 'sv';
+    }
+    document.getElementById('btnSV').classList.toggle('active', lang === 'sv');
+    document.getElementById('btnEN').classList.toggle('active', lang === 'en');
+  }
+
+  // ─── Scroll progress bar ───
+  window.addEventListener('scroll', () => {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = (scrollTop / docHeight) * 100;
+    document.getElementById('progressBar').style.width = progress + '%';
+  });
+
+  // ─── Fade-up on scroll ───
+  const fadeEls = document.querySelectorAll('.fade-up');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.15 });
+  fadeEls.forEach(el => observer.observe(el));
+
+  // Nav is always visible (fixed)
+
+  // ─── Active nav link ───
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-links a');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(section => {
+      const sectionTop = section.offsetTop - 100;
+      if (window.scrollY >= sectionTop) {
+        current = section.getAttribute('id');
+      }
+    });
+    navLinks.forEach(link => {
+      link.classList.remove('active');
+      if (link.getAttribute('href') === '#' + current) {
+        link.classList.add('active');
+      }
+    });
+  });
+</script>
+</body>
+</html>

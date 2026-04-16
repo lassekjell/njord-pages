@@ -1,0 +1,2264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Northern Gale — Bilge Keel Design Visualization</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --njord-red: #da2129;
+    --njord-dark-red: #84160e;
+    --njord-navy: #0a1e2a;
+    --njord-teal: #21bdbe;
+    --njord-blue: #244b67;
+    --njord-dark: #293133;
+    --njord-light: #f5f5f5;
+    --njord-white: #ffffff;
+    --njord-gray: #6b7280;
+    /* Legacy support */
+    --bg: #ffffff;
+    --panel: var(--njord-white);
+    --border: rgba(0,0,0,0.06);
+    --text: var(--njord-dark);
+    --dim: var(--njord-gray);
+    --accent: var(--njord-red);
+    --green: var(--njord-teal);
+    --red: var(--njord-red);
+    --amber: #f59e0b;
+    --cyan: var(--njord-teal);
+    --purple: var(--njord-blue);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { 
+    background: var(--njord-white); 
+    color: var(--njord-dark); 
+    font-family: 'Inter', -apple-system, sans-serif;
+    line-height: 1.6;
+  }
+
+  /* HERO HEADER */
+  .header { 
+    background: linear-gradient(135deg, var(--njord-navy) 0%, rgba(10, 30, 42, 0.95) 100%);
+    background-attachment: fixed;
+    padding: 80px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(ellipse at 80% 20%, rgba(218, 33, 41, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 20% 80%, rgba(33, 189, 190, 0.08) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  .header > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .header h1 { 
+    font-size: 48px; 
+    font-weight: 800; 
+    margin-bottom: 8px;
+    color: var(--njord-white);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  .header h1 span {
+    color: var(--njord-red);
+  }
+
+  .header .sub { 
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 16px; 
+    margin-bottom: 16px;
+  }
+
+  .header .badge { 
+    display: inline-block;
+    background: var(--njord-red);
+    color: white; 
+    padding: 8px 16px; 
+    border-radius: 4px; 
+    font-size: 12px; 
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* FIXED NAV */
+  .nav { 
+    display: flex; 
+    gap: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    padding: 0;
+  }
+
+  .nav button { 
+    flex: 1;
+    padding: 12px 16px; 
+    background: transparent; 
+    border: none; 
+    color: var(--njord-gray); 
+    font-size: 12px; 
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+    position: relative;
+  }
+
+  .nav button:hover { 
+    color: var(--njord-dark);
+    background: rgba(218, 33, 41, 0.03);
+  }
+
+  .nav button.active { 
+    color: var(--njord-red);
+    border-bottom-color: var(--njord-red);
+    background: rgba(218, 33, 41, 0.05);
+  }
+
+  /* SECTIONS */
+  body {
+    padding-top: 50px; /* Account for fixed nav */
+  }
+
+  .section { 
+    display: none; 
+    padding: 60px 40px; 
+    max-width: 1400px; 
+    margin: 0 auto;
+    min-height: 100vh;
+    animation: fadeInUp 0.5s ease-out;
+  }
+
+  .section.active { 
+    display: block; 
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .section-title { 
+    font-size: 36px; 
+    font-weight: 800; 
+    margin-bottom: 16px;
+    color: var(--njord-dark);
+    letter-spacing: -0.01em;
+    position: relative;
+    padding-left: 48px;
+  }
+
+  .section-title::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    background: var(--njord-red);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .section-desc { 
+    color: var(--njord-gray); 
+    font-size: 16px; 
+    margin-bottom: 40px; 
+    line-height: 1.7;
+    max-width: 900px;
+  }
+
+  /* GRID */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 32px; }
+
+  @media (max-width: 1200px) {
+    .grid-3 { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media (max-width: 900px) { 
+    .grid-2, .grid-3 { 
+      grid-template-columns: 1fr;
+    }
+    .section-title {
+      font-size: 28px;
+      padding-left: 40px;
+    }
+    .section-title::before {
+      width: 28px;
+      height: 28px;
+    }
+  }
+
+  /* CARDS */
+  .card { 
+    background: var(--njord-white); 
+    border: 1px solid var(--border);
+    border-radius: 12px; 
+    padding: 28px; 
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+
+  .card:hover {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    transform: translateY(-4px);
+  }
+
+  .card h3 { 
+    font-size: 16px; 
+    font-weight: 700;
+    margin-bottom: 20px; 
+    color: var(--njord-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--njord-red);
+  }
+
+  .card h4 { 
+    font-size: 13px; 
+    font-weight: 700; 
+    margin: 16px 0 8px; 
+    color: var(--njord-gray);
+    text-transform: uppercase; 
+    letter-spacing: 0.08em;
+  }
+
+  /* DRAWINGS */
+  .drawing { 
+    background: var(--njord-navy);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 12px; 
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .drawing-title { 
+    padding: 12px 16px; 
+    background: rgba(10, 30, 42, 0.8);
+    border-bottom: 1px solid rgba(33, 189, 190, 0.2);
+    font-size: 13px; 
+    font-weight: 700;
+    color: var(--njord-teal);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .drawing svg { 
+    width: 100%; 
+    height: auto; 
+    display: block;
+    padding: 20px;
+    background: var(--njord-navy);
+  }
+
+  /* SVG STYLES */
+  .dim-line { stroke: var(--amber); stroke-width: 0.5; stroke-dasharray: 3,2; }
+  .dim-text { fill: var(--amber); font-size: 9px; font-family: 'Courier New', monospace; }
+  .hull-fill { fill: rgba(33, 189, 190, 0.15); stroke: var(--njord-teal); stroke-width: 1.2; }
+  .hull-inner { fill: none; stroke: rgba(107, 114, 128, 0.3); stroke-width: 0.5; stroke-dasharray: 4,3; }
+  .water { fill: rgba(33, 189, 190, 0.08); }
+  .waterline { stroke: var(--njord-teal); stroke-width: 1; stroke-dasharray: 8,4; }
+  .bk-fill { fill: var(--njord-teal); fill-opacity: 0.25; stroke: var(--njord-teal); stroke-width: 1.5; }
+  .bk-highlight { fill: var(--njord-teal); fill-opacity: 0.5; stroke: var(--njord-teal); stroke-width: 2; }
+  .center-line { stroke: rgba(107, 114, 128, 0.4); stroke-width: 0.5; stroke-dasharray: 12,4,2,4; }
+  .frame-line { stroke: rgba(30, 41, 59, 0.3); stroke-width: 0.3; }
+  .label { fill: rgba(255, 255, 255, 0.9); font-size: 10px; font-family: 'Inter', sans-serif; }
+  .label-small { fill: rgba(255, 255, 255, 0.6); font-size: 8px; font-family: 'Inter', sans-serif; }
+  .note { fill: var(--amber); font-size: 9px; font-family: 'Inter', sans-serif; font-style: italic; }
+
+  /* TABLES */
+  .spec-table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    font-size: 13px;
+  }
+
+  .spec-table th { 
+    text-align: left; 
+    padding: 10px 12px; 
+    background: rgba(218, 33, 41, 0.05);
+    border-bottom: 2px solid var(--njord-red);
+    color: var(--njord-dark); 
+    font-weight: 700; 
+    font-size: 12px; 
+    text-transform: uppercase; 
+    letter-spacing: 0.05em;
+  }
+
+  .spec-table td { 
+    padding: 10px 12px; 
+    border-bottom: 1px solid var(--border);
+  }
+
+  .spec-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .spec-table td:first-child {
+    font-weight: 500;
+    color: var(--njord-dark);
+  }
+
+  .spec-table td:last-child { 
+    text-align: right; 
+    font-family: 'Courier New', monospace; 
+    color: var(--njord-teal);
+    font-weight: 600;
+  }
+
+  /* CHARTS */
+  .bar-chart { 
+    display: flex; 
+    align-items: flex-end; 
+    gap: 12px; 
+    height: 200px; 
+    padding: 10px 0;
+    background: var(--njord-light);
+    border-radius: 8px;
+    padding: 20px;
+  }
+
+  .bar-group { 
+    flex: 1; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    height: 100%; 
+    justify-content: flex-end;
+  }
+
+  .bar-pair { 
+    display: flex; 
+    gap: 4px; 
+    align-items: flex-end; 
+    width: 100%; 
+    justify-content: center;
+  }
+
+  .bar { 
+    width: 28px; 
+    border-radius: 3px 3px 0 0; 
+    transition: height 0.5s; 
+    position: relative;
+  }
+
+  .bar.before { background: var(--njord-red); opacity: 0.8; }
+  .bar.after { background: var(--njord-teal); opacity: 0.9; }
+
+  .bar-label { 
+    font-size: 11px; 
+    color: var(--njord-gray); 
+    margin-top: 8px; 
+    text-align: center;
+    font-weight: 500;
+  }
+
+  .bar-value { 
+    font-size: 9px; 
+    color: var(--njord-dark); 
+    text-align: center; 
+    margin-bottom: 2px; 
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+  }
+
+  /* LEGEND */
+  .legend { 
+    display: flex; 
+    gap: 24px; 
+    margin: 16px 0;
+    flex-wrap: wrap;
+  }
+
+  .legend-item { 
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+    font-size: 13px; 
+    color: var(--njord-gray);
+  }
+
+  .legend-swatch { 
+    width: 16px; 
+    height: 16px; 
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  /* STATS */
+  .stat-row { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    padding: 12px 0; 
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stat-row:last-child { 
+    border-bottom: none;
+  }
+
+  .stat-label { 
+    color: var(--njord-gray); 
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .stat-value { 
+    font-family: 'Courier New', monospace; 
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--njord-dark);
+  }
+
+  .stat-value.good { color: var(--njord-teal); }
+  .stat-value.bad { color: var(--njord-red); }
+  .stat-value.warn { color: var(--amber); }
+
+  /* CALLOUTS */
+  .callout { 
+    background: rgba(218, 33, 41, 0.08);
+    border-left: 4px solid var(--njord-red);
+    padding: 16px 18px; 
+    border-radius: 0 8px 8px 0; 
+    margin: 20px 0; 
+    font-size: 13px;
+    color: var(--njord-dark);
+    line-height: 1.6;
+  }
+
+  .callout.success { 
+    background: rgba(33, 189, 190, 0.08);
+    border-color: var(--njord-teal);
+  }
+
+  .callout.warning { 
+    background: rgba(245, 158, 11, 0.08);
+    border-color: var(--amber);
+  }
+
+  /* CALCULATIONS */
+  .calc-block { 
+    background: var(--njord-light);
+    border: 1px solid var(--border);
+    border-radius: 12px; 
+    padding: 28px; 
+    margin-bottom: 28px;
+  }
+
+  .calc-block h3 { 
+    font-size: 16px; 
+    font-weight: 700; 
+    margin-bottom: 18px; 
+    color: var(--njord-red);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .formula { 
+    background: var(--njord-navy);
+    border: 1px solid rgba(33, 189, 190, 0.2);
+    border-radius: 8px; 
+    padding: 16px 20px; 
+    margin: 12px 0; 
+    font-family: 'Courier New', monospace; 
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.8; 
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  .formula .comment { color: rgba(107, 114, 128, 0.7); }
+  .formula .result { color: var(--njord-teal); font-weight: 700; }
+  .formula .var { color: var(--njord-teal); }
+  .formula .warn { color: var(--njord-red); font-weight: 700; }
+
+  /* ASSUMPTIONS */
+  .assumption { 
+    display: flex; 
+    gap: 12px; 
+    padding: 10px 0; 
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    align-items: flex-start;
+  }
+
+  .assumption:last-child { 
+    border-bottom: none;
+  }
+
+  .assumption .tag { 
+    flex-shrink: 0; 
+    padding: 4px 10px; 
+    border-radius: 4px; 
+    font-size: 10px; 
+    font-weight: 700; 
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  .assumption .tag.measured { 
+    background: rgba(33, 189, 190, 0.15);
+    color: var(--njord-teal);
+  }
+
+  .assumption .tag.estimated { 
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--amber);
+  }
+
+  .assumption .tag.literature { 
+    background: rgba(36, 75, 103, 0.15);
+    color: var(--njord-blue);
+  }
+
+  .assumption .tag.derived { 
+    background: rgba(33, 189, 190, 0.1);
+    color: rgba(33, 189, 190, 0.8);
+  }
+
+  /* REFERENCE TABLE */
+  .ref-table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    font-size: 12px;
+  }
+
+  .ref-table td { 
+    padding: 8px 12px; 
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  .ref-table td:first-child { 
+    color: var(--njord-teal);
+    font-family: 'Courier New', monospace; 
+    width: 50px; 
+    text-align: center;
+    font-weight: 700;
+  }
+
+  .ref-table td:nth-child(2) { 
+    font-weight: 600; 
+    width: 30%;
+    color: var(--njord-dark);
+  }
+
+  .ref-table td:last-child { 
+    color: var(--njord-gray);
+  }
+
+  /* STEP NUMBERS */
+  .step-num { 
+    display: inline-flex; 
+    align-items: center; 
+    justify-content: center; 
+    width: 28px; 
+    height: 28px; 
+    border-radius: 50%; 
+    background: var(--njord-red);
+    color: white; 
+    font-size: 13px; 
+    font-weight: 800; 
+    margin-right: 10px; 
+    flex-shrink: 0;
+  }
+
+  .calc-step { 
+    display: flex; 
+    align-items: flex-start; 
+    padding: 14px 0; 
+    border-bottom: 1px solid var(--border);
+  }
+
+  .calc-step:last-child { 
+    border-bottom: none;
+  }
+
+  .calc-step-content { 
+    flex: 1;
+  }
+
+  .calc-step-content .desc { 
+    font-size: 13px; 
+    color: var(--njord-gray);
+    margin-bottom: 8px;
+  }
+
+  /* SENSITIVITY */
+  .sensitivity-row { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr; 
+    gap: 1px; 
+    font-size: 12px;
+  }
+
+  .sensitivity-row > div { 
+    padding: 10px 12px; 
+    background: var(--njord-light);
+    text-align: center;
+    border: 1px solid var(--border);
+  }
+
+  .sensitivity-row.header > div { 
+    background: rgba(218, 33, 41, 0.1);
+    color: var(--njord-dark); 
+    font-weight: 700; 
+    font-size: 11px; 
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+  }
+
+  .sensitivity-row > div.highlight { 
+    background: rgba(218, 33, 41, 0.15);
+    color: var(--njord-red); 
+    font-weight: 700;
+    border: 1px solid rgba(218, 33, 41, 0.3);
+  }
+
+  /* DETAIL ZOOM */
+  .detail-zoom { 
+    cursor: pointer; 
+    transition: filter 0.2s;
+  }
+
+  .detail-zoom:hover { 
+    filter: brightness(1.1);
+  }
+
+</style>
+</head>
+<body>
+<div id="njord-password-gate">
+  <div class="njord-gate-box">
+    <div class="ns-logo">NS</div>
+    <h2>Njord Survey — Internal</h2>
+    <form onsubmit="return njordCheckPass()">
+      <input type="password" id="njord-gate-pwd" class="njord-gate-input"
+             placeholder="Enter password" autocomplete="off">
+      <button type="submit" class="njord-gate-btn">Open</button>
+    </form>
+    <div id="njord-gate-err" class="njord-gate-err">Incorrect password</div>
+  </div>
+</div>
+
+<div class="header">
+  <h1>Northern <span>Gale</span> — Bilge Keel Design</h1>
+  <div class="sub">Hull H209 · 26m High-Speed Catamaran · Passive Roll Stabilisation</div>
+  <span class="badge">OPTION B: 200mm × 10m × 2 KEELS</span>
+</div>
+
+<div class="nav">
+  <button class="active" onclick="showSection('overview')">Overview</button>
+  <button onclick="showSection('cross')">Cross Section</button>
+  <button onclick="showSection('profile')">Profile View</button>
+  <button onclick="showSection('plan')">Plan View</button>
+  <button onclick="showSection('details')">Construction Details</button>
+  <button onclick="showSection('results')">Motion Results</button>
+  <button onclick="showSection('compare')">Comparison</button>
+  <button onclick="showSection('calcs')">Calculations</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- OVERVIEW -->
+<!-- ============================================================ -->
+<div class="section active" id="overview">
+  <div class="section-title">Design Overview</div>
+  <div class="section-desc">
+    Bilge keels monterade på ytterbilgen av varje skrov. Passiv lösning utan effektbehov —
+    energin absorberas genom hydrodynamiskt motstånd (vortex shedding) vid rollrörelse.
+    Katamaran-geometrin ger en unik fördel: hävarmen (4.80m) är 2–3× längre än monoskrov,
+    vilket ger ~4× effektivare dämpning per areaenhet.
+  </div>
+
+  <div class="grid-3">
+    <div class="card">
+      <h3>Design Specification</h3>
+      <table class="spec-table">
+        <tr><td>Span (protrusion)</td><td>200 mm</td></tr>
+        <tr><td>Length</td><td>10.0 m</td></tr>
+        <tr><td>Number of keels</td><td>2 (outer bilge)</td></tr>
+        <tr><td>Total area</td><td>4.00 m²</td></tr>
+        <tr><td>Plate thickness</td><td>10 mm</td></tr>
+        <tr><td>Material</td><td>5083 H321 Al</td></tr>
+        <tr><td>Total weight</td><td>~133 kg</td></tr>
+        <tr><td>b_BK / B_hull</td><td>8.6%</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>Performance Estimate</h3>
+      <div class="stat-row">
+        <span class="stat-label">Roll reduction</span>
+        <span class="stat-value good">47–55%</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Roll max (rough)</span>
+        <span class="stat-value">±12.9° → ±6.3°</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Wheelhouse accel</span>
+        <span class="stat-value good">0.060g → 0.029g</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">AFS compliance</span>
+        <span class="stat-value good">✓ Under limit</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Speed penalty @10kn</span>
+        <span class="stat-value warn">~2.7%</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Weight impact</span>
+        <span class="stat-value good">0.11% Δ</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Catamaran Advantage</h3>
+      <div class="drawing">
+        <div class="drawing-title">Lever Arm Comparison</div>
+        <svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+          <!-- Monohull -->
+          <text x="75" y="20" class="label" text-anchor="middle" font-weight="600">Monohull</text>
+          <ellipse cx="75" cy="130" rx="40" ry="50" class="hull-fill"/>
+          <circle cx="75" cy="100" r="3" fill="#f59e0b"/>
+          <text x="75" y="96" class="label-small" text-anchor="middle">G</text>
+          <line x1="75" y1="100" x2="45" y2="160" stroke="#ef4444" stroke-width="1.5"/>
+          <rect x="40" y="155" width="12" height="4" fill="#10b981" rx="1"/>
+          <text x="30" y="138" class="dim-text" transform="rotate(-55,30,138)">r≈2.0m</text>
+
+          <!-- Catamaran -->
+          <text x="210" y="20" class="label" text-anchor="middle" font-weight="600">Northern Gale</text>
+          <!-- Port hull -->
+          <rect x="160" y="100" width="25" ry="8" height="70" class="hull-fill"/>
+          <!-- Stbd hull -->
+          <rect x="230" y="100" width="25" ry="8" height="70" class="hull-fill"/>
+          <!-- G marker -->
+          <circle cx="210" cy="90" r="3" fill="#f59e0b"/>
+          <text x="210" y="86" class="label-small" text-anchor="middle">G</text>
+          <!-- Lever arm lines -->
+          <line x1="210" y1="90" x2="155" y2="155" stroke="#ef4444" stroke-width="1.5"/>
+          <line x1="210" y1="90" x2="260" y2="155" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,2"/>
+          <!-- BK markers -->
+          <rect x="148" y="150" width="12" height="4" fill="#10b981" rx="1"/>
+          <rect x="255" y="150" width="12" height="4" fill="#10b981" rx="1"/>
+          <text x="170" y="130" class="dim-text" transform="rotate(-50,170,130)">r=4.80m</text>
+
+          <!-- Comparison -->
+          <text x="150" y="192" class="note" text-anchor="middle">r² = 23 m² → 4× more effective per m²</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- CROSS SECTION -->
+<!-- ============================================================ -->
+<div class="section" id="cross">
+  <div class="section-title">Cross Section — Midship</div>
+  <div class="section-desc">
+    Sektionsvy vid midskeppet (Frame ~10), tittar förut. Visar bilge keel-placering på ytterbilgen
+    med 45° vinkel från horisontalen — optimal orientering enligt Irkal et al. (2016).
+  </div>
+
+  <div class="drawing" style="max-width: 1000px; margin: 0 auto;">
+    <div class="drawing-title">MIDSHIP CROSS SECTION — Looking Forward (Scale approx 1:50)</div>
+    <svg viewBox="0 0 900 500" xmlns="http://www.w3.org/2000/svg">
+      <!-- Water -->
+      <rect x="0" y="200" width="900" height="300" class="water"/>
+      <line x1="0" y1="200" x2="900" y2="200" class="waterline"/>
+      <text x="10" y="196" class="label-small" fill="#06b6d4">WL (T=1.55m)</text>
+
+      <!-- Centerline -->
+      <line x1="450" y1="30" x2="450" y2="480" class="center-line"/>
+      <text x="454" y="45" class="label-small">CL</text>
+
+      <!-- Grid / scale -->
+      <text x="880" y="196" class="label-small" text-anchor="end">1m</text>
+      <line x1="860" y1="200" x2="860" y2="245" stroke="#334155" stroke-width="0.5"/>
+      <line x1="855" y1="200" x2="865" y2="200" stroke="#334155" stroke-width="0.5"/>
+      <line x1="855" y1="245" x2="865" y2="245" stroke="#334155" stroke-width="0.5"/>
+
+      <!-- PORT HULL (left side) -->
+      <g id="port-hull">
+        <!-- Hull outline -->
+        <path d="M 265,130 L 265,200 Q 265,270 280,310 Q 295,345 315,355 L 370,355 Q 380,345 385,330 Q 395,295 395,200 L 395,130 Z" class="hull-fill"/>
+        <!-- Deck -->
+        <line x1="255" y1="130" x2="405" y2="130" stroke="var(--text)" stroke-width="1.5"/>
+        <!-- Internal structure hint -->
+        <line x1="285" y1="130" x2="285" y2="330" class="hull-inner"/>
+        <line x1="310" y1="130" x2="310" y2="345" class="hull-inner"/>
+        <line x1="340" y1="130" x2="340" y2="355" class="hull-inner"/>
+        <line x1="370" y1="130" x2="370" y2="350" class="hull-inner"/>
+
+        <!-- Bilge keel on outer bilge (port side = left) -->
+        <g class="detail-zoom">
+          <!-- BK plate: 200mm span at 45° from horizontal at bilge turn -->
+          <line x1="268" y1="295" x2="252" y2="279" class="bk-highlight" stroke-width="3"/>
+          <!-- BK end cap -->
+          <circle cx="252" cy="279" r="2" fill="#10b981"/>
+          <!-- Dimension arrow -->
+          <line x1="268" y1="295" x2="252" y2="279" class="dim-line"/>
+          <text x="238" y="292" class="dim-text" transform="rotate(-45,238,292)">200mm</text>
+          <!-- Angle indicator -->
+          <path d="M 268,295 L 268,280" stroke="#f59e0b" stroke-width="0.5" fill="none"/>
+          <path d="M 268,287 A 8,8 0 0,0 260,295" stroke="#f59e0b" stroke-width="0.5" fill="none"/>
+          <text x="256" y="283" style="fill:#f59e0b;font-size:7px;">45°</text>
+
+          <!-- Detail circle -->
+          <circle cx="260" cy="287" r="30" fill="none" stroke="#f59e0b" stroke-width="0.5" stroke-dasharray="3,2"/>
+          <text x="228" y="260" class="note">DETAIL A</text>
+        </g>
+
+        <!-- Labels -->
+        <text x="330" y="160" class="label" text-anchor="middle" font-weight="600">PORT HULL</text>
+        <text x="330" y="174" class="label-small" text-anchor="middle">B=2.32m</text>
+      </g>
+
+      <!-- STARBOARD HULL (right side) -->
+      <g id="stbd-hull">
+        <path d="M 505,130 L 505,200 Q 505,295 520,330 Q 530,345 540,355 L 590,355 Q 610,345 620,310 Q 635,270 635,200 L 635,130 Z" class="hull-fill"/>
+        <line x1="495" y1="130" x2="645" y2="130" stroke="var(--text)" stroke-width="1.5"/>
+        <line x1="515" y1="130" x2="515" y2="335" class="hull-inner"/>
+        <line x1="540" y1="130" x2="540" y2="350" class="hull-inner"/>
+        <line x1="565" y1="130" x2="565" y2="355" class="hull-inner"/>
+        <line x1="590" y1="130" x2="590" y2="350" class="hull-inner"/>
+
+        <!-- Bilge keel on outer bilge (starboard = right) -->
+        <g class="detail-zoom">
+          <line x1="632" y1="295" x2="648" y2="279" class="bk-highlight" stroke-width="3"/>
+          <circle cx="648" cy="279" r="2" fill="#10b981"/>
+          <text x="652" y="292" class="dim-text" transform="rotate(45,652,292)">200mm</text>
+          <circle cx="640" cy="287" r="30" fill="none" stroke="#f59e0b" stroke-width="0.5" stroke-dasharray="3,2"/>
+          <text x="648" y="260" class="note">DETAIL A</text>
+        </g>
+
+        <text x="570" y="160" class="label" text-anchor="middle" font-weight="600">STBD HULL</text>
+        <text x="570" y="174" class="label-small" text-anchor="middle">B=2.32m</text>
+      </g>
+
+      <!-- Bridge structure -->
+      <rect x="260" y="90" width="380" height="40" fill="#1a2332" stroke="var(--text)" stroke-width="0.8" rx="3"/>
+      <text x="450" y="115" class="label" text-anchor="middle">MAIN DECK</text>
+
+      <!-- Wheelhouse hint -->
+      <rect x="380" y="40" width="140" height="50" fill="none" stroke="var(--dim)" stroke-width="0.5" stroke-dasharray="4,3" rx="3"/>
+      <text x="450" y="68" class="label-small" text-anchor="middle">Wheelhouse (8m)</text>
+
+      <!-- Dimensions -->
+      <!-- Overall beam -->
+      <line x1="265" y1="375" x2="635" y2="375" class="dim-line"/>
+      <line x1="265" y1="370" x2="265" y2="380" class="dim-line"/>
+      <line x1="635" y1="370" x2="635" y2="380" class="dim-line"/>
+      <text x="450" y="388" class="dim-text" text-anchor="middle">B = 11.00 m</text>
+
+      <!-- Hull spacing -->
+      <line x1="330" y1="400" x2="570" y2="400" class="dim-line"/>
+      <line x1="330" y1="395" x2="330" y2="405" class="dim-line"/>
+      <line x1="570" y1="395" x2="570" y2="405" class="dim-line"/>
+      <text x="450" y="413" class="dim-text" text-anchor="middle">Hull centers ±3.0m</text>
+
+      <!-- Draft -->
+      <line x1="220" y1="200" x2="220" y2="355" class="dim-line"/>
+      <line x1="215" y1="200" x2="225" y2="200" class="dim-line"/>
+      <line x1="215" y1="355" x2="225" y2="355" class="dim-line"/>
+      <text x="210" y="280" class="dim-text" text-anchor="middle" transform="rotate(-90,210,280)">T = 1.55m</text>
+
+      <!-- Lever arm -->
+      <!-- G marker -->
+      <circle cx="450" cy="90" r="4" fill="#f59e0b" stroke="#f59e0b" stroke-width="1"/>
+      <text x="460" y="86" class="label" fill="#f59e0b">G (KG≈2.8m)</text>
+
+      <!-- Lever arm line to port BK -->
+      <line x1="450" y1="90" x2="260" y2="287" stroke="#ef4444" stroke-width="1" stroke-dasharray="6,3"/>
+      <text x="340" y="175" class="dim-text" fill="#ef4444" transform="rotate(-47,340,175)">r = 4.80 m (lever arm)</text>
+
+      <!-- Roll axis indicator -->
+      <text x="450" y="445" class="label" text-anchor="middle" fill="#f59e0b">↻ Roll axis through G</text>
+
+      <!-- Deadrise angle -->
+      <line x1="315" y1="355" x2="265" y2="270" stroke="#8b5cf6" stroke-width="0.5" stroke-dasharray="3,2"/>
+      <text x="270" y="340" class="label-small" fill="#8b5cf6">23.6° deadrise</text>
+    </svg>
+  </div>
+
+  <!-- Detail A -->
+  <div class="grid-2" style="margin-top: 24px;">
+    <div class="drawing">
+      <div class="drawing-title">DETAIL A — Bilge Keel Section (Scale 1:5)</div>
+      <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+        <!-- Hull surface (curved bilge) -->
+        <path d="M 100,250 Q 120,200 160,160 Q 200,120 280,100" fill="none" stroke="var(--text)" stroke-width="3"/>
+        <text x="290" y="96" class="label-small">Hull outer surface</text>
+
+        <!-- Hull plating thickness -->
+        <path d="M 104,246 Q 124,198 163,158 Q 202,120 282,100" fill="none" stroke="var(--dim)" stroke-width="1" stroke-dasharray="3,2"/>
+        <text x="215" y="113" class="label-small">6mm hull plate</text>
+
+        <!-- Ground bar / doubler -->
+        <rect x="148" y="154" width="30" height="6" fill="#334155" stroke="var(--text)" stroke-width="0.8" transform="rotate(-45,163,157)"/>
+        <text x="115" y="142" class="label-small" fill="#06b6d4">50×8mm doubler</text>
+
+        <!-- Bilge keel plate -->
+        <line x1="160" y1="160" x2="108" y2="108" stroke="var(--green)" stroke-width="4"/>
+
+        <!-- Dimension -->
+        <line x1="165" y1="155" x2="113" y2="103" class="dim-line"/>
+        <text x="120" y="118" class="dim-text" transform="rotate(-45,120,118)">200mm span</text>
+
+        <!-- Weld symbols -->
+        <polygon points="158,162 152,168 164,168" fill="#f59e0b" opacity="0.8"/>
+        <text x="168" y="176" class="label-small" fill="#f59e0b">Fillet weld</text>
+        <text x="168" y="188" class="label-small" fill="#f59e0b">(MIG, 5356)</text>
+
+        <!-- Plate thickness -->
+        <line x1="100" y1="100" x2="116" y2="116" class="dim-line"/>
+        <text x="85" y="96" class="dim-text">10mm plate</text>
+
+        <!-- Bracket hint (at frame) -->
+        <path d="M 160,160 L 180,140 L 180,168" fill="rgba(139,92,246,0.2)" stroke="#8b5cf6" stroke-width="0.8"/>
+        <text x="188" y="155" class="label-small" fill="#8b5cf6">Bracket</text>
+        <text x="188" y="165" class="label-small" fill="#8b5cf6">(at frames)</text>
+
+        <!-- 45° angle indicator -->
+        <line x1="160" y1="160" x2="160" y2="130" stroke="#f59e0b" stroke-width="0.5"/>
+        <path d="M 160,140 A 20,20 0 0,0 145,155" stroke="#f59e0b" stroke-width="0.5" fill="none"/>
+        <text x="138" y="142" class="dim-text">45°</text>
+
+        <!-- Material callout -->
+        <rect x="200" y="220" width="180" height="65" fill="#161b22" stroke="var(--border)" rx="4"/>
+        <text x="210" y="238" class="label" font-weight="600" fill="#06b6d4">Material Specification</text>
+        <text x="210" y="254" class="label-small">Plate: 5083 H321 (10mm)</text>
+        <text x="210" y="266" class="label-small">Doubler: 5083 H321 (8mm)</text>
+        <text x="210" y="278" class="label-small">Weld: MIG, 5356 filler wire</text>
+      </svg>
+    </div>
+
+    <div class="drawing">
+      <div class="drawing-title">SACRIFICIAL JOINT DESIGN</div>
+      <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+        <!-- Hull plate (top) -->
+        <rect x="50" y="80" width="300" height="20" fill="#1a2332" stroke="var(--text)" stroke-width="1.5"/>
+        <text x="200" y="94" class="label" text-anchor="middle">Hull plate (6mm)</text>
+
+        <!-- Doubler plate -->
+        <rect x="120" y="100" width="160" height="10" fill="#334155" stroke="var(--text)" stroke-width="1"/>
+        <text x="320" y="108" class="label-small">Doubler (50×8mm)</text>
+
+        <!-- Bilge keel plate -->
+        <rect x="185" y="110" width="8" height="120" fill="var(--green)" fill-opacity="0.3" stroke="var(--green)" stroke-width="1.5"/>
+        <text x="155" y="175" class="label" fill="var(--green)" text-anchor="end" font-weight="600">Bilge keel</text>
+        <text x="155" y="188" class="label-small" fill="var(--green)" text-anchor="end">(200×10mm)</text>
+
+        <!-- Inner weld (strong) -->
+        <polygon points="186,110 180,100 192,100" fill="#10b981"/>
+        <line x1="193" y1="105" x2="250" y2="105" stroke="#10b981" stroke-width="0.5" stroke-dasharray="2,2"/>
+        <text x="255" y="108" class="label-small" fill="#10b981">Continuous weld (strong)</text>
+
+        <!-- Outer weld (sacrificial) -->
+        <polygon points="186,115 180,125 192,125" fill="#f59e0b"/>
+        <!-- Intermittent weld representation -->
+        <rect x="183" y="130" width="3" height="15" fill="#f59e0b"/>
+        <rect x="183" y="155" width="3" height="15" fill="#f59e0b"/>
+        <rect x="183" y="180" width="3" height="15" fill="#f59e0b"/>
+        <line x1="195" y1="140" x2="250" y2="140" stroke="#f59e0b" stroke-width="0.5" stroke-dasharray="2,2"/>
+        <text x="255" y="138" class="label-small" fill="#f59e0b">Intermittent weld</text>
+        <text x="255" y="150" class="label-small" fill="#f59e0b">(sacrificial — breaks</text>
+        <text x="255" y="162" class="label-small" fill="#f59e0b"> before hull damage)</text>
+
+        <!-- Break arrow -->
+        <path d="M 170,210 L 186,195 M 186,210 L 170,195" stroke="#ef4444" stroke-width="1.5"/>
+        <text x="150" y="225" class="label-small" fill="#ef4444" text-anchor="middle">Controlled</text>
+        <text x="150" y="236" class="label-small" fill="#ef4444" text-anchor="middle">break zone</text>
+
+        <!-- Explanation -->
+        <rect x="50" y="250" width="300" height="40" fill="#161b22" stroke="var(--border)" rx="4"/>
+        <text x="60" y="268" class="label-small">Sacrificial design: yttre svets svagare än inre.</text>
+        <text x="60" y="280" class="label-small">Vid grundstötning lossnar kölen utan skrovskada.</text>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PROFILE VIEW -->
+<!-- ============================================================ -->
+<div class="section" id="profile">
+  <div class="section-title">Profile View — Starboard Side</div>
+  <div class="section-desc">
+    Longitudinell placering av bilge keel centrerad kring midskeppet.
+    Ändarna taprade (1:10 ratio) för att minska virvelbildning.
+    Alinjerad med vattenflödet vid 8 kn (survey design speed).
+  </div>
+
+  <div class="drawing" style="max-width: 1200px; margin: 0 auto;">
+    <div class="drawing-title">PROFILE VIEW — Starboard Hull (Scale approx 1:100)</div>
+    <svg viewBox="0 0 1100 380" xmlns="http://www.w3.org/2000/svg">
+      <!-- Water -->
+      <rect x="0" y="160" width="1100" height="220" class="water"/>
+      <line x1="0" y1="160" x2="1100" y2="160" class="waterline"/>
+      <text x="15" y="155" class="label-small" fill="#06b6d4">DWL</text>
+
+      <!-- Hull profile -->
+      <path d="M 80,160 L 80,100 L 120,80 L 950,80 L 980,90 L 1000,100 L 1020,120 L 1030,140 Q 1035,150 1035,160
+               L 1035,220 Q 1030,260 1010,280 Q 990,295 960,300 L 120,300 Q 100,295 90,280 Q 80,260 75,230 L 75,160 Z"
+            class="hull-fill"/>
+
+      <!-- Deck line -->
+      <line x1="80" y1="80" x2="1000" y2="80" stroke="var(--text)" stroke-width="1"/>
+
+      <!-- Keel line -->
+      <path d="M 80,300 Q 70,295 68,280 L 68,260" fill="none" stroke="var(--text)" stroke-width="1"/>
+
+      <!-- Frame lines -->
+      <g>
+        <!-- Every 1.2m at 1:100 = every 45px roughly -->
+        <line x1="165" y1="80" x2="165" y2="300" class="frame-line"/>
+        <line x1="210" y1="80" x2="210" y2="300" class="frame-line"/>
+        <line x1="255" y1="80" x2="255" y2="300" class="frame-line"/>
+        <line x1="300" y1="80" x2="300" y2="300" class="frame-line"/>
+        <line x1="345" y1="80" x2="345" y2="300" class="frame-line"/>
+        <line x1="390" y1="80" x2="390" y2="300" class="frame-line"/>
+        <line x1="435" y1="80" x2="435" y2="300" class="frame-line"/>
+        <line x1="480" y1="80" x2="480" y2="300" class="frame-line"/>
+        <line x1="525" y1="80" x2="525" y2="300" class="frame-line"/>
+        <line x1="570" y1="80" x2="570" y2="300" class="frame-line"/>
+        <line x1="615" y1="80" x2="615" y2="300" class="frame-line"/>
+        <line x1="660" y1="80" x2="660" y2="300" class="frame-line"/>
+        <line x1="705" y1="80" x2="705" y2="300" class="frame-line"/>
+        <line x1="750" y1="80" x2="750" y2="300" class="frame-line"/>
+        <line x1="795" y1="80" x2="795" y2="300" class="frame-line"/>
+        <line x1="840" y1="80" x2="840" y2="300" class="frame-line"/>
+        <line x1="885" y1="80" x2="885" y2="300" class="frame-line"/>
+        <line x1="930" y1="80" x2="930" y2="300" class="frame-line"/>
+      </g>
+
+      <!-- BILGE KEEL -->
+      <g class="detail-zoom">
+        <!-- Main bilge keel bar (at bilge turn, ~0.4m above BL → approx y=280) -->
+        <!-- Forward taper -->
+        <path d="M 305,280 L 325,275" stroke="var(--green)" stroke-width="3" stroke-linecap="round"/>
+        <!-- Main keel -->
+        <line x1="325" y1="275" x2="775" y2="275" stroke="var(--green)" stroke-width="3"/>
+        <!-- Aft taper -->
+        <path d="M 775,275 L 795,280" stroke="var(--green)" stroke-width="3" stroke-linecap="round"/>
+
+        <!-- Keel fill area -->
+        <path d="M 305,280 L 325,275 L 775,275 L 795,280" fill="none" stroke="var(--green)" stroke-width="3"/>
+
+        <!-- Label -->
+        <text x="550" y="268" class="label" text-anchor="middle" fill="#10b981" font-weight="600">BILGE KEEL</text>
+      </g>
+
+      <!-- Brackets at every 2nd frame -->
+      <g>
+        <line x1="345" y1="280" x2="345" y2="275" stroke="var(--green)" stroke-width="1"/>
+        <line x1="435" y1="280" x2="435" y2="275" stroke="var(--green)" stroke-width="1"/>
+        <line x1="525" y1="280" x2="525" y2="275" stroke="var(--green)" stroke-width="1"/>
+        <line x1="615" y1="280" x2="615" y2="275" stroke="var(--green)" stroke-width="1"/>
+        <line x1="705" y1="280" x2="705" y2="275" stroke="var(--green)" stroke-width="1"/>
+      </g>
+
+      <!-- Dimensions -->
+      <!-- BK length -->
+      <line x1="305" y1="325" x2="795" y2="325" class="dim-line"/>
+      <line x1="305" y1="320" x2="305" y2="330" class="dim-line"/>
+      <line x1="795" y1="320" x2="795" y2="330" class="dim-line"/>
+      <text x="550" y="338" class="dim-text" text-anchor="middle">10.0 m (42% LWL)</text>
+
+      <!-- LWL -->
+      <line x1="80" y1="355" x2="1035" y2="355" class="dim-line"/>
+      <line x1="80" y1="350" x2="80" y2="360" class="dim-line"/>
+      <line x1="1035" y1="350" x2="1035" y2="360" class="dim-line"/>
+      <text x="557" y="368" class="dim-text" text-anchor="middle">LWL = 23.99 m</text>
+
+      <!-- Taper detail -->
+      <circle cx="310" cy="278" r="20" fill="none" stroke="#f59e0b" stroke-width="0.5" stroke-dasharray="3,2"/>
+      <text x="290" y="312" class="note">Taper 1:10</text>
+      <circle cx="790" cy="278" r="20" fill="none" stroke="#f59e0b" stroke-width="0.5" stroke-dasharray="3,2"/>
+      <text x="770" y="312" class="note">Taper 1:10</text>
+
+      <!-- Direction labels -->
+      <text x="100" y="60" class="label" font-weight="600">← BOW</text>
+      <text x="960" y="60" class="label" font-weight="600">STERN →</text>
+
+      <!-- Flow arrow -->
+      <path d="M 850,230 L 200,230" fill="none" stroke="#06b6d4" stroke-width="0.8" marker-end="url(#arrowCyan)"/>
+      <text x="525" y="224" class="label-small" fill="#06b6d4" text-anchor="middle">Flow direction (at speed)</text>
+
+      <defs>
+        <marker id="arrowCyan" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#06b6d4"/>
+        </marker>
+      </defs>
+
+      <!-- Midship marker -->
+      <line x1="550" y1="70" x2="550" y2="300" stroke="#8b5cf6" stroke-width="0.5" stroke-dasharray="6,4"/>
+      <text x="550" y="66" class="label-small" text-anchor="middle" fill="#8b5cf6">⊕ Midship</text>
+    </svg>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PLAN VIEW -->
+<!-- ============================================================ -->
+<div class="section" id="plan">
+  <div class="section-title">Plan View — Bottom (Underifrån)</div>
+  <div class="section-desc">
+    Vy underifrån visar båda skroven med bilge keels placerade på ytterbilgen.
+    Gröna linjer markerar bilge keel-positionen.
+  </div>
+
+  <div class="drawing" style="max-width: 1000px; margin: 0 auto;">
+    <div class="drawing-title">PLAN VIEW — Looking Up (Scale approx 1:100)</div>
+    <svg viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg">
+      <!-- Centerline -->
+      <line x1="100" y1="250" x2="950" y2="250" class="center-line"/>
+      <text x="55" y="254" class="label-small" text-anchor="end">CL</text>
+
+      <!-- PORT HULL (top in plan view) -->
+      <g>
+        <path d="M 150,160 Q 130,165 120,175 Q 105,190 100,210
+                 L 100,210 Q 100,220 105,225 L 870,225
+                 Q 890,220 900,210 Q 920,190 930,170 Q 935,162 930,158
+                 L 150,158 Z"
+              fill="#1a2332" stroke="var(--text)" stroke-width="1.2"/>
+        <!-- Inner edge -->
+        <line x1="150" y1="225" x2="870" y2="225" stroke="var(--text)" stroke-width="0.8"/>
+        <text x="500" y="200" class="label" text-anchor="middle">PORT HULL</text>
+
+        <!-- Bilge keel on outer edge -->
+        <line x1="280" y1="155" x2="720" y2="155" stroke="var(--green)" stroke-width="4"/>
+        <text x="500" y="148" class="label-small" fill="#10b981" text-anchor="middle">Bilge keel (outer bilge)</text>
+      </g>
+
+      <!-- STARBOARD HULL (bottom in plan view) -->
+      <g>
+        <path d="M 150,340 Q 130,335 120,325 Q 105,310 100,290
+                 L 100,290 Q 100,280 105,275 L 870,275
+                 Q 890,280 900,290 Q 920,310 930,330 Q 935,338 930,342
+                 L 150,342 Z"
+              fill="#1a2332" stroke="var(--text)" stroke-width="1.2"/>
+        <line x1="150" y1="275" x2="870" y2="275" stroke="var(--text)" stroke-width="0.8"/>
+        <text x="500" y="315" class="label" text-anchor="middle">STBD HULL</text>
+
+        <!-- Bilge keel on outer edge -->
+        <line x1="280" y1="345" x2="720" y2="345" stroke="var(--green)" stroke-width="4"/>
+        <text x="500" y="360" class="label-small" fill="#10b981" text-anchor="middle">Bilge keel (outer bilge)</text>
+      </g>
+
+      <!-- Dimension: BK length -->
+      <line x1="280" y1="380" x2="720" y2="380" class="dim-line"/>
+      <line x1="280" y1="375" x2="280" y2="385" class="dim-line"/>
+      <line x1="720" y1="375" x2="720" y2="385" class="dim-line"/>
+      <text x="500" y="395" class="dim-text" text-anchor="middle">10.0 m</text>
+
+      <!-- Dimension: LOA -->
+      <line x1="95" y1="430" x2="935" y2="430" class="dim-line"/>
+      <line x1="95" y1="425" x2="95" y2="435" class="dim-line"/>
+      <line x1="935" y1="425" x2="935" y2="435" class="dim-line"/>
+      <text x="515" y="445" class="dim-text" text-anchor="middle">LOA = 24.94 m</text>
+
+      <!-- Dimension: Hull spacing -->
+      <line x1="60" y1="190" x2="60" y2="310" class="dim-line"/>
+      <line x1="55" y1="190" x2="65" y2="190" class="dim-line"/>
+      <line x1="55" y1="310" x2="65" y2="310" class="dim-line"/>
+      <text x="50" y="254" class="dim-text" text-anchor="middle" transform="rotate(-90,50,254)">~6.0m c/c</text>
+
+      <!-- Direction -->
+      <text x="110" y="250" class="label" text-anchor="end" font-weight="600">BOW ←</text>
+      <text x="910" y="250" class="label" font-weight="600">→ STERN</text>
+
+      <!-- Midship -->
+      <line x1="500" y1="140" x2="500" y2="370" stroke="#8b5cf6" stroke-width="0.5" stroke-dasharray="6,4"/>
+      <text x="500" y="135" class="label-small" text-anchor="middle" fill="#8b5cf6">⊕ Midship</text>
+
+      <!-- Flow alignment note -->
+      <rect x="700" y="410" width="280" height="50" fill="#161b22" stroke="var(--border)" rx="4"/>
+      <text x="710" y="428" class="label-small" fill="#f59e0b">⚠ Flow alignment critical:</text>
+      <text x="710" y="442" class="label-small">Verify with tuft test or CFD at</text>
+      <text x="710" y="454" class="label-small">design survey speed (7–10 kn)</text>
+    </svg>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- CONSTRUCTION DETAILS -->
+<!-- ============================================================ -->
+<div class="section" id="details">
+  <div class="section-title">Construction Details</div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>Bracket Detail (at Frame)</h3>
+      <div class="drawing">
+        <svg viewBox="0 0 350 280" xmlns="http://www.w3.org/2000/svg">
+          <!-- Hull surface -->
+          <path d="M 30,200 Q 80,120 180,80 L 330,60" fill="none" stroke="var(--text)" stroke-width="2.5"/>
+          <text x="310" y="52" class="label-small">Hull outer surface</text>
+
+          <!-- Frame -->
+          <path d="M 35,195 Q 84,118 182,78 L 325,58" fill="none" stroke="#8b5cf6" stroke-width="1.5"/>
+          <text x="25" y="218" class="label-small" fill="#8b5cf6">Frame (at 1200mm c/c)</text>
+
+          <!-- Bilge keel plate -->
+          <line x1="120" y1="115" x2="62" y2="57" stroke="var(--green)" stroke-width="4"/>
+          <text x="40" y="48" class="label" fill="#10b981">BK plate</text>
+
+          <!-- Bracket -->
+          <path d="M 120,115 L 140,95 L 140,120 Z" fill="rgba(139,92,246,0.3)" stroke="#8b5cf6" stroke-width="1.5"/>
+          <text x="148" y="115" class="label-small" fill="#8b5cf6">Triangular bracket</text>
+          <text x="148" y="127" class="label-small" fill="#8b5cf6">~150×150mm, 8mm plate</text>
+
+          <!-- Weld symbols -->
+          <circle cx="128" cy="110" r="4" fill="#f59e0b" opacity="0.6"/>
+          <circle cx="135" cy="98" r="4" fill="#f59e0b" opacity="0.6"/>
+
+          <!-- Spacing note -->
+          <rect x="150" y="170" width="180" height="70" fill="#161b22" stroke="var(--border)" rx="4"/>
+          <text x="160" y="190" class="label-small" font-weight="600">Bracket spacing:</text>
+          <text x="160" y="206" class="label-small">Every 2nd frame = 2400mm c/c</text>
+          <text x="160" y="222" class="label-small">5 brackets per keel × 2 keels</text>
+          <text x="160" y="234" class="label-small">= 10 brackets total</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>End Taper Detail</h3>
+      <div class="drawing">
+        <svg viewBox="0 0 350 280" xmlns="http://www.w3.org/2000/svg">
+          <!-- Hull surface -->
+          <line x1="20" y1="140" x2="330" y2="140" stroke="var(--text)" stroke-width="2.5"/>
+
+          <!-- BK full section -->
+          <line x1="200" y1="140" x2="200" y2="90" stroke="var(--green)" stroke-width="3"/>
+          <text x="210" y="115" class="label-small" fill="#10b981">Full 200mm</text>
+
+          <!-- Taper -->
+          <path d="M 200,90 L 60,130" stroke="var(--green)" stroke-width="3" stroke-linecap="round"/>
+
+          <!-- Taper line -->
+          <line x1="60" y1="130" x2="60" y2="140" stroke="var(--green)" stroke-width="2"/>
+
+          <!-- Dimension lines -->
+          <line x1="60" y1="160" x2="200" y2="160" class="dim-line"/>
+          <line x1="60" y1="155" x2="60" y2="165" class="dim-line"/>
+          <line x1="200" y1="155" x2="200" y2="165" class="dim-line"/>
+          <text x="130" y="175" class="dim-text" text-anchor="middle">~2000mm (taper 1:10)</text>
+
+          <!-- Height dimension -->
+          <line x1="220" y1="90" x2="220" y2="140" class="dim-line"/>
+          <line x1="215" y1="90" x2="225" y2="90" class="dim-line"/>
+          <line x1="215" y1="140" x2="225" y2="140" class="dim-line"/>
+          <text x="230" y="120" class="dim-text">200mm</text>
+
+          <!-- Forward label -->
+          <text x="30" y="130" class="label" font-weight="600">FWD →</text>
+
+          <rect x="50" y="200" width="260" height="55" fill="#161b22" stroke="var(--border)" rx="4"/>
+          <text x="60" y="218" class="label-small" font-weight="600">Taper design:</text>
+          <text x="60" y="234" class="label-small">• Ratio 1:10 (200mm over 2000mm)</text>
+          <text x="60" y="248" class="label-small">• Reduces vortex shedding at ends</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 24px;">
+    <h3>Bill of Materials — Option B</h3>
+    <table class="spec-table">
+      <tr><th>Item</th><th>Description</th><th>Quantity</th><th>Material</th><th>Weight</th></tr>
+      <tr><td>1</td><td>Bilge keel plate 200×10mm × 10m</td><td>2</td><td>5083 H321</td><td>106 kg</td></tr>
+      <tr><td>2</td><td>Ground bar / doubler 50×8mm × 10m</td><td>2</td><td>5083 H321</td><td>21 kg</td></tr>
+      <tr><td>3</td><td>Triangular bracket 150×150×8mm</td><td>10</td><td>6082 T6</td><td>3 kg</td></tr>
+      <tr><td>4</td><td>Taper end pieces</td><td>4</td><td>5083 H321</td><td>2 kg</td></tr>
+      <tr><td></td><td><strong>TOTAL</strong></td><td></td><td></td><td><strong>~133 kg</strong></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- MOTION RESULTS -->
+<!-- ============================================================ -->
+<div class="section" id="results">
+  <div class="section-title">Motion Improvement Prediction</div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>Roll Amplitude — Before vs After</h3>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-swatch" style="background:var(--red);opacity:0.7;"></div>Without bilge keels</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:var(--green);opacity:0.9;"></div>With bilge keels (est.)</div>
+      </div>
+      <div class="bar-chart" id="roll-chart"></div>
+    </div>
+
+    <div class="card">
+      <h3>Lateral Acceleration — Wheelhouse (8m)</h3>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-swatch" style="background:var(--red);opacity:0.7;"></div>Without bilge keels</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:var(--green);opacity:0.9;"></div>With bilge keels (est.)</div>
+      </div>
+      <div class="bar-chart" id="accel-chart"></div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-top: 24px;">
+    <div class="card">
+      <h3>AFS Compliance — Wheelhouse</h3>
+      <div class="drawing">
+        <svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+          <!-- Scale bar background -->
+          <rect x="40" y="40" width="320" height="30" rx="4" fill="#1e293b"/>
+
+          <!-- Zone colors -->
+          <rect x="40" y="40" width="128" height="30" rx="4" fill="rgba(16,185,129,0.3)"/>
+          <rect x="168" y="40" width="64" height="30" fill="rgba(245,158,11,0.3)"/>
+          <rect x="232" y="40" width="128" height="30" rx="4" fill="rgba(239,68,68,0.3)"/>
+
+          <!-- Scale labels -->
+          <text x="40" y="85" class="label-small" text-anchor="start">0</text>
+          <text x="104" y="85" class="label-small" text-anchor="middle">0.032g</text>
+          <text x="200" y="85" class="label-small" text-anchor="middle">0.051g</text>
+          <text x="296" y="85" class="label-small" text-anchor="middle">0.082g</text>
+          <text x="360" y="85" class="label-small" text-anchor="end">0.112g</text>
+
+          <!-- AFS insatsvärde line -->
+          <line x1="200" y1="35" x2="200" y2="75" stroke="#f59e0b" stroke-width="2"/>
+          <text x="200" y="30" class="label-small" fill="#f59e0b" text-anchor="middle">AFS Insatsvärde</text>
+
+          <!-- AFS gränsvärde -->
+          <line x1="360" y1="35" x2="360" y2="75" stroke="#ef4444" stroke-width="2"/>
+          <text x="360" y="30" class="label-small" fill="#ef4444" text-anchor="end">AFS Gränsvärde</text>
+
+          <!-- Before marker -->
+          <circle cx="232" cy="55" r="8" fill="#ef4444" stroke="white" stroke-width="1.5"/>
+          <text x="232" y="110" class="label" fill="#ef4444" text-anchor="middle" font-weight="600">BEFORE: 0.060g</text>
+          <text x="232" y="124" class="label-small" fill="#ef4444" text-anchor="middle">Exceeds insatsvärde</text>
+
+          <!-- After marker -->
+          <circle cx="112" cy="55" r="8" fill="#10b981" stroke="white" stroke-width="1.5"/>
+          <text x="112" y="145" class="label" fill="#10b981" text-anchor="middle" font-weight="600">AFTER: 0.029g</text>
+          <text x="112" y="159" class="label-small" fill="#10b981" text-anchor="middle">Below insatsvärde ✓</text>
+
+          <!-- Arrow -->
+          <path d="M 225,55 L 120,55" fill="none" stroke="white" stroke-width="1.5" marker-end="url(#arrowWhite)" stroke-dasharray="4,2"/>
+          <text x="172" y="50" class="label-small" fill="white" text-anchor="middle">-51%</text>
+
+          <!-- Zone labels -->
+          <text x="104" y="180" class="label-small" text-anchor="middle" fill="#10b981">Not uncomfortable</text>
+          <text x="200" y="180" class="label-small" text-anchor="middle" fill="#f59e0b">A little</text>
+          <text x="296" y="180" class="label-small" text-anchor="middle" fill="#ef4444">Fairly uncomfortable</text>
+
+          <defs>
+            <marker id="arrowWhite" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="white"/>
+            </marker>
+          </defs>
+        </svg>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Speed Penalty Summary</h3>
+      <table class="spec-table">
+        <tr><th>Speed</th><th>Mode</th><th>Resistance increase</th></tr>
+        <tr><td>7 kn</td><td>Survey (slow)</td><td style="color:var(--green);">~3.1%</td></tr>
+        <tr><td>10 kn</td><td>Survey (fast)</td><td style="color:var(--green);">~2.7%</td></tr>
+        <tr><td>14 kn</td><td>Transit</td><td style="color:var(--amber);">~2.9%</td></tr>
+      </table>
+      <div class="callout" style="margin-top:12px;">
+        Vid survey-hastighet (7–10 kn): ~0.2–0.3 kn hastighetsminskning
+        eller ~3% bränsleökning. Försumbart för survey-operationer.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- COMPARISON -->
+<!-- ============================================================ -->
+<div class="section" id="compare">
+  <div class="section-title">Solution Comparison</div>
+
+  <div class="grid-3">
+    <div class="card" style="border-color: var(--green); border-width: 2px;">
+      <h3 style="color: var(--green);">✓ Bilge Keels (Recommended)</h3>
+      <h4>Performance</h4>
+      <div class="stat-row"><span class="stat-label">Roll reduction</span><span class="stat-value">47–55%</span></div>
+      <div class="stat-row"><span class="stat-label">Works at 0 kn</span><span class="stat-value warn">Limited</span></div>
+      <div class="stat-row"><span class="stat-label">Speed penalty</span><span class="stat-value">2–3%</span></div>
+      <h4>Cost & Complexity</h4>
+      <div class="stat-row"><span class="stat-label">Install cost</span><span class="stat-value good">30–80k SEK</span></div>
+      <div class="stat-row"><span class="stat-label">Weight</span><span class="stat-value good">133 kg</span></div>
+      <div class="stat-row"><span class="stat-label">Power</span><span class="stat-value good">0 kW</span></div>
+      <div class="stat-row"><span class="stat-label">Maintenance</span><span class="stat-value good">~5k/year</span></div>
+      <div class="stat-row"><span class="stat-label">Complexity</span><span class="stat-value good">Very low</span></div>
+      <div class="stat-row"><span class="stat-label">Classification</span><span class="stat-value good">Drawing only</span></div>
+    </div>
+
+    <div class="card">
+      <h3>Gyro Stabilizer (SG150)</h3>
+      <h4>Performance</h4>
+      <div class="stat-row"><span class="stat-label">Roll reduction</span><span class="stat-value">50–70%</span></div>
+      <div class="stat-row"><span class="stat-label">Works at 0 kn</span><span class="stat-value good">Yes</span></div>
+      <div class="stat-row"><span class="stat-label">Speed penalty</span><span class="stat-value good">0%</span></div>
+      <h4>Cost & Complexity</h4>
+      <div class="stat-row"><span class="stat-label">Install cost</span><span class="stat-value bad">500k–1M+ SEK</span></div>
+      <div class="stat-row"><span class="stat-label">Weight</span><span class="stat-value bad">1,960 kg</span></div>
+      <div class="stat-row"><span class="stat-label">Power</span><span class="stat-value warn">2–3.5 kW</span></div>
+      <div class="stat-row"><span class="stat-label">Maintenance</span><span class="stat-value warn">~40k/year</span></div>
+      <div class="stat-row"><span class="stat-label">Complexity</span><span class="stat-value bad">High</span></div>
+      <div class="stat-row"><span class="stat-label">Classification</span><span class="stat-value bad">Full system cert</span></div>
+    </div>
+
+    <div class="card">
+      <h3>Active Fins</h3>
+      <h4>Performance</h4>
+      <div class="stat-row"><span class="stat-label">Roll reduction</span><span class="stat-value">40–55%</span></div>
+      <div class="stat-row"><span class="stat-label">Works at 0 kn</span><span class="stat-value bad">No</span></div>
+      <div class="stat-row"><span class="stat-label">Speed penalty</span><span class="stat-value">1–2%</span></div>
+      <h4>Cost & Complexity</h4>
+      <div class="stat-row"><span class="stat-label">Install cost</span><span class="stat-value warn">300–600k SEK</span></div>
+      <div class="stat-row"><span class="stat-label">Weight</span><span class="stat-value warn">~500 kg</span></div>
+      <div class="stat-row"><span class="stat-label">Power</span><span class="stat-value warn">5–15 kW</span></div>
+      <div class="stat-row"><span class="stat-label">Maintenance</span><span class="stat-value warn">~30k/year</span></div>
+      <div class="stat-row"><span class="stat-label">Complexity</span><span class="stat-value bad">High</span></div>
+      <div class="stat-row"><span class="stat-label">Classification</span><span class="stat-value bad">Full system cert</span></div>
+    </div>
+  </div>
+
+  <div class="callout success" style="margin-top: 24px;">
+    <strong>Slutsats:</strong> Bilge keels ger jämförbar rollreduktion som aktiva fenor — men utan el, utan rörliga delar,
+    utan internt utrymme, och till en bråkdel av kostnaden. Den enda nackdelen är begränsad effekt vid noll fart,
+    vilket sällan förekommer under survey-operationer. Om zero-speed stabilisering blir kritiskt i framtiden kan
+    bilge keels kombineras med ett gyro (hybrid-approach).
+  </div>
+
+  <div class="card" style="margin-top: 16px;">
+    <h3>Document Information</h3>
+    <table class="spec-table">
+      <tr><td>Document</td><td>PROJ-NG-STAB-001</td></tr>
+      <tr><td>Date</td><td>2026-04-16</td></tr>
+      <tr><td>Version</td><td>1.0 DRAFT</td></tr>
+      <tr><td>Vessel</td><td>Northern Gale (H209)</td></tr>
+      <tr><td>Author</td><td>Lasse Kjellerup, Tech Supt</td></tr>
+      <tr><td>Method</td><td>Ikeda (1978) + Bassler & Reed (2009)</td></tr>
+      <tr><td>Validation</td><td>Cross-referenced Irkal et al. (2016)</td></tr>
+      <tr><td>Status</td><td>Draft — pending CFD validation</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- CALCULATIONS -->
+<!-- ============================================================ -->
+<div class="section" id="calcs">
+  <div class="section-title">Calculations, Assumptions & References</div>
+  <div class="section-desc">
+    Komplett dokumentation av beräkningsmodellen: alla input-parametrar, antaganden, formler,
+    mellansteg och slutresultat. Varje parameter är taggad med sin källa.
+  </div>
+
+  <!-- ===== INPUT PARAMETERS ===== -->
+  <div class="calc-block">
+    <h3>1. Input Parameters — Vessel Particulars</h3>
+    <p style="color:var(--dim);font-size:13px;margin-bottom:12px;">
+      Alla mått extraherade från Lines Plan SM246-10-008 Rev A och Midship Section SM246-20-001 Rev B
+      om inget annat anges.
+    </p>
+    <table class="spec-table">
+      <tr><th>Symbol</th><th>Parameter</th><th>Value</th><th>Source</th></tr>
+      <tr><td>LOA</td><td>Length overall</td><td>24.94 m</td><td>Lines Plan</td></tr>
+      <tr><td>LWL</td><td>Load waterline length</td><td>23.99 m</td><td>Lines Plan</td></tr>
+      <tr><td>B</td><td>Greatest moulded breadth</td><td>11.00 m</td><td>Lines Plan</td></tr>
+      <tr><td>B<sub>hull</sub></td><td>Individual hull beam</td><td>2.32 m</td><td>Lines Plan (ΣB/2 = 4.64/2)</td></tr>
+      <tr><td>y<sub>hull</sub></td><td>Hull center from CL</td><td>±3.00 m</td><td>Body plan (estimated)</td></tr>
+      <tr><td>T</td><td>Maximum draught</td><td>1.55 m</td><td>Lines Plan</td></tr>
+      <tr><td>Δ</td><td>Maximum displacement</td><td>121.9 t</td><td>Lines Plan</td></tr>
+      <tr><td>C<sub>b</sub></td><td>Block coefficient</td><td>0.654</td><td>Lines Plan</td></tr>
+      <tr><td>β</td><td>Deadrise angle at LCG</td><td>23.6°</td><td>Lines Plan</td></tr>
+      <tr><td>V<sub>max</sub></td><td>Maximum design speed</td><td>30.0 kn</td><td>Lines Plan</td></tr>
+      <tr><td>s</td><td>Frame spacing</td><td>1200 mm</td><td>Midship Section</td></tr>
+      <tr><td>ρ</td><td>Seawater density</td><td>1025 kg/m³</td><td>Standard (15°C, 3.5% sal)</td></tr>
+      <tr><td>g</td><td>Gravitational acceleration</td><td>9.81 m/s²</td><td>Standard</td></tr>
+    </table>
+  </div>
+
+  <!-- ===== ASSUMPTIONS ===== -->
+  <div class="calc-block">
+    <h3>2. Key Assumptions</h3>
+    <p style="color:var(--dim);font-size:13px;margin-bottom:12px;">
+      Varje antagande är klassificerat efter källa. <span style="color:var(--green);">MEASURED</span> = direkt från Seapath-data.
+      <span style="color:var(--amber);">ESTIMATED</span> = ingenjörsbedömning.
+      <span style="color:var(--purple);">LITERATURE</span> = värde från publicerad referens.
+      <span style="color:var(--cyan);">DERIVED</span> = beräknat från andra värden.
+    </p>
+
+    <div class="assumption">
+      <span class="tag measured">Measured</span>
+      <span><strong>T<sub>roll</sub> ≈ 3.8 s</strong> — Natural roll period, uppskattad från Seapath Log 1 och Log 2 peak-frekvensanalys. Bör verifieras med formellt free roll decay test.</span>
+    </div>
+    <div class="assumption">
+      <span class="tag estimated">Estimated</span>
+      <span><strong>KG = 2.8 m</strong> — Tyngdpunktshöjd ovan baslinje. Baserat på typiskt KG/D-ratio (0.65–0.75) för denna typ av aluminium-katamaran med däckshus. Bör hämtas från stabilitetsbok.</span>
+    </div>
+    <div class="assumption">
+      <span class="tag literature">Literature</span>
+      <span><strong>k<sub>44</sub> = 0.35 × B = 3.85 m</strong> — Rolltröghetradie. 0.35 × B rekommenderas av ITTC (2011) för katamaraner. Monoskrov använder typiskt 0.35–0.45 × B.</span>
+    </div>
+    <div class="assumption">
+      <span class="tag derived">Derived</span>
+      <span><strong>GM = 4.13 m</strong> — Beräknat från T<sub>roll</sub> och k<sub>44</sub>. Högt GM är förväntat för katamaran med bred hullspacing. Bekräftar den stela, snäppiga rullkaraktäristiken.</span>
+    </div>
+    <div class="assumption">
+      <span class="tag estimated">Estimated</span>
+      <span><strong>ζ<sub>bare</sub> = 0.020</strong> — Bare hull damping ratio (dimensionslös). Typiskt 0.015–0.03 för katamaraner utan appendix. Monoskrov: 0.03–0.08. Bör verifieras med free roll decay.</span>
+    </div>
+    <div class="assumption">
+      <span class="tag literature">Literature</span>
+      <span><strong>A<sub>44</sub> = 0.15 × I<sub>44</sub></strong> — Added mass moment of inertia i roll, typiskt 10–20% av I<sub>44</sub>. 15% valt som mittenvärde. Källa: Himeno (1981), ITTC (2011).</span>
+    </div>
+    <div class="assumption">
+      <span class="tag estimated">Estimated</span>
+      <span><strong>BK position: y=4.16m, z=0.4m</strong> — Bilge keel placerad vid ytterbilgövergång, 0.4m ovan baslinje. Uppskattat från midship section-ritningen och deadrise-vinkeln 23.6°.</span>
+    </div>
+    <div class="assumption">
+      <span class="tag literature">Literature</span>
+      <span><strong>f(σ) = 1.0</strong> — Ikedas sektionskoefficientfunktion. σ ≈ 0.7 för katamaranens skrovsektion ger f = 1 + 0.3 × exp(-160 × (1-0.7)) ≈ 1.0000. Källa: Ikeda (1978e).</span>
+    </div>
+    <div class="assumption">
+      <span class="tag estimated">Estimated</span>
+      <span><strong>C<sub>p</sub> integral ≈ 0.10</strong> — Tryckkoefficient-integral för bilge keel-hull interaction (B<sub>BKH</sub>). Förenklad; fullständig beräkning kräver integrering över skrovets girth.</span>
+    </div>
+    <div class="assumption">
+      <span class="tag measured">Measured</span>
+      <span><strong>Sjöförhållanden</strong> — Bft 3–4 (mild) och Bft 5–6 (rough) baserat på besättningens uppskattning. Ej instrumentellt verifierad våghöjd.</span>
+    </div>
+  </div>
+
+  <!-- ===== STEP 1: ROLL DYNAMICS ===== -->
+  <div class="calc-block">
+    <h3>3. Step 1 — Roll Dynamics</h3>
+
+    <div class="calc-step">
+      <span class="step-num">1</span>
+      <div class="calc-step-content">
+        <div class="desc">Roll angular frequency from measured period</div>
+        <div class="formula"><span class="var">ω</span> = 2π / T<sub>roll</sub> = 2π / 3.8 = <span class="result">1.653 rad/s</span></div>
+      </div>
+    </div>
+
+    <div class="calc-step">
+      <span class="step-num">2</span>
+      <div class="calc-step-content">
+        <div class="desc">Metacentric height from roll period (inverted natural frequency relation)</div>
+        <div class="formula">T<sub>roll</sub> = 2π × k<sub>44</sub> / √(g × GM)
+
+Solving for GM:
+<span class="var">GM</span> = (2π × k<sub>44</sub> / T<sub>roll</sub>)² / g
+    = (2π × 3.85 / 3.8)² / 9.81
+    = (6.367)² / 9.81
+    = 40.54 / 9.81
+    = <span class="result">4.13 m</span></div>
+      </div>
+    </div>
+
+    <div class="calc-step">
+      <span class="step-num">3</span>
+      <div class="calc-step-content">
+        <div class="desc">Mass moment of inertia in roll</div>
+        <div class="formula"><span class="var">I<sub>44</sub></span> = Δ × k<sub>44</sub>²
+      = 121,900 × 3.85²
+      = 121,900 × 14.8225
+      = <span class="result">1,806,863 kg·m²</span>
+
+<span class="var">A<sub>44</sub></span> = 0.15 × I<sub>44</sub> = 0.15 × 1,806,863 = <span class="result">271,029 kg·m²</span>
+
+<span class="var">I<sub>total</sub></span> = I<sub>44</sub> + A<sub>44</sub> = 1,806,863 + 271,029 = <span class="result">2,077,892 kg·m²</span></div>
+      </div>
+    </div>
+
+    <div class="calc-step">
+      <span class="step-num">4</span>
+      <div class="calc-step-content">
+        <div class="desc">Roll restoring moment coefficient</div>
+        <div class="formula"><span class="var">C<sub>roll</sub></span> = Δ × g × GM
+       = 121,900 × 9.81 × 4.13
+       = <span class="result">4,939,895 N·m/rad</span></div>
+      </div>
+    </div>
+
+    <div class="calc-step">
+      <span class="step-num">5</span>
+      <div class="calc-step-content">
+        <div class="desc">Bare hull damping coefficients</div>
+        <div class="formula"><span class="var">B<sub>44,crit</sub></span> = 2 × I<sub>total</sub> × ω
+            = 2 × 2,077,892 × 1.653
+            = <span class="result">6,871,464 N·m·s/rad</span>
+
+<span class="var">B<sub>44,bare</sub></span> = 2 × ζ<sub>bare</sub> × I<sub>total</sub> × ω
+            = 2 × 0.020 × 2,077,892 × 1.653
+            = <span class="result">137,429 N·m·s/rad</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== STEP 2: BK GEOMETRY ===== -->
+  <div class="calc-block">
+    <h3>4. Step 2 — Bilge Keel Geometry</h3>
+
+    <div class="calc-step">
+      <span class="step-num">6</span>
+      <div class="calc-step-content">
+        <div class="desc">Bilge keel position (outer bilge of each hull)</div>
+        <div class="formula"><span class="var">y<sub>BK</sub></span> = y<sub>hull center</sub> + B<sub>hull</sub>/2
+       = 3.00 + 2.32/2
+       = <span class="result">4.16 m from CL</span>
+
+<span class="var">z<sub>BK</sub></span> = <span class="result">0.40 m above baseline</span> <span class="comment">(at bilge turn, estimated from deadrise)</span></div>
+      </div>
+    </div>
+
+    <div class="calc-step">
+      <span class="step-num">7</span>
+      <div class="calc-step-content">
+        <div class="desc">Lever arm from roll axis (through G) to bilge keel</div>
+        <div class="formula"><span class="var">r</span> = √(y<sub>BK</sub>² + (KG - z<sub>BK</sub>)²)
+  = √(4.16² + (2.80 - 0.40)²)
+  = √(17.306 + 5.760)
+  = √23.066
+  = <span class="result">4.80 m</span>
+
+<span class="comment">Compare monohull ~25m: r ≈ 1.5–2.5 m</span>
+<span class="comment">Catamaran advantage: r² = 23.04 m² vs monohull r² ≈ 4–6 m²</span>
+<span class="comment">→ Damping moment scales with r², giving ~4–6× more effective per m² BK area</span></div>
+      </div>
+    </div>
+
+    <div class="calc-step">
+      <span class="step-num">8</span>
+      <div class="calc-step-content">
+        <div class="desc">Bilge keel design dimensions (Option B)</div>
+        <div class="formula"><span class="var">b<sub>BK</sub></span> = 0.200 m  <span class="comment">(span / protrusion from hull)</span>
+<span class="var">L<sub>BK</sub></span> = 10.0 m   <span class="comment">(length, = 42% of LWL)</span>
+<span class="var">n</span>     = 2        <span class="comment">(number of keels, outer bilge each hull)</span>
+
+Area per keel: 0.200 × 10.0 = 2.00 m²
+Total area:    2 × 2.00 = <span class="result">4.00 m²</span>
+
+b<sub>BK</sub>/B<sub>hull</sub> = 0.200 / 2.32 = <span class="result">8.6%</span> <span class="comment">(typical range: 3–6% for large ships)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== STEP 3: IKEDA BK DAMPING ===== -->
+  <div class="calc-block">
+    <h3>5. Step 3 — Ikeda Bilge Keel Damping Components</h3>
+    <p style="color:var(--dim);font-size:13px;margin-bottom:12px;">
+      Baserat på Ikeda et al. (1978a-e), formulerat av Bassler & Reed (2009).
+      Bilge keel-dämpningen består av tre komponenter: B<sub>BKN</sub> (normalkraft),
+      B<sub>BKH</sub> (hull interaction), B<sub>BKW</sub> (wave-making, försumbar).
+    </p>
+
+    <div class="calc-step">
+      <span class="step-num">9</span>
+      <div class="calc-step-content">
+        <div class="desc">Bilge keel normal force component at zero speed (Bassler & Reed Eq. 6)</div>
+        <div class="formula"><span class="comment">Formula: Ikeda (1978a), Bassler & Reed (2009) Eq. 6</span>
+
+B<sub>BKN0</sub> = (8/3π) × ρ × r² × b<sub>BK</sub>² × ω × f² × [22.5/(π×f) + 2.4 × (r×φ/b<sub>BK</sub>)]
+
+<span class="comment">Where:</span>
+  ρ    = 1025 kg/m³     <span class="comment">(seawater density)</span>
+  r    = 4.80 m         <span class="comment">(lever arm, roll axis → BK)</span>
+  b<sub>BK</sub>  = 0.200 m       <span class="comment">(bilge keel span)</span>
+  ω    = 1.653 rad/s    <span class="comment">(roll angular frequency)</span>
+  f    = 1.0000         <span class="comment">(section coefficient function, f(σ=0.7))</span>
+  φ    = roll amplitude (radians, varies by condition)
+
+<span class="comment">Note: B<sub>BKN0</sub> is per unit length. Multiply by L<sub>BK</sub> × (n/2) for total.</span></div>
+      </div>
+    </div>
+
+    <div class="calc-step">
+      <span class="step-num">10</span>
+      <div class="calc-step-content">
+        <div class="desc">Worked example: Rough conditions (φ = 7.0° = 0.1222 rad)</div>
+        <div class="formula"><span class="comment">Pre-compute constant terms:</span>
+8/(3π) = <span class="var">0.8488</span>
+
+<span class="comment">Term 1: viscous drag</span>
+22.5/(π × f) = 22.5/(π × 1.0) = <span class="var">7.162</span>
+
+<span class="comment">Term 2: amplitude-dependent</span>
+2.4 × r × φ / b<sub>BK</sub> = 2.4 × 4.80 × 0.1222 / 0.200 = <span class="var">7.039</span>
+
+<span class="comment">Combined bracket:</span>
+[7.162 + 7.039] = <span class="var">14.201</span>
+
+<span class="comment">B<sub>BKN0</sub> per unit length:</span>
+= 0.8488 × 1025 × 4.80² × 0.200² × 1.653 × 1.0² × 14.201
+= 0.8488 × 1025 × 23.04 × 0.04 × 1.653 × 14.201
+= 0.8488 × 1025 × 23.04 × 0.04 × 23.47
+= 0.8488 × 1025 × 21.63
+= 0.8488 × 22,172
+= <span class="var">18,822 N·m·s/rad per meter length</span>
+
+<span class="comment">Total B<sub>BKN0</sub> (× L<sub>BK</sub> × n/2 pairs):</span>
+= 18,822 × 10.0 × 1
+= <span class="result">188,220 N·m·s/rad</span>
+
+<span class="comment">(Script output: 188,515 — difference due to rounding in manual calc)</span></div>
+      </div>
+    </div>
+
+    <div class="calc-step">
+      <span class="step-num">11</span>
+      <div class="calc-step-content">
+        <div class="desc">Bilge keel-hull interaction component (Bassler & Reed Eq. 8)</div>
+        <div class="formula"><span class="comment">Formula: Ikeda (1978b), Bassler & Reed (2009) Eq. 8</span>
+
+B<sub>BKH</sub> = (4/3π) × r² × d⁴ × f² × ω × φ × ∫C<sub>p</sub> × l dG
+
+<span class="comment">Simplified (using C<sub>p</sub> integral ≈ 0.10):</span>
+= (4/3π) × ρ × r² × T⁴ × f² × ω × φ × C<sub>p,int</sub> × L<sub>BK</sub> × (n/2)
+= 0.4244 × 1025 × 23.04 × 1.55⁴ × 1.0 × 1.653 × 0.1222 × 0.10 × 10.0 × 1
+= 0.4244 × 1025 × 23.04 × 5.768 × 1.653 × 0.1222 × 0.10 × 10.0
+= <span class="result">~11,700 N·m·s/rad</span>
+
+<span class="comment">B<sub>BKH</sub> ≈ 6% of B<sub>BKN0</sub> — as expected, hull interaction is secondary.</span></div>
+      </div>
+    </div>
+
+    <div class="calc-step">
+      <span class="step-num">12</span>
+      <div class="calc-step-content">
+        <div class="desc">Total bilge keel damping and resulting damping ratio</div>
+        <div class="formula"><span class="var">B<sub>BK</sub></span> = B<sub>BKN</sub> + B<sub>BKH</sub>
+     = 188,515 + 11,700
+     = <span class="result">200,214 N·m·s/rad</span>
+
+<span class="var">B<sub>44,total</sub></span> = B<sub>44,bare</sub> + B<sub>BK</sub>
+          = 137,429 + 200,214
+          = <span class="result">337,644 N·m·s/rad</span>
+
+<span class="var">ζ<sub>total</sub></span> = B<sub>44,total</sub> / B<sub>44,crit</sub>
+        = 337,644 / 6,871,464
+        = <span class="result">0.049</span>
+
+<span class="comment">Damping increase: 0.049 / 0.020 = 2.5× over bare hull</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== STEP 4: ROLL REDUCTION ===== -->
+  <div class="calc-block">
+    <h3>6. Step 4 — Roll Reduction Estimate</h3>
+
+    <div class="calc-step">
+      <span class="step-num">13</span>
+      <div class="calc-step-content">
+        <div class="desc">Roll Reduction Ratio (RRR) — near-resonance approximation</div>
+        <div class="formula"><span class="comment">At or near natural frequency, roll amplitude is inversely proportional to damping:</span>
+<span class="comment">φ<sub>max</sub> ∝ 1/(2ζ)</span>
+
+<span class="comment">Therefore:</span>
+<span class="var">RRR</span> = 1 - ζ<sub>bare</sub> / ζ<sub>total</sub>
+    = 1 - 0.020 / 0.049
+    = 1 - 0.408
+    = <span class="result">0.593 = 59.3%</span> <span class="comment">(at φ=7° rough conditions)</span>
+
+<span class="comment">Note: This is a theoretical maximum at resonance.</span>
+<span class="comment">Real-world conditions include off-resonance waves → lower effective reduction.</span>
+<span class="comment">Calibrated range: 0.8 × RRR to 1.0 × RRR, capped at 55%.</span>
+<span class="comment">→ Reported range: <span class="result">47% – 55%</span> (midpoint 51%)</span></div>
+      </div>
+    </div>
+
+    <div class="calc-step">
+      <span class="step-num">14</span>
+      <div class="calc-step-content">
+        <div class="desc">Complete results table for all conditions and options</div>
+      </div>
+    </div>
+
+    <table class="spec-table" style="margin-top:10px;">
+      <tr><th>Option</th><th>b<sub>BK</sub></th><th>L<sub>BK</sub></th><th>n</th><th>RRR @ 3°</th><th>RRR @ 6°</th><th>RRR @ 7°</th><th>RRR @ 13°</th></tr>
+      <tr><td>A: Conservative</td><td>150mm</td><td>8m</td><td>2</td><td>34%</td><td>42%</td><td>44%</td><td>54%</td></tr>
+      <tr style="background:rgba(59,130,246,0.08);"><td><strong>B: Moderate</strong></td><td><strong>200mm</strong></td><td><strong>10m</strong></td><td><strong>2</strong></td><td><strong>51%</strong></td><td><strong>57%</strong></td><td><strong>59%</strong></td><td><strong>68%</strong></td></tr>
+      <tr><td>C: Aggressive</td><td>250mm</td><td>12m</td><td>2</td><td>64%</td><td>69%</td><td>71%</td><td>77%</td></tr>
+      <tr><td>D: Dual 4-keel</td><td>200mm</td><td>8m</td><td>4</td><td>51%</td><td>57%</td><td>59%</td><td>67%</td></tr>
+    </table>
+  </div>
+
+  <!-- ===== STEP 5: SPEED PENALTY ===== -->
+  <div class="calc-block">
+    <h3>7. Step 5 — Speed Penalty</h3>
+
+    <div class="calc-step">
+      <span class="step-num">15</span>
+      <div class="calc-step-content">
+        <div class="desc">Wetted surface estimation (per hull)</div>
+        <div class="formula"><span class="var">S<sub>hull</sub></span> = LWL × (2T + B<sub>hull</sub>) × C<sub>ws</sub>
+         = 23.99 × (2×1.55 + 2.32) × 0.72
+         = 23.99 × 5.42 × 0.72
+         = <span class="result">93.6 m² per hull</span>
+
+<span class="var">S<sub>total</sub></span> = 2 × 93.6 = <span class="result">187.2 m²</span>
+
+<span class="comment">C<sub>ws</sub> = 0.72 wetted surface coefficient (estimated for catamaran hull form)</span></div>
+      </div>
+    </div>
+
+    <div class="calc-step">
+      <span class="step-num">16</span>
+      <div class="calc-step-content">
+        <div class="desc">Added wetted surface from bilge keels (Option B)</div>
+        <div class="formula"><span class="comment">Both sides of flat plate keel:</span>
+<span class="var">S<sub>BK</sub></span> = 2 × b<sub>BK</sub> × L<sub>BK</sub> × n
+     = 2 × 0.200 × 10.0 × 2
+     = <span class="result">8.0 m²</span>
+
+<span class="var">ΔS/S</span> = 8.0 / 187.2 = <span class="result">4.3%</span></div>
+      </div>
+    </div>
+
+    <div class="calc-step">
+      <span class="step-num">17</span>
+      <div class="calc-step-content">
+        <div class="desc">Resistance increase at 10 kn (ITTC-57 friction line)</div>
+        <div class="formula"><span class="comment">Speed: V = 10 kn = 5.144 m/s</span>
+<span class="comment">Reynolds number:</span>
+Re = V × LWL / ν = 5.144 × 23.99 / 1.19×10⁻⁶ = <span class="var">1.037 × 10⁸</span>
+
+<span class="comment">ITTC-57 friction coefficient:</span>
+<span class="var">C<sub>f</sub></span> = 0.075 / (log₁₀(Re) - 2)²
+    = 0.075 / (8.016 - 2)²
+    = 0.075 / 36.19
+    = <span class="var">0.00207</span>
+
+<span class="comment">Frictional resistance increase (friction ≈ 40% of total at semi-displacement):</span>
+ΔR<sub>friction</sub> = ΔS/S × 0.40 = 4.3% × 0.40 = <span class="var">1.7%</span>
+
+<span class="comment">Form drag (bilge keel pressure drag at survey speed, well-aligned):</span>
+C<sub>d,form</sub> = 0.005 <span class="comment">(aligned with streamlines)</span>
+ΔR<sub>form</sub> ≈ C<sub>d,form</sub> × ρ × A<sub>BK</sub> × V / (C<sub>f</sub> × ρ × S<sub>total</sub> × V)
+       ≈ <span class="var">1.0%</span>
+
+<span class="comment">Total:</span>
+<span class="var">ΔR<sub>total</sub></span> ≈ 1.7% + 1.0% = <span class="result">~2.7% at 10 kn</span>
+
+<span class="comment">Speed loss (at constant power): ΔV/V ≈ ΔR/(2+n), n≈0 for displacement</span>
+<span class="comment">→ ~1.3% speed loss = ~0.13 kn at 10 kn</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== STEP 6: WEIGHT ===== -->
+  <div class="calc-block">
+    <h3>8. Step 6 — Weight Calculation</h3>
+
+    <div class="calc-step">
+      <span class="step-num">18</span>
+      <div class="calc-step-content">
+        <div class="desc">Material weight (5083 H321: ρ = 2660 kg/m³)</div>
+        <div class="formula"><span class="comment">Bilge keel plates (2 × 200mm × 10m × 10mm):</span>
+W<sub>plate</sub> = 2 × 0.200 × 10.0 × 0.010 × 2660 = <span class="var">106.4 kg</span>
+
+<span class="comment">Ground bar / doubler (2 × 50mm × 10m × 8mm):</span>
+W<sub>ground</sub> = 2 × 0.050 × 10.0 × 0.008 × 2660 = <span class="var">21.3 kg</span>
+
+<span class="comment">Brackets (10 pcs × ~0.3 kg each):</span>
+W<sub>brackets</sub> = 10 × 0.3 = <span class="var">3.0 kg</span>
+
+<span class="comment">Taper ends (4 pcs × ~0.5 kg each):</span>
+W<sub>taper</sub> = 4 × 0.5 = <span class="var">2.0 kg</span>
+
+<span class="var">W<sub>total</sub></span> = 106.4 + 21.3 + 3.0 + 2.0 = <span class="result">132.7 kg</span>
+
+<span class="comment">Percentage of displacement: 132.7 / 121,900 = 0.109%</span>
+<span class="comment">→ Negligible impact on stability, trim, and speed</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== STEP 7: LATERAL ACCELERATION ===== -->
+  <div class="calc-block">
+    <h3>9. Step 7 — Lateral Acceleration Prediction</h3>
+
+    <div class="calc-step">
+      <span class="step-num">19</span>
+      <div class="calc-step-content">
+        <div class="desc">Scaling of lateral acceleration with roll reduction</div>
+        <div class="formula"><span class="comment">Lateral acceleration at height h above roll center:</span>
+a<sub>lat</sub> = g × sin(φ) + φ̈ × h ≈ g × φ + ω² × φ × h  <span class="comment">(small angle)</span>
+
+<span class="comment">Since a<sub>lat</sub> scales linearly with φ for small angles:</span>
+<span class="var">a<sub>lat,new</sub></span> = a<sub>lat,baseline</sub> × (1 - RRR)
+
+<span class="comment">Wheelhouse (rough conditions), midpoint estimate (RRR = 51%):</span>
+a<sub>lat,new</sub> = 0.060 × (1 - 0.51) = 0.060 × 0.49 = <span class="result">0.029g</span>
+
+<span class="comment">AFS Insatsvärde: 0.051g → 0.029g < 0.051g → <span class="result">COMPLIANT ✓</span></span>
+
+<span class="comment">Range with uncertainty (47%–55%):</span>
+Low:  0.060 × 0.53 = 0.032g  <span class="comment">(still below 0.051g ✓)</span>
+Mid:  0.060 × 0.49 = 0.029g  <span class="comment">(well below ✓)</span>
+High: 0.060 × 0.45 = 0.027g  <span class="comment">(well below ✓)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SENSITIVITY ANALYSIS ===== -->
+  <div class="calc-block">
+    <h3>10. Sensitivity Analysis</h3>
+    <p style="color:var(--dim);font-size:13px;margin-bottom:12px;">
+      Hur känsligt är resultatet för de viktigaste antagandena?
+    </p>
+
+    <h4 style="color:var(--dim);font-size:12px;margin:14px 0 8px;">Effect of ζ<sub>bare</sub> on RRR (Option B, φ=7°)</h4>
+    <div class="sensitivity-row header">
+      <div>ζ<sub>bare</sub></div><div>B<sub>44,bare</sub></div><div>ζ<sub>total</sub></div><div>RRR</div><div>WH accel</div>
+    </div>
+    <div class="sensitivity-row">
+      <div>0.010</div><div>68,715</div><div>0.039</div><div>74%</div><div>0.016g</div>
+    </div>
+    <div class="sensitivity-row">
+      <div>0.015</div><div>103,072</div><div>0.044</div><div>66%</div><div>0.020g</div>
+    </div>
+    <div class="sensitivity-row">
+      <div class="highlight">0.020</div><div class="highlight">137,429</div><div class="highlight">0.049</div><div class="highlight">59%</div><div class="highlight">0.029g</div>
+    </div>
+    <div class="sensitivity-row">
+      <div>0.030</div><div>206,144</div><div>0.059</div><div>49%</div><div>0.031g</div>
+    </div>
+    <div class="sensitivity-row">
+      <div>0.040</div><div>274,859</div><div>0.069</div><div>42%</div><div>0.035g</div>
+    </div>
+
+    <h4 style="color:var(--dim);font-size:12px;margin:20px 0 8px;">Effect of KG on lever arm and RRR</h4>
+    <div class="sensitivity-row header">
+      <div>KG (m)</div><div>r (m)</div><div>r²</div><div>B<sub>BK</sub></div><div>RRR @ 7°</div>
+    </div>
+    <div class="sensitivity-row">
+      <div>2.2</div><div>4.55</div><div>20.7</div><div>179k</div><div>57%</div>
+    </div>
+    <div class="sensitivity-row">
+      <div>2.5</div><div>4.67</div><div>21.8</div><div>189k</div><div>58%</div>
+    </div>
+    <div class="sensitivity-row">
+      <div class="highlight">2.8</div><div class="highlight">4.80</div><div class="highlight">23.0</div><div class="highlight">200k</div><div class="highlight">59%</div>
+    </div>
+    <div class="sensitivity-row">
+      <div>3.2</div><div>4.99</div><div>24.9</div><div>216k</div><div>61%</div>
+    </div>
+    <div class="sensitivity-row">
+      <div>3.5</div><div>5.14</div><div>26.5</div><div>230k</div><div>63%</div>
+    </div>
+
+    <div class="callout" style="margin-top:16px;">
+      <strong>Observation:</strong> Resultatet är <strong>mest känsligt för ζ<sub>bare</sub></strong> (bare hull damping ratio).
+      Ett free roll decay test som fastställer ζ<sub>bare</sub> exakt skulle avsevärt minska osäkerheten.
+      KG har mindre inverkan — ±0.5m ändrar RRR med bara ±2 procentenheter.
+    </div>
+  </div>
+
+  <!-- ===== VALIDATION ===== -->
+  <div class="calc-block">
+    <h3>11. Validation Against Literature</h3>
+
+    <table class="spec-table">
+      <tr><th>Check</th><th>This Analysis</th><th>Literature</th><th>Status</th></tr>
+      <tr>
+        <td>GM for catamaran</td>
+        <td>4.13 m</td>
+        <td>&gt;3m expected for wide-spaced cat</td>
+        <td style="color:var(--green);">✓ Consistent</td>
+      </tr>
+      <tr>
+        <td>b<sub>BK</sub>/B<sub>hull</sub> ratio</td>
+        <td>8.6%</td>
+        <td>Irkal: 3.3–6.7% (large ships)</td>
+        <td style="color:var(--amber);">⚠ Above range (justified by small hull)</td>
+      </tr>
+      <tr>
+        <td>Damping increase factor</td>
+        <td>2.5×</td>
+        <td>Irkal: 4.7× (optimal BK on monohull)</td>
+        <td style="color:var(--green);">✓ Conservative</td>
+      </tr>
+      <tr>
+        <td>Roll reduction</td>
+        <td>47–55%</td>
+        <td>Froude: 50%. Literature: 20–50%</td>
+        <td style="color:var(--green);">✓ Upper range (cat advantage)</td>
+      </tr>
+      <tr>
+        <td>Weight impact</td>
+        <td>0.11% Δ</td>
+        <td>Negligible for all practical purposes</td>
+        <td style="color:var(--green);">✓ Negligible</td>
+      </tr>
+      <tr>
+        <td>Speed penalty</td>
+        <td>2–3% at survey</td>
+        <td>&lt;10% (literature consensus)</td>
+        <td style="color:var(--green);">✓ Within range</td>
+      </tr>
+      <tr>
+        <td>Ikeda method applicability</td>
+        <td>Adapted for catamaran</td>
+        <td>Developed for monohull Cb 0.56–0.85</td>
+        <td style="color:var(--amber);">⚠ Requires CFD validation</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ===== MODEL LIMITATIONS ===== -->
+  <div class="calc-block">
+    <h3>12. Model Limitations</h3>
+
+    <div class="assumption">
+      <span class="tag" style="background:rgba(239,68,68,0.2);color:var(--red);">Limitation</span>
+      <span><strong>Ikeda method developed for monohulls.</strong> Original validation data is for conventional cargo ships (Cb 0.56–0.85). Extension to catamaran hull forms is approximative. The lever arm calculation is straightforward, but hull interaction effects (B<sub>BKH</sub>) and wave-making effects (B<sub>BKW</sub>) may differ significantly.</span>
+    </div>
+    <div class="assumption">
+      <span class="tag" style="background:rgba(239,68,68,0.2);color:var(--red);">Limitation</span>
+      <span><strong>Linear superposition assumption.</strong> Roll damping is inherently nonlinear (drag ∝ velocity²). The equivalent linearization (Fourier averaging) used here is accurate for single-frequency excitation but less precise for broadband wave spectra.</span>
+    </div>
+    <div class="assumption">
+      <span class="tag" style="background:rgba(239,68,68,0.2);color:var(--red);">Limitation</span>
+      <span><strong>No frequency weighting applied.</strong> AFS compliance assessment uses unweighted RMS acceleration. ISO 2631-1 requires frequency-weighted acceleration (W<sub>d</sub> for lateral). The assessment is therefore indicative, not formally compliant.</span>
+    </div>
+    <div class="assumption">
+      <span class="tag" style="background:rgba(239,68,68,0.2);color:var(--red);">Limitation</span>
+      <span><strong>Sea state estimated, not measured.</strong> Wave conditions based on Beaufort scale estimates by crew. No wave buoy or radar wave measurement available. Actual H<sub>s</sub> unknown.</span>
+    </div>
+    <div class="assumption">
+      <span class="tag" style="background:rgba(239,68,68,0.2);color:var(--red);">Limitation</span>
+      <span><strong>Speed penalty is simplified.</strong> Uses ITTC-57 friction line and estimated form drag. Does not account for spray, wave-making interaction, or flow separation at high Froude numbers. CFD analysis would provide better accuracy.</span>
+    </div>
+    <div class="assumption">
+      <span class="tag" style="background:rgba(239,68,68,0.2);color:var(--red);">Limitation</span>
+      <span><strong>No forward speed effect on BK damping.</strong> Eq. 7 (Bassler & Reed) adds a forward speed term to B<sub>BKN</sub>. This was omitted as Northern Gale primarily operates at low speed (7–10 kn) where the zero-speed term dominates. At transit (14 kn), BK effectiveness may be slightly higher than predicted.</span>
+    </div>
+  </div>
+
+  <!-- ===== REFERENCES ===== -->
+  <div class="calc-block">
+    <h3>13. Complete Reference List</h3>
+
+    <table class="ref-table">
+      <tr>
+        <td>[1]</td>
+        <td>Ikeda, Y. et al. (1978a–e)</td>
+        <td>On Roll Damping Force of Ship — Effects of Friction of Hull and Normal Force of Bilge Keels. Journal of the Kansai Society of Naval Architects, Japan. Series of five papers establishing the component-based roll damping prediction method.</td>
+      </tr>
+      <tr>
+        <td>[2]</td>
+        <td>Bassler, C.C. & Reed, A.M. (2009)</td>
+        <td>An Analysis of the Bilge Keel Roll Damping Component Model. 10th International Conference on Stability of Ships and Ocean Vehicles (STAB 2009). Provides Eq. 6–8 used in this analysis.</td>
+      </tr>
+      <tr>
+        <td>[3]</td>
+        <td>Irkal, M.A.R. et al. (2016)</td>
+        <td>CFD approach to roll damping of ship with bilge keel with experimental validation. Applied Ocean Research 55, 1–17. Validates CFD vs. experiments for various BK configurations at 45° inclination. Shows damping increase factors of 4–5×.</td>
+      </tr>
+      <tr>
+        <td>[4]</td>
+        <td>Himeno, Y. (1981)</td>
+        <td>Prediction of Ship Roll Damping — State of the Art. University of Michigan, Dept. of Naval Architecture and Marine Engineering, Report No. 239. Fundamental reference for roll damping components.</td>
+      </tr>
+      <tr>
+        <td>[5]</td>
+        <td>ITTC (2011)</td>
+        <td>Recommended Procedures 7.5-02-07-04.5: Numerical Estimation of Roll Damping. International Towing Tank Conference. Provides k<sub>44</sub> guidance and validation methodology.</td>
+      </tr>
+      <tr>
+        <td>[6]</td>
+        <td>ISO 2631-1:1997</td>
+        <td>Mechanical vibration and shock — Evaluation of human exposure to whole-body vibration. Part 1: General requirements. Defines comfort zones and W<sub>d</sub> weighting curves.</td>
+      </tr>
+      <tr>
+        <td>[7]</td>
+        <td>AFS 2005:15</td>
+        <td>Vibrationer (Arbetsmiljöverket). Swedish workplace vibration directive. Insatsvärde: 0.5 m/s² (0.051g), Gränsvärde: 1.1 m/s² (0.112g) for 8h daily exposure.</td>
+      </tr>
+      <tr>
+        <td>[8]</td>
+        <td>Bertilsson, T. & Persson, J. (2022)</td>
+        <td>Adaptive ship stabilization — Control of ship stabilizing actuators using modified deep model reference adaptive control. Master's thesis, Chalmers University of Technology. Background on active stabilization systems.</td>
+      </tr>
+      <tr>
+        <td>[9]</td>
+        <td>SM246-10-008 Rev A</td>
+        <td>Lines Plan — 26m High-Speed Service Vessel. Offshore Ship Design / Strategic Marine. Hull H209. Source of principal dimensions and body plan.</td>
+      </tr>
+      <tr>
+        <td>[10]</td>
+        <td>SM246-20-001 Rev B</td>
+        <td>Midship Section — 26m High-Speed Service Vessel. As-built (07/12/2016). Source of structural details, frame spacing, material specs, and class notation.</td>
+      </tr>
+      <tr>
+        <td>[11]</td>
+        <td>Smart Gyro SG150 Datasheet Rev 1.1</td>
+        <td>Technical specifications for gyro stabilizer comparison. Angular momentum 37,000 Nms, max torque 90,100 Nm, weight 1,960 kg.</td>
+      </tr>
+      <tr>
+        <td>[12]</td>
+        <td>Kongsberg Seapath 320 Manual</td>
+        <td>Installation and operation manual. Source of PBFG telegram format and sign conventions.</td>
+      </tr>
+      <tr>
+        <td>[13]</td>
+        <td>Kasten Marine Design</td>
+        <td>"Roll Attenuation and Bilge Keels." Web resource. Provides empirical guidance on bilge keel sizing, 35–55% reduction range, and historical Froude data.</td>
+      </tr>
+      <tr>
+        <td>[14]</td>
+        <td>Seapath Motion Logs</td>
+        <td>PortMonitor_TelegramOut15 logs from 15–16 April 2026. PBFG format at 10 Hz (mild) and 100 Hz (rough). Source of all measured motion baseline data.</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ===== COMPUTATION ENVIRONMENT ===== -->
+  <div class="calc-block">
+    <h3>14. Computation Details</h3>
+    <table class="spec-table">
+      <tr><td>Script</td><td>bilge_keel_v2.py (Python 3)</td></tr>
+      <tr><td>Date computed</td><td>2026-04-16</td></tr>
+      <tr><td>Method</td><td>Ikeda component method (1978) via Bassler & Reed (2009) formulation</td></tr>
+      <tr><td>Validation</td><td>Cross-referenced against Irkal et al. (2016) experimental data</td></tr>
+      <tr><td>Uncertainty</td><td>RRR reported as ±4% range (sensitivity to ζ<sub>bare</sub>)</td></tr>
+      <tr><td>Key recommendation</td><td>Perform free roll decay test to reduce ζ<sub>bare</sub> uncertainty</td></tr>
+    </table>
+  </div>
+</div>
+
+<script>
+// Navigation
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// Build bar charts
+function buildBarChart(containerId, data) {
+  const container = document.getElementById(containerId);
+  const maxVal = Math.max(...data.map(d => Math.max(d.before, d.after)));
+
+  data.forEach(d => {
+    const group = document.createElement('div');
+    group.className = 'bar-group';
+
+    const pair = document.createElement('div');
+    pair.className = 'bar-pair';
+
+    const barBefore = document.createElement('div');
+    barBefore.className = 'bar before';
+    barBefore.style.height = (d.before / maxVal * 160) + 'px';
+
+    const barAfter = document.createElement('div');
+    barAfter.className = 'bar after';
+    barAfter.style.height = (d.after / maxVal * 160) + 'px';
+
+    const valBefore = document.createElement('div');
+    valBefore.className = 'bar-value';
+    valBefore.style.color = '#da2129';
+    valBefore.textContent = d.before.toFixed(d.decimals || 1) + d.unit;
+
+    const valAfter = document.createElement('div');
+    valAfter.className = 'bar-value';
+    valAfter.style.color = '#21bdbe';
+    valAfter.textContent = d.after.toFixed(d.decimals || 1) + d.unit;
+
+    const colB = document.createElement('div');
+    colB.style.display = 'flex';
+    colB.style.flexDirection = 'column';
+    colB.style.alignItems = 'center';
+    colB.appendChild(valBefore);
+    colB.appendChild(barBefore);
+
+    const colA = document.createElement('div');
+    colA.style.display = 'flex';
+    colA.style.flexDirection = 'column';
+    colA.style.alignItems = 'center';
+    colA.appendChild(valAfter);
+    colA.appendChild(barAfter);
+
+    pair.appendChild(colB);
+    pair.appendChild(colA);
+
+    const label = document.createElement('div');
+    label.className = 'bar-label';
+    label.textContent = d.label;
+
+    group.appendChild(pair);
+    group.appendChild(label);
+    container.appendChild(group);
+  });
+}
+
+// Roll amplitude data
+buildBarChart('roll-chart', [
+  { label: 'Mild max', before: 6.5, after: 3.2, unit: '°' },
+  { label: 'Mild RMS', before: 1.5, after: 0.7, unit: '°' },
+  { label: 'Rough max', before: 12.9, after: 6.3, unit: '°' },
+  { label: 'Rough RMS', before: 3.5, after: 1.7, unit: '°' },
+]);
+
+// Acceleration data
+buildBarChart('accel-chart', [
+  { label: 'Mild (WH)', before: 0.034, after: 0.017, unit: 'g', decimals: 3 },
+  { label: 'Mild (WD)', before: 0.011, after: 0.005, unit: 'g', decimals: 3 },
+  { label: 'Rough (WH)', before: 0.060, after: 0.029, unit: 'g', decimals: 3 },
+  { label: 'Rough (WD)', before: 0.032, after: 0.016, unit: 'g', decimals: 3 },
+]);
+</script>
+</body>
+</html>

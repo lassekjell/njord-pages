@@ -1,0 +1,1581 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Northern Gale — Data & Antaganden</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, -apple-system, sans-serif; background: #f8f9fa; color: #212529; font-size: 14px; line-height: 1.6; }
+  header { background: #fff; border-bottom: 1px solid #dee2e6; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
+  header h1 { font-size: 20px; font-weight: 700; }
+  header p { color: #6c757d; font-size: 13px; margin-top: 2px; }
+  .nav-link { font-size: 13px; font-weight: 600; color: #343a40; text-decoration: none; padding: 6px 14px; border: 1px solid #dee2e6; border-radius: 6px; background: #fff; white-space: nowrap; }
+  .nav-link:hover { background: #f0f0f0; }
+
+  main { padding: 24px; max-width: 1200px; }
+  .section { background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.07); padding: 20px 24px; margin-bottom: 24px; }
+  .section h2 { font-size: 16px; font-weight: 700; color: #343a40; border-bottom: 2px solid #e9ecef; padding-bottom: 8px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section h3 { font-size: 14px; font-weight: 700; color: #495057; margin: 14px 0 6px; }
+  .meta { font-size: 12px; color: #6c757d; margin-bottom: 12px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: #f8f9fa; font-weight: 700; color: #495057; text-align: left; padding: 7px 10px; border-bottom: 2px solid #dee2e6; }
+  td { padding: 6px 10px; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
+  .badge-diesel { background: #fff3cd; color: #856404; }
+  .badge-genset { background: #cfe2ff; color: #084298; }
+  .badge-electric { background: #d1e7dd; color: #0f5132; }
+  .badge-hybrid { background: #f8d7da; color: #842029; }
+
+  .warn-box { background: #fff3cd; border-left: 4px solid #ffc107; padding: 10px 14px; border-radius: 4px; font-size: 13px; margin-bottom: 10px; }
+  .info-box { background: #d1ecf1; border-left: 4px solid #0dcaf0; padding: 10px 14px; border-radius: 4px; font-size: 13px; margin-bottom: 10px; }
+  .bsfc-mini { font-size: 11px; color: #6c757d; }
+  .bsfc-mini span { margin-right: 8px; }
+
+  .kv-row { display: flex; gap: 0; margin-bottom: 6px; align-items: center; }
+  .kv-label { min-width: 220px; color: #6c757d; font-size: 13px; }
+  .kv-value { font-weight: 600; font-size: 13px; }
+
+  ul.limitations { list-style: none; padding: 0; }
+  ul.limitations li { padding: 5px 0 5px 20px; border-bottom: 1px solid #f0f0f0; position: relative; font-size: 13px; }
+  ul.limitations li:before { content: "\26A0"; position: absolute; left: 0; color: #ffc107; }
+  ul.limitations li:last-child { border-bottom: none; }
+
+  .scope-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+  .scope-card { border: 1px solid #dee2e6; border-radius: 6px; padding: 12px 14px; background: #fafafa; }
+  .scope-card .sc-name { font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+  .scope-card .sc-row { font-size: 12px; color: #495057; margin-bottom: 3px; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+  .scope-card .sc-row strong { color: #212529; }
+  .scope-select { padding: 3px 6px; border: 1px solid #ced4da; border-radius: 4px; font-size: 12px; background: #fff; max-width: 220px; cursor: pointer; }
+  .scope-select:focus { border-color: #86b7fe; outline: 0; box-shadow: 0 0 0 2px rgba(13,110,253,.15); }
+  .scope-count { padding: 3px 4px; border: 1px solid #ced4da; border-radius: 4px; font-size: 12px; }
+
+  /* Editable input styling */
+  .edit-input { width: 90px; padding: 3px 6px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px; font-weight: 700; background: #fffef5; }
+  .edit-input:focus { outline: 2px solid #ffc107; border-color: #ffc107; }
+  .edit-input.modified { background: #fff3cd; border-color: #ffc107; }
+  .edit-unit { font-size: 12px; color: #6c757d; margin-left: 4px; }
+  .edit-hint { font-size: 11px; color: #adb5bd; margin-left: 8px; }
+
+  /* Overhaul table */
+  .oh-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-top: 12px; }
+  .oh-card { border: 1px solid #dee2e6; border-radius: 6px; padding: 12px 14px; background: #fafafa; }
+  .oh-card .oh-title { font-weight: 700; font-size: 13px; margin-bottom: 8px; color: #343a40; }
+  .oh-card .oh-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; font-size: 13px; }
+  .oh-card .oh-row label { min-width: 140px; color: #6c757d; font-size: 12px; }
+
+  /* Sticky action bar */
+  .action-bar { position: sticky; bottom: 0; z-index: 100; background: #fff; border-top: 2px solid #dee2e6; padding: 10px 24px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 -2px 8px rgba(0,0,0,.08); }
+  .action-bar .status { font-size: 13px; color: #6c757d; }
+  .action-bar .status.has-changes { color: #b45309; font-weight: 700; }
+  .btn-apply { padding: 8px 20px; font-size: 14px; font-weight: 700; border-radius: 6px; border: none; cursor: pointer; }
+  .btn-apply-primary { background: #343a40; color: #fff; }
+  .btn-apply-primary:hover { background: #495057; }
+  .btn-reset { background: #fff; color: #dc3545; border: 1px solid #dc3545; margin-right: 10px; }
+  .btn-reset:hover { background: #fff5f5; }
+
+  /* BSFC edit table */
+  .bsfc-edit { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+  .bsfc-edit .bsfc-point { display: flex; align-items: center; gap: 2px; font-size: 11px; }
+  .bsfc-edit input { width: 48px; padding: 2px 4px; border: 1px solid #d1d5db; border-radius: 3px; font-size: 11px; text-align: center; background: #fffef5; }
+</style>
+</head>
+<body>
+<div id="njord-password-gate">
+  <div class="njord-gate-box">
+    <div class="ns-logo">NS</div>
+    <h2>Njord Survey — Internal</h2>
+    <form onsubmit="return njordCheckPass()">
+      <input type="password" id="njord-gate-pwd" class="njord-gate-input"
+             placeholder="Enter password" autocomplete="off">
+      <button type="submit" class="njord-gate-btn">Open</button>
+    </form>
+    <div id="njord-gate-err" class="njord-gate-err">Incorrect password</div>
+  </div>
+</div>
+
+<header>
+  <div>
+    <h1>Northern Gale — Data & Antaganden</h1>
+    <p>Underlag och begränsningar. Redigera parametrar direkt — ändringar synkas till dashboarden. Genererad 2026-04-14.</p>
+  </div>
+  <div style="display:flex; gap:8px;">
+    <a href="comparison.html" class="nav-link">← Dashboard</a>
+  </div>
+</header>
+
+<main>
+
+<!-- Sektion 1: Fartygsdata -->
+<div class="section">
+  <h2>1. Fartygsdata</h2>
+  <p class="meta">Verifierade fasta värden.</p>
+  <div class="kv-row"><span class="kv-label">Fartyg</span><span class="kv-value">Northern Gale</span></div>
+  <div class="kv-row">
+    <span class="kv-label">Hotellast vid sjö</span>
+    <input type="number" class="edit-input cfg-input" data-key="vessel.hotel_sea_kw" value="50.0" min="20" max="150" step="5">
+    <span class="edit-unit">kW</span>
+  </div>
+  <div class="kv-row">
+    <span class="kv-label">Hotellast vid kaj</span>
+    <input type="number" class="edit-input cfg-input" data-key="vessel.hotel_dock_kw" value="30.0" min="10" max="80" step="5">
+    <span class="edit-unit">kW</span>
+  </div>
+  <div class="kv-row">
+    <span class="kv-label">Däcksutrustning</span>
+    <input type="number" class="edit-input cfg-input" data-key="vessel.deck_equipment_kw" value="40.0" min="20" max="80" step="5">
+    <span class="edit-unit">kW</span>
+  </div>
+</div>
+
+<!-- Sektion 2: Motordata & BSFC -->
+<div class="section">
+  <h2>2. Motordata & BSFC</h2>
+  <div class="info-box">
+    Redigera BSFC-värden och servicekostnader direkt i tabellen. Gula fält = ändrade värden som synkas till dashboarden.
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Motor</th>
+        <th>Typ</th>
+        <th>Används i</th>
+        <th>Effekt</th>
+        <th>BSFC (g/kWh vid last-%)</th>
+        <th>Service SEK/h</th>
+        <th>Serviceintervall</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+      <tr>
+        <td><strong>Danfoss 295kW Hybrid Electric Motor</strong><br><span style="color:#6c757d;font-size:11px;">danfoss-295</span></td>
+        <td>
+          <span class="badge badge-electric">Elmotor</span>
+          
+        </td>
+        <td class="usage-cell" data-engine-id="danfoss-295">
+          <!-- Rendered dynamically by JS: updateUsageCells() -->
+        </td>
+        <td>
+          <input type="number" class="edit-input cfg-input" data-key="engine.danfoss-295.power_kw" value="295" min="50" max="2000" step="10" style="width:70px;">
+          <span class="edit-unit">kW</span>
+        </td>
+        <td>
+          <span style="color:#adb5bd;">N/A</span>
+        </td>
+        <td><strong class="live-maint-rate" data-engine-id="danfoss-295">0.0</strong> kr/h</td>
+        <td>
+          
+          <div style="font-size:12px; margin-bottom:4px;">
+            <input type="number" class="edit-input cfg-input svc-input" data-key="engine.danfoss-295.svc.5000" data-engine="danfoss-295" data-interval="5000" value="0" min="500" max="100000" step="500" style="width:70px;">
+            <span class="edit-unit">kr / 5000h</span>
+            <span class="edit-hint">Lagerinspektion + kylsystem</span>
+          </div>
+          
+          <div style="font-size:12px; margin-bottom:4px;">
+            <input type="number" class="edit-input cfg-input svc-input" data-key="engine.danfoss-295.svc.20000" data-engine="danfoss-295" data-interval="20000" value="0" min="500" max="100000" step="500" style="width:70px;">
+            <span class="edit-unit">kr / 20000h</span>
+            <span class="edit-hint">Stor service — lindning, lager, encoder</span>
+          </div>
+          
+        </td>
+      </tr>
+      
+      <tr>
+        <td><strong>Danfoss 600kW Electric Motor</strong><br><span style="color:#6c757d;font-size:11px;">danfoss-600</span></td>
+        <td>
+          <span class="badge badge-electric">Elmotor</span>
+          
+        </td>
+        <td class="usage-cell" data-engine-id="danfoss-600">
+          <!-- Rendered dynamically by JS: updateUsageCells() -->
+        </td>
+        <td>
+          <input type="number" class="edit-input cfg-input" data-key="engine.danfoss-600.power_kw" value="600" min="50" max="2000" step="10" style="width:70px;">
+          <span class="edit-unit">kW</span>
+        </td>
+        <td>
+          <span style="color:#adb5bd;">N/A</span>
+        </td>
+        <td><strong class="live-maint-rate" data-engine-id="danfoss-600">0.0</strong> kr/h</td>
+        <td>
+          
+          <div style="font-size:12px; margin-bottom:4px;">
+            <input type="number" class="edit-input cfg-input svc-input" data-key="engine.danfoss-600.svc.5000" data-engine="danfoss-600" data-interval="5000" value="0" min="500" max="100000" step="500" style="width:70px;">
+            <span class="edit-unit">kr / 5000h</span>
+            <span class="edit-hint">Lagerinspektion + kylsystem</span>
+          </div>
+          
+          <div style="font-size:12px; margin-bottom:4px;">
+            <input type="number" class="edit-input cfg-input svc-input" data-key="engine.danfoss-600.svc.20000" data-engine="danfoss-600" data-interval="20000" value="0" min="500" max="100000" step="500" style="width:70px;">
+            <span class="edit-unit">kr / 20000h</span>
+            <span class="edit-hint">Stor service — lindning, lager, encoder</span>
+          </div>
+          
+        </td>
+      </tr>
+      
+      <tr>
+        <td><strong>Danfoss 750kW Electric Motor</strong><br><span style="color:#6c757d;font-size:11px;">danfoss-750</span></td>
+        <td>
+          <span class="badge badge-electric">Elmotor</span>
+          
+        </td>
+        <td class="usage-cell" data-engine-id="danfoss-750">
+          <!-- Rendered dynamically by JS: updateUsageCells() -->
+        </td>
+        <td>
+          <input type="number" class="edit-input cfg-input" data-key="engine.danfoss-750.power_kw" value="750" min="50" max="2000" step="10" style="width:70px;">
+          <span class="edit-unit">kW</span>
+        </td>
+        <td>
+          <span style="color:#adb5bd;">N/A</span>
+        </td>
+        <td><strong class="live-maint-rate" data-engine-id="danfoss-750">0.0</strong> kr/h</td>
+        <td>
+          
+          <div style="font-size:12px; margin-bottom:4px;">
+            <input type="number" class="edit-input cfg-input svc-input" data-key="engine.danfoss-750.svc.5000" data-engine="danfoss-750" data-interval="5000" value="0" min="500" max="100000" step="500" style="width:70px;">
+            <span class="edit-unit">kr / 5000h</span>
+            <span class="edit-hint">Lagerinspektion + kylsystem</span>
+          </div>
+          
+          <div style="font-size:12px; margin-bottom:4px;">
+            <input type="number" class="edit-input cfg-input svc-input" data-key="engine.danfoss-750.svc.20000" data-engine="danfoss-750" data-interval="20000" value="0" min="500" max="100000" step="500" style="width:70px;">
+            <span class="edit-unit">kr / 20000h</span>
+            <span class="edit-hint">Stor service — lindning, lager, encoder</span>
+          </div>
+          
+        </td>
+      </tr>
+      
+      <tr>
+        <td><strong>Generisk 75kW Hotellgenset</strong><br><span style="color:#6c757d;font-size:11px;">genset-75kw</span></td>
+        <td>
+          <span class="badge badge-genset">Genset</span>
+          
+        </td>
+        <td class="usage-cell" data-engine-id="genset-75kw">
+          <!-- Rendered dynamically by JS: updateUsageCells() -->
+        </td>
+        <td>
+          <input type="number" class="edit-input cfg-input" data-key="engine.genset-75kw.power_kw" value="75" min="50" max="2000" step="10" style="width:70px;">
+          <span class="edit-unit">kW</span>
+        </td>
+        <td>
+          
+          <div class="bsfc-edit">
+            
+            <div class="bsfc-point">
+              <span>10%:</span>
+              <input type="number" class="cfg-input" data-key="engine.genset-75kw.bsfc.10" value="310" min="150" max="500" step="5">
+            </div>
+            
+            <div class="bsfc-point">
+              <span>15%:</span>
+              <input type="number" class="cfg-input" data-key="engine.genset-75kw.bsfc.15" value="280" min="150" max="500" step="5">
+            </div>
+            
+            <div class="bsfc-point">
+              <span>20%:</span>
+              <input type="number" class="cfg-input" data-key="engine.genset-75kw.bsfc.20" value="260" min="150" max="500" step="5">
+            </div>
+            
+            <div class="bsfc-point">
+              <span>25%:</span>
+              <input type="number" class="cfg-input" data-key="engine.genset-75kw.bsfc.25" value="245" min="150" max="500" step="5">
+            </div>
+            
+            <div class="bsfc-point">
+              <span>50%:</span>
+              <input type="number" class="cfg-input" data-key="engine.genset-75kw.bsfc.50" value="220" min="150" max="500" step="5">
+            </div>
+            
+            <div class="bsfc-point">
+              <span>75%:</span>
+              <input type="number" class="cfg-input" data-key="engine.genset-75kw.bsfc.75" value="210" min="150" max="500" step="5">
+            </div>
+            
+            <div class="bsfc-point">
+              <span>100%:</span>
+              <input type="number" class="cfg-input" data-key="engine.genset-75kw.bsfc.100" value="215" min="150" max="500" step="5">
+            </div>
+            
+          </div>
+          
+        </td>
+        <td><strong class="live-maint-rate" data-engine-id="genset-75kw">12.0</strong> kr/h</td>
+        <td>
+          
+          <div style="font-size:12px; margin-bottom:4px;">
+            <input type="number" class="edit-input cfg-input svc-input" data-key="engine.genset-75kw.svc.500" data-engine="genset-75kw" data-interval="500" value="3500" min="500" max="100000" step="500" style="width:70px;">
+            <span class="edit-unit">kr / 500h</span>
+            <span class="edit-hint">Oljebyte + filter</span>
+          </div>
+          
+          <div style="font-size:12px; margin-bottom:4px;">
+            <input type="number" class="edit-input cfg-input svc-input" data-key="engine.genset-75kw.svc.1000" data-engine="genset-75kw" data-interval="1000" value="5000" min="500" max="100000" step="500" style="width:70px;">
+            <span class="edit-unit">kr / 1000h</span>
+            <span class="edit-hint">1000h service — utökat filterbyte</span>
+          </div>
+          
+        </td>
+      </tr>
+      
+      <tr>
+        <td><strong>Volvo Penta D13 380kW Genset</strong><br><span style="color:#6c757d;font-size:11px;">penta-d13-380</span></td>
+        <td>
+          <span class="badge badge-genset">Genset</span>
+          
+        </td>
+        <td class="usage-cell" data-engine-id="penta-d13-380">
+          <!-- Rendered dynamically by JS: updateUsageCells() -->
+        </td>
+        <td>
+          <input type="number" class="edit-input cfg-input" data-key="engine.penta-d13-380.power_kw" value="380" min="50" max="2000" step="10" style="width:70px;">
+          <span class="edit-unit">kW</span>
+        </td>
+        <td>
+          
+          <div class="bsfc-edit">
+            
+            <div class="bsfc-point">
+              <span>10%:</span>
+              <input type="number" class="cfg-input" data-key="engine.penta-d13-380.bsfc.10" value="245" min="150" max="500" step="5">
+            </div>
+            
+            <div class="bsfc-point">
+              <span>15%:</span>
+              <input type="number" class="cfg-input" data-key="engine.penta-d13-380.bsfc.15" value="230" min="150" max="500" step="5">
+            </div>
+            
+            <div class="bsfc-point">
+              <span>20%:</span>
+              <input type="number" class="cfg-input" data-key="engine.penta-d13-380.bsfc.20" value="218" min="150" max="500" step="5">
+            </div>
+            
+            <div class="bsfc-point">
+              <span>25%:</span>
+              <input type="number" class="cfg-input" data-key="engine.penta-d13-380.bsfc.25" value="212" min="150" max="500" step="5">
+            </div>
+            
+            <div class="bsfc-point">
+              <span>50%:</span>
+              <input type="number" class="cfg-input" data-key="engine.penta-d13-380.bsfc.50" value="202" min="150" max="500" step="5">
+            </div>
+            
+            <div class="bsfc-point">
+              <span>75%:</span>
+              <input type="number" class="cfg-input" data-key="engine.penta-d13-380.bsfc.75" value="197" min="150" max="500" step="5">
+            </div>
+            
+            <div class="bsfc-point">
+              <span>100%:</span>
+              <input type="number" class="cfg-input" data-key="engine.penta-d13-380.bsfc.100" value="202" min="150" max="500" step="5">
+            </div>
+            
+          </div>
+          
+        </td>
+        <td><strong class="live-maint-rate" data-engine-id="penta-d13-380">20.0</strong> kr/h</td>
+        <td>
+          
+          <div style="font-size:12px; margin-bottom:4px;">
+            <input type="number" class="edit-input cfg-input svc-input" data-key="engine.penta-d13-380.svc.500" data-engine="penta-d13-380" data-interval="500" value="6000" min="500" max="100000" step="500" style="width:70px;">
+            <span class="edit-unit">kr / 500h</span>
+            <span class="edit-hint">Oljebyte + filter</span>
+          </div>
+          
+          <div style="font-size:12px; margin-bottom:4px;">
+            <input type="number" class="edit-input cfg-input svc-input" data-key="engine.penta-d13-380.svc.1000" data-engine="penta-d13-380" data-interval="1000" value="8000" min="500" max="100000" step="500" style="width:70px;">
+            <span class="edit-unit">kr / 1000h</span>
+            <span class="edit-hint">1000h service — utökat filterbyte</span>
+          </div>
+          
+        </td>
+      </tr>
+      
+      <tr>
+        <td><strong>Scania DW6 440kW Genset</strong><br><span style="color:#6c757d;font-size:11px;">scania-dw6-440-genset</span></td>
+        <td>
+          <span class="badge badge-genset">Genset</span>
+          
+        </td>
+        <td class="usage-cell" data-engine-id="scania-dw6-440-genset">
+          <!-- Rendered dynamically by JS: updateUsageCells() -->
+        </td>
+        <td>
+          <input type="number" class="edit-input cfg-input" data-key="engine.scania-dw6-440-genset.power_kw" value="440" min="50" max="2000" step="10" style="width:70px;">
+          <span class="edit-unit">kW</span>
+        </td>
+        <td>
+          
+          <div class="bsfc-edit">
+            
+            <div class="bsfc-point">
+              <span>10%:</span>
+              <input type="number" class="cfg-input" data-key="engine.scania-dw6-440-genset.bsfc.10" value="240" min="150" max="500" step="5">
+            </div>
+            
+            <div class="bsfc-point">
+              <span>15%:</span>
+              <input type="number" class="cfg-input" data-key="engine.scania-dw6-440-genset.bsfc.15" value="225" min="150" max="500" step="5">
+            </div>
+            
+            <div class="bsfc-point">
+              <span>20%:</span>
+              <input type="number" class="cfg-input" data-key="engine.scania-dw6-440-genset.bsfc.20" value="215" min="150" max="500" step="5">
+            </div>
+            
+            <div class="bsfc-point">
+              <span>25%:</span>
+              <input type="number" class="cfg-input" data-key="engine.scania-dw6-440-genset.bsfc.25" value="210" min="150" max="500" step="5">
+            </div>
+            
+            <div class="bsfc-point">
+              <span>50%:</span>
+              <input type="number" class="cfg-input" data-key="engine.scania-dw6-440-genset.bsfc.50" value="200" min="150" max="500" step="5">
+            </div>
+            
+            <div class="bsfc-point">
+              <span>75%:</span>
+              <input type="number" class="cfg-input" data-key="engine.scania-dw6-440-genset.bsfc.75" value="195" min="150" max="500" step="5">
+            </div>
+            
+            <div class="bsfc-point">
+              <span>100%:</span>
+              <input type="number" class="cfg-input" data-key="engine.scania-dw6-440-genset.bsfc.100" value="200" min="150" max="500" step="5">
+            </div>
+            
+          </div>
+          
+        </td>
+        <td><strong class="live-maint-rate" data-engine-id="scania-dw6-440-genset">20.0</strong> kr/h</td>
+        <td>
+          
+          <div style="font-size:12px; margin-bottom:4px;">
+            <input type="number" class="edit-input cfg-input svc-input" data-key="engine.scania-dw6-440-genset.svc.500" data-engine="scania-dw6-440-genset" data-interval="500" value="6000" min="500" max="100000" step="500" style="width:70px;">
+            <span class="edit-unit">kr / 500h</span>
+            <span class="edit-hint">Oljebyte + filter</span>
+          </div>
+          
+          <div style="font-size:12px; margin-bottom:4px;">
+            <input type="number" class="edit-input cfg-input svc-input" data-key="engine.scania-dw6-440-genset.svc.1000" data-engine="scania-dw6-440-genset" data-interval="1000" value="8000" min="500" max="100000" step="500" style="width:70px;">
+            <span class="edit-unit">kr / 1000h</span>
+            <span class="edit-hint">1000h service — utökat filterbyte</span>
+          </div>
+          
+        </td>
+      </tr>
+      
+      <tr>
+        <td><strong>Scania DW6 440kW Propulsion</strong><br><span style="color:#6c757d;font-size:11px;">scania-dw6-440</span></td>
+        <td>
+          <span class="badge badge-diesel">Diesel</span>
+          
+        </td>
+        <td class="usage-cell" data-engine-id="scania-dw6-440">
+          <!-- Rendered dynamically by JS: updateUsageCells() -->
+        </td>
+        <td>
+          <input type="number" class="edit-input cfg-input" data-key="engine.scania-dw6-440.power_kw" value="440" min="50" max="2000" step="10" style="width:70px;">
+          <span class="edit-unit">kW</span>
+        </td>
+        <td>
+          
+          <div class="bsfc-edit">
+            
+            <div class="bsfc-point">
+              <span>10%:</span>
+              <input type="number" class="cfg-input" data-key="engine.scania-dw6-440.bsfc.10" value="260" min="150" max="500" step="5">
+            </div>
+            
+            <div class="bsfc-point">
+              <span>15%:</span>
+              <input type="number" class="cfg-input" data-key="engine.scania-dw6-440.bsfc.15" value="245" min="150" max="500" step="5">
+            </div>
+            
+            <div class="bsfc-point">
+              <span>20%:</span>
+              <input type="number" class="cfg-input" data-key="engine.scania-dw6-440.bsfc.20" value="230" min="150" max="500" step="5">
+            </div>
+            
+            <div class="bsfc-point">
+              <span>25%:</span>
+              <input type="number" class="cfg-input" data-key="engine.scania-dw6-440.bsfc.25" value="220" min="150" max="500" step="5">
+            </div>
+            
+            <div class="bsfc-point">
+              <span>50%:</span>
+              <input type="number" class="cfg-input" data-key="engine.scania-dw6-440.bsfc.50" value="205" min="150" max="500" step="5">
+            </div>
+            
+            <div class="bsfc-point">
+              <span>75%:</span>
+              <input type="number" class="cfg-input" data-key="engine.scania-dw6-440.bsfc.75" value="198" min="150" max="500" step="5">
+            </div>
+            
+            <div class="bsfc-point">
+              <span>100%:</span>
+              <input type="number" class="cfg-input" data-key="engine.scania-dw6-440.bsfc.100" value="202" min="150" max="500" step="5">
+            </div>
+            
+          </div>
+          
+        </td>
+        <td><strong class="live-maint-rate" data-engine-id="scania-dw6-440">20.0</strong> kr/h</td>
+        <td>
+          
+          <div style="font-size:12px; margin-bottom:4px;">
+            <input type="number" class="edit-input cfg-input svc-input" data-key="engine.scania-dw6-440.svc.500" data-engine="scania-dw6-440" data-interval="500" value="6000" min="500" max="100000" step="500" style="width:70px;">
+            <span class="edit-unit">kr / 500h</span>
+            <span class="edit-hint">Oljebyte + filter</span>
+          </div>
+          
+          <div style="font-size:12px; margin-bottom:4px;">
+            <input type="number" class="edit-input cfg-input svc-input" data-key="engine.scania-dw6-440.svc.1000" data-engine="scania-dw6-440" data-interval="1000" value="8000" min="500" max="100000" step="500" style="width:70px;">
+            <span class="edit-unit">kr / 1000h</span>
+            <span class="edit-hint">1000h service — utökat filterbyte</span>
+          </div>
+          
+        </td>
+      </tr>
+      
+      <tr>
+        <td><strong>Yanmar 750kW Marine Diesel</strong><br><span style="color:#6c757d;font-size:11px;">yanmar-750</span></td>
+        <td>
+          <span class="badge badge-diesel">Diesel</span>
+          
+        </td>
+        <td class="usage-cell" data-engine-id="yanmar-750">
+          <!-- Rendered dynamically by JS: updateUsageCells() -->
+        </td>
+        <td>
+          <input type="number" class="edit-input cfg-input" data-key="engine.yanmar-750.power_kw" value="750" min="50" max="2000" step="10" style="width:70px;">
+          <span class="edit-unit">kW</span>
+        </td>
+        <td>
+          
+          <div class="bsfc-edit">
+            
+            <div class="bsfc-point">
+              <span>5%:</span>
+              <input type="number" class="cfg-input" data-key="engine.yanmar-750.bsfc.5" value="380" min="150" max="500" step="5">
+            </div>
+            
+            <div class="bsfc-point">
+              <span>10%:</span>
+              <input type="number" class="cfg-input" data-key="engine.yanmar-750.bsfc.10" value="340" min="150" max="500" step="5">
+            </div>
+            
+            <div class="bsfc-point">
+              <span>15%:</span>
+              <input type="number" class="cfg-input" data-key="engine.yanmar-750.bsfc.15" value="310" min="150" max="500" step="5">
+            </div>
+            
+            <div class="bsfc-point">
+              <span>20%:</span>
+              <input type="number" class="cfg-input" data-key="engine.yanmar-750.bsfc.20" value="290" min="150" max="500" step="5">
+            </div>
+            
+            <div class="bsfc-point">
+              <span>25%:</span>
+              <input type="number" class="cfg-input" data-key="engine.yanmar-750.bsfc.25" value="270" min="150" max="500" step="5">
+            </div>
+            
+            <div class="bsfc-point">
+              <span>50%:</span>
+              <input type="number" class="cfg-input" data-key="engine.yanmar-750.bsfc.50" value="220" min="150" max="500" step="5">
+            </div>
+            
+            <div class="bsfc-point">
+              <span>75%:</span>
+              <input type="number" class="cfg-input" data-key="engine.yanmar-750.bsfc.75" value="200" min="150" max="500" step="5">
+            </div>
+            
+            <div class="bsfc-point">
+              <span>100%:</span>
+              <input type="number" class="cfg-input" data-key="engine.yanmar-750.bsfc.100" value="205" min="150" max="500" step="5">
+            </div>
+            
+          </div>
+          
+        </td>
+        <td><strong class="live-maint-rate" data-engine-id="yanmar-750">30.0</strong> kr/h</td>
+        <td>
+          
+          <div style="font-size:12px; margin-bottom:4px;">
+            <input type="number" class="edit-input cfg-input svc-input" data-key="engine.yanmar-750.svc.500" data-engine="yanmar-750" data-interval="500" value="9000" min="500" max="100000" step="500" style="width:70px;">
+            <span class="edit-unit">kr / 500h</span>
+            <span class="edit-hint">Oljebyte + filter</span>
+          </div>
+          
+          <div style="font-size:12px; margin-bottom:4px;">
+            <input type="number" class="edit-input cfg-input svc-input" data-key="engine.yanmar-750.svc.1000" data-engine="yanmar-750" data-interval="1000" value="12000" min="500" max="100000" step="500" style="width:70px;">
+            <span class="edit-unit">kr / 1000h</span>
+            <span class="edit-hint">1000h service — utökat filterbyte</span>
+          </div>
+          
+        </td>
+      </tr>
+      
+    </tbody>
+  </table>
+</div>
+
+<!-- Sektion 3: Överhalning & Livslängd -->
+<div class="section">
+  <h2>3. Överhalning & Livslängd</h2>
+  <p class="meta">Motorspecifika intervalverktyg för helrenovering och livslängdsbyte. Redigera direkt.</p>
+  <div class="oh-grid">
+    
+    <div class="oh-card">
+      <div class="oh-title">scania-dw6-440</div>
+      <div class="oh-row">
+        <label>Överhalningsintervall</label>
+        <input type="number" class="edit-input cfg-input" data-key="overhaul.scania-dw6-440.interval_h" value="0" min="5000" max="60000" step="1000">
+        <span class="edit-unit">h</span>
+      </div>
+      <div class="oh-row">
+        <label>Överhalningskostnad</label>
+        <input type="number" class="edit-input cfg-input" data-key="overhaul.scania-dw6-440.cost_sek" value="0" min="50000" max="10000000" step="50000">
+        <span class="edit-unit">SEK</span>
+      </div>
+      <div class="oh-row">
+        <label>Livslängd</label>
+        <input type="number" class="edit-input cfg-input" data-key="overhaul.scania-dw6-440.lifespan_h" value="30000" min="10000" max="80000" step="1000">
+        <span class="edit-unit">h</span>
+      </div>
+      
+      <div class="oh-row">
+        <label>Byte-kostnad (livslängd)</label>
+        <input type="number" class="edit-input cfg-input" data-key="overhaul.scania-dw6-440.repl_cost_sek" value="1000000" min="0" max="20000000" step="500000">
+        <span class="edit-unit">SEK</span>
+      </div>
+      
+      
+      <div style="font-size:11px; color:#6c757d; margin-top:6px; border-top:1px solid #f0f0f0; padding-top:6px;">Scania DW6 440kW — ingen stor OH, körs till 30 000h sedan motorbyte (1 MSEK/motor). Uppdaterad 2026-04-05.</div>
+      
+    </div>
+    
+    <div class="oh-card">
+      <div class="oh-title">scania-dw6-440-genset</div>
+      <div class="oh-row">
+        <label>Överhalningsintervall</label>
+        <input type="number" class="edit-input cfg-input" data-key="overhaul.scania-dw6-440-genset.interval_h" value="0" min="5000" max="60000" step="1000">
+        <span class="edit-unit">h</span>
+      </div>
+      <div class="oh-row">
+        <label>Överhalningskostnad</label>
+        <input type="number" class="edit-input cfg-input" data-key="overhaul.scania-dw6-440-genset.cost_sek" value="0" min="50000" max="10000000" step="50000">
+        <span class="edit-unit">SEK</span>
+      </div>
+      <div class="oh-row">
+        <label>Livslängd</label>
+        <input type="number" class="edit-input cfg-input" data-key="overhaul.scania-dw6-440-genset.lifespan_h" value="30000" min="10000" max="80000" step="1000">
+        <span class="edit-unit">h</span>
+      </div>
+      
+      <div class="oh-row">
+        <label>Byte-kostnad (livslängd)</label>
+        <input type="number" class="edit-input cfg-input" data-key="overhaul.scania-dw6-440-genset.repl_cost_sek" value="1000000" min="0" max="20000000" step="500000">
+        <span class="edit-unit">SEK</span>
+      </div>
+      
+      
+      <div style="font-size:11px; color:#6c757d; margin-top:6px; border-top:1px solid #f0f0f0; padding-top:6px;">Scania DW6 440kW genset — ingen stor OH, körs till 30 000h sedan motorbyte (1 MSEK/motor). Uppdaterad 2026-04-05.</div>
+      
+    </div>
+    
+    <div class="oh-card">
+      <div class="oh-title">penta-d13-380</div>
+      <div class="oh-row">
+        <label>Överhalningsintervall</label>
+        <input type="number" class="edit-input cfg-input" data-key="overhaul.penta-d13-380.interval_h" value="0" min="5000" max="60000" step="1000">
+        <span class="edit-unit">h</span>
+      </div>
+      <div class="oh-row">
+        <label>Överhalningskostnad</label>
+        <input type="number" class="edit-input cfg-input" data-key="overhaul.penta-d13-380.cost_sek" value="0" min="50000" max="10000000" step="50000">
+        <span class="edit-unit">SEK</span>
+      </div>
+      <div class="oh-row">
+        <label>Livslängd</label>
+        <input type="number" class="edit-input cfg-input" data-key="overhaul.penta-d13-380.lifespan_h" value="30000" min="10000" max="80000" step="1000">
+        <span class="edit-unit">h</span>
+      </div>
+      
+      <div class="oh-row">
+        <label>Byte-kostnad (livslängd)</label>
+        <input type="number" class="edit-input cfg-input" data-key="overhaul.penta-d13-380.repl_cost_sek" value="1000000" min="0" max="20000000" step="500000">
+        <span class="edit-unit">SEK</span>
+      </div>
+      
+      
+      <div style="font-size:11px; color:#6c757d; margin-top:6px; border-top:1px solid #f0f0f0; padding-top:6px;">Volvo Penta D13 380kW — samma profil som DW6: ingen OH, byte vid 30 000h (1 MSEK). Uppdaterad 2026-04-05.</div>
+      
+    </div>
+    
+    <div class="oh-card">
+      <div class="oh-title">yanmar-750</div>
+      <div class="oh-row">
+        <label>Överhalningsintervall</label>
+        <input type="number" class="edit-input cfg-input" data-key="overhaul.yanmar-750.interval_h" value="15000" min="5000" max="60000" step="1000">
+        <span class="edit-unit">h</span>
+      </div>
+      <div class="oh-row">
+        <label>Överhalningskostnad</label>
+        <input type="number" class="edit-input cfg-input" data-key="overhaul.yanmar-750.cost_sek" value="1000000" min="50000" max="10000000" step="50000">
+        <span class="edit-unit">SEK</span>
+      </div>
+      <div class="oh-row">
+        <label>Livslängd</label>
+        <input type="number" class="edit-input cfg-input" data-key="overhaul.yanmar-750.lifespan_h" value="40000" min="10000" max="80000" step="1000">
+        <span class="edit-unit">h</span>
+      </div>
+      
+      <div class="oh-row">
+        <label>Byte-kostnad (livslängd)</label>
+        <input type="number" class="edit-input cfg-input" data-key="overhaul.yanmar-750.repl_cost_sek" value="3000000" min="0" max="20000000" step="500000">
+        <span class="edit-unit">SEK</span>
+      </div>
+      
+      
+      <div style="font-size:11px; color:#6c757d; margin-top:6px; border-top:1px solid #f0f0f0; padding-top:6px;">Yanmar 750kW — överhalning 15 000h (1 MSEK). Vid 40 000h = motorbyte 3 MSEK/motor (6 MSEK totalt för 2st). Uppdaterad 2026-04-05.</div>
+      
+    </div>
+    
+    <div class="oh-card">
+      <div class="oh-title">genset-75kw</div>
+      <div class="oh-row">
+        <label>Överhalningsintervall</label>
+        <input type="number" class="edit-input cfg-input" data-key="overhaul.genset-75kw.interval_h" value="15000" min="5000" max="60000" step="1000">
+        <span class="edit-unit">h</span>
+      </div>
+      <div class="oh-row">
+        <label>Överhalningskostnad</label>
+        <input type="number" class="edit-input cfg-input" data-key="overhaul.genset-75kw.cost_sek" value="200000" min="50000" max="10000000" step="50000">
+        <span class="edit-unit">SEK</span>
+      </div>
+      <div class="oh-row">
+        <label>Livslängd</label>
+        <input type="number" class="edit-input cfg-input" data-key="overhaul.genset-75kw.lifespan_h" value="30000" min="10000" max="80000" step="1000">
+        <span class="edit-unit">h</span>
+      </div>
+      
+      <div class="oh-row">
+        <label>Byte-kostnad (livslängd)</label>
+        <input type="number" class="edit-input cfg-input" data-key="overhaul.genset-75kw.repl_cost_sek" value="0" min="0" max="20000000" step="500000">
+        <span class="edit-unit">SEK</span>
+        <span class="edit-hint">0 = ingår i OH-kostnad</span>
+      </div>
+      
+      
+      <div style="font-size:11px; color:#6c757d; margin-top:6px; border-top:1px solid #f0f0f0; padding-top:6px;">75kW hotellgenset — liten motor, billig överhalning.</div>
+      
+    </div>
+    
+    <div class="oh-card">
+      <div class="oh-title">danfoss-295</div>
+      <div class="oh-row">
+        <label>Överhalningsintervall</label>
+        <input type="number" class="edit-input cfg-input" data-key="overhaul.danfoss-295.interval_h" value="30000" min="5000" max="60000" step="1000">
+        <span class="edit-unit">h</span>
+      </div>
+      <div class="oh-row">
+        <label>Överhalningskostnad</label>
+        <input type="number" class="edit-input cfg-input" data-key="overhaul.danfoss-295.cost_sek" value="0" min="50000" max="10000000" step="50000">
+        <span class="edit-unit">SEK</span>
+      </div>
+      <div class="oh-row">
+        <label>Livslängd</label>
+        <input type="number" class="edit-input cfg-input" data-key="overhaul.danfoss-295.lifespan_h" value="60000" min="10000" max="80000" step="1000">
+        <span class="edit-unit">h</span>
+      </div>
+      
+      <div class="oh-row">
+        <label>Byte-kostnad (livslängd)</label>
+        <input type="number" class="edit-input cfg-input" data-key="overhaul.danfoss-295.repl_cost_sek" value="0" min="0" max="20000000" step="500000">
+        <span class="edit-unit">SEK</span>
+        <span class="edit-hint">0 = ingår i OH-kostnad</span>
+      </div>
+      
+      
+      <div style="font-size:11px; color:#6c757d; margin-top:6px; border-top:1px solid #f0f0f0; padding-top:6px;">Danfoss 295kW elmotor — serviceintervall 30 000h, 0 SEK (notis). Uppdaterad 2026-04-05.</div>
+      
+    </div>
+    
+    <div class="oh-card">
+      <div class="oh-title">danfoss-600</div>
+      <div class="oh-row">
+        <label>Överhalningsintervall</label>
+        <input type="number" class="edit-input cfg-input" data-key="overhaul.danfoss-600.interval_h" value="30000" min="5000" max="60000" step="1000">
+        <span class="edit-unit">h</span>
+      </div>
+      <div class="oh-row">
+        <label>Överhalningskostnad</label>
+        <input type="number" class="edit-input cfg-input" data-key="overhaul.danfoss-600.cost_sek" value="0" min="50000" max="10000000" step="50000">
+        <span class="edit-unit">SEK</span>
+      </div>
+      <div class="oh-row">
+        <label>Livslängd</label>
+        <input type="number" class="edit-input cfg-input" data-key="overhaul.danfoss-600.lifespan_h" value="60000" min="10000" max="80000" step="1000">
+        <span class="edit-unit">h</span>
+      </div>
+      
+      <div class="oh-row">
+        <label>Byte-kostnad (livslängd)</label>
+        <input type="number" class="edit-input cfg-input" data-key="overhaul.danfoss-600.repl_cost_sek" value="0" min="0" max="20000000" step="500000">
+        <span class="edit-unit">SEK</span>
+        <span class="edit-hint">0 = ingår i OH-kostnad</span>
+      </div>
+      
+      
+      <div style="font-size:11px; color:#6c757d; margin-top:6px; border-top:1px solid #f0f0f0; padding-top:6px;">Danfoss 600kW elmotor — serviceintervall 30 000h, 0 SEK (notis). Uppdaterad 2026-04-05.</div>
+      
+    </div>
+    
+    <div class="oh-card">
+      <div class="oh-title">danfoss-750</div>
+      <div class="oh-row">
+        <label>Överhalningsintervall</label>
+        <input type="number" class="edit-input cfg-input" data-key="overhaul.danfoss-750.interval_h" value="30000" min="5000" max="60000" step="1000">
+        <span class="edit-unit">h</span>
+      </div>
+      <div class="oh-row">
+        <label>Överhalningskostnad</label>
+        <input type="number" class="edit-input cfg-input" data-key="overhaul.danfoss-750.cost_sek" value="0" min="50000" max="10000000" step="50000">
+        <span class="edit-unit">SEK</span>
+      </div>
+      <div class="oh-row">
+        <label>Livslängd</label>
+        <input type="number" class="edit-input cfg-input" data-key="overhaul.danfoss-750.lifespan_h" value="60000" min="10000" max="80000" step="1000">
+        <span class="edit-unit">h</span>
+      </div>
+      
+      <div class="oh-row">
+        <label>Byte-kostnad (livslängd)</label>
+        <input type="number" class="edit-input cfg-input" data-key="overhaul.danfoss-750.repl_cost_sek" value="0" min="0" max="20000000" step="500000">
+        <span class="edit-unit">SEK</span>
+        <span class="edit-hint">0 = ingår i OH-kostnad</span>
+      </div>
+      
+      
+      <div style="font-size:11px; color:#6c757d; margin-top:6px; border-top:1px solid #f0f0f0; padding-top:6px;">Danfoss 750kW elmotor — serviceintervall 30 000h, 0 SEK (notis). Uppdaterad 2026-04-05.</div>
+      
+    </div>
+    
+  </div>
+</div>
+
+<!-- Sektion 4: Scope-konfigurationer (interaktiv motorväljare) -->
+<div class="section">
+  <h2>4. Framdrivningskoncept (Scopes)</h2>
+  <div class="info-box">
+    Välj motorer per scope. Vid byte uppdateras BSFC, underhåll och överhalning automatiskt i dashboarden.
+  </div>
+  <div class="scope-grid" id="scope-configurator">
+    <!-- Rendered by JS from COMPARISON_DATA -->
+  </div>
+</div>
+
+<!-- Sektion 5: Driftsprofil -->
+<div class="section">
+  <h2>5. Driftsprofiler</h2>
+  <p class="meta">Timmar per driftläge och år. Justeras via sliders i dashboarden, men grundvärden sätts här.</p>
+  
+  <h3>Standard Survey Year (DP/ROV-capable) (standard-survey)</h3>
+  <div style="display:flex; flex-wrap:wrap; gap:16px; margin-bottom:12px;">
+    
+    <div class="kv-row" style="min-width:200px;">
+      <span class="kv-label" style="min-width:120px;">transit</span>
+      <input type="number" class="edit-input cfg-input" data-key="operation.standard-survey.transit" value="1500" min="0" max="8760" step="100" style="width:70px;">
+      <span class="edit-unit">h/år</span>
+    </div>
+    
+    <div class="kv-row" style="min-width:200px;">
+      <span class="kv-label" style="min-width:120px;">dp_rov</span>
+      <input type="number" class="edit-input cfg-input" data-key="operation.standard-survey.dp_rov" value="1200" min="0" max="8760" step="100" style="width:70px;">
+      <span class="edit-unit">h/år</span>
+    </div>
+    
+    <div class="kv-row" style="min-width:200px;">
+      <span class="kv-label" style="min-width:120px;">survey</span>
+      <input type="number" class="edit-input cfg-input" data-key="operation.standard-survey.survey" value="3800" min="0" max="8760" step="100" style="width:70px;">
+      <span class="edit-unit">h/år</span>
+    </div>
+    
+    <div class="kv-row" style="min-width:200px;">
+      <span class="kv-label" style="min-width:120px;">idle_dock</span>
+      <input type="number" class="edit-input cfg-input" data-key="operation.standard-survey.idle_dock" value="1260" min="0" max="8760" step="100" style="width:70px;">
+      <span class="edit-unit">h/år</span>
+    </div>
+    
+  </div>
+  
+  <h3>Traditional Survey Year (traditional-survey)</h3>
+  <div style="display:flex; flex-wrap:wrap; gap:16px; margin-bottom:12px;">
+    
+    <div class="kv-row" style="min-width:200px;">
+      <span class="kv-label" style="min-width:120px;">transit</span>
+      <input type="number" class="edit-input cfg-input" data-key="operation.traditional-survey.transit" value="1500" min="0" max="8760" step="100" style="width:70px;">
+      <span class="edit-unit">h/år</span>
+    </div>
+    
+    <div class="kv-row" style="min-width:200px;">
+      <span class="kv-label" style="min-width:120px;">survey</span>
+      <input type="number" class="edit-input cfg-input" data-key="operation.traditional-survey.survey" value="5000" min="0" max="8760" step="100" style="width:70px;">
+      <span class="edit-unit">h/år</span>
+    </div>
+    
+    <div class="kv-row" style="min-width:200px;">
+      <span class="kv-label" style="min-width:120px;">idle_dock</span>
+      <input type="number" class="edit-input cfg-input" data-key="operation.traditional-survey.idle_dock" value="1260" min="0" max="8760" step="100" style="width:70px;">
+      <span class="edit-unit">h/år</span>
+    </div>
+    
+  </div>
+  
+</div>
+
+<!-- Sektion 6: Bränslepris & Eskalering -->
+<div class="section">
+  <h2>6. Bränslepris & Eskalering</h2>
+  <div class="kv-row">
+    <span class="kv-label">Baspris MGO</span>
+    <input type="number" class="edit-input cfg-input" data-key="fuel.base_price_sek" value="12000" min="5000" max="30000" step="500">
+    <span class="edit-unit">SEK/ton</span>
+  </div>
+  <div class="kv-row">
+    <span class="kv-label">Bränsle-eskalering per år</span>
+    <input type="number" class="edit-input cfg-input" data-key="fuel.escalation_pct" value="3.0" min="0" max="15" step="0.5">
+    <span class="edit-unit">%</span>
+  </div>
+  <div class="kv-row">
+    <span class="kv-label">Underhålls-eskalering per år</span>
+    <input type="number" class="edit-input cfg-input" data-key="maint.escalation_pct" value="2.0" min="0" max="15" step="0.5">
+    <span class="edit-unit">%</span>
+  </div>
+  <div class="kv-row">
+    <span class="kv-label">CO₂-faktor (IMO)</span>
+    <input type="number" class="edit-input cfg-input" data-key="co2.factor" value="3.206" min="1.0" max="5.0" step="0.001">
+    <span class="edit-unit">kg CO₂ / kg bränsle</span>
+  </div>
+  <div class="kv-row"><span class="kv-label">Källa</span><span class="kv-value">Marknadsuppskattning 2026 (MGO Nordsjön)</span></div>
+</div>
+
+<!-- Sektion 7: Underhållsmodell (dynamisk — uppdateras live vid svc-ändringar) -->
+<div class="section">
+  <h2>7. Underhållsmodell</h2>
+  <p style="font-size:13px; margin-bottom:12px;">
+    Underhållskostnaden beräknas som <strong>SEK/h × drifttimmar × antal motorer</strong> per driftläge.
+    Timtaxan härleds från serviceintervall ovan (max-intervall-cykel).
+  </p>
+  <table>
+    <thead>
+      <tr><th>Motor</th><th>Beräknad SEK/h</th><th>Beräkningsgrund</th></tr>
+    </thead>
+    <tbody id="maint-model-tbody">
+      <!-- Rendered dynamically by renderMaintModel() -->
+    </tbody>
+  </table>
+</div>
+
+<!-- Sektion 8: Batteri & peak shaving -->
+<div class="section">
+  <h2>8. Batteri & Peak Shaving</h2>
+  <div class="kv-row"><span class="kv-label">Tillämpas på scope</span><span class="kv-value" id="battery-applies-to">scope1-scania-hybrid, scope2-mets-de, scope3-zem-de</span></div>
+  <div class="kv-row"><span class="kv-label">Effekt i simuleringen</span><span class="kv-value" id="battery-effect">1 genset istf 2 under DP/ROV (peak shaving, EJ energilagring)</span></div>
+  
+  <div style="margin-top:8px;">
+    <div class="kv-row">
+      <span class="kv-label">Kapacitet</span>
+      <input type="number" class="edit-input cfg-input" data-key="battery.capacity_kwh" value="150" min="50" max="500" step="10">
+      <span class="edit-unit">kWh</span>
+    </div>
+    <div class="kv-row">
+      <span class="kv-label">Max urladdning</span>
+      <input type="number" class="edit-input cfg-input" data-key="battery.max_discharge_kw" value="150" min="50" max="500" step="10">
+      <span class="edit-unit">kW</span>
+    </div>
+    <div class="kv-row">
+      <span class="kv-label">Roundtrip-verkningsgrad</span>
+      <input type="number" class="edit-input cfg-input" data-key="battery.efficiency_roundtrip" value="0.88" min="0.5" max="1.0" step="0.01">
+    </div>
+  </div>
+  
+</div>
+
+<!-- Sektion 9: Kända begränsningar -->
+<div class="section">
+  <h2>9. Kända Begränsningar</h2>
+  <ul class="limitations">
+    
+    <li>BSFC-kurvor är PLACEHOLDER — samma typvärden för alla dieselmotorer. DE-scopes missgynnas: med verkliga kurvor borde 1 genset vid optimal last slå 2× Yanmar vid låg last. Verkliga kurvor från leverantörer krävs.</li>
+    
+    <li>Renovationsmodell: Scania 30 000h (motorbyte), Yanmar 15 000h (överhalning) + 40 000h (livslängd). Ingen gradvis BSFC-försämring.</li>
+    
+    <li>Emissionsberäkning begränsad till CO₂ (IMO MGO-faktor 3.206). NOx och SOx ej inkluderade.</li>
+    
+    <li>Landström antas tillgänglig vid kaj (0 bränslekostnad).</li>
+    
+    <li>Hotellast är konstant (ingen variation dag/natt eller årstid).</li>
+    
+    <li>Kedjeverkningsgrad för DE-drivsystem är konstant (ingen lastberoende variation).</li>
+    
+    <li>Servicekostnader per motortyp: Yanmar 30 kr/h, Scania DW6 20 kr/h, 75kW genset 12 kr/h. PLACEHOLDER — bekräftas mot leverantörer.</li>
+    
+  </ul>
+</div>
+
+</main>
+
+<!-- Sticky action bar -->
+<div class="action-bar">
+  <div>
+    <span class="status" id="change-status">Inga ändringar</span>
+  </div>
+  <div>
+    <button class="btn-apply btn-reset" onclick="resetAll()">Återställ allt</button>
+    <button class="btn-apply btn-apply-primary" onclick="applyAndGo()">Tillämpa & öppna Dashboard →</button>
+  </div>
+</div>
+
+<script>
+// ======================================
+// Config override system — syncs to comparison.html via localStorage
+// ======================================
+
+const COMPARISON_DATA = {"generated": "2026-04-14T12:47:40", "vessel": "northern-gale", "fuel_price_base": 12000.0, "fuel_escalation": 0.03, "maint_escalation": 0.02, "scopes": {"scope1-scania-hybrid": {"name": "Scania DW6 Hybrid", "type": "hybrid", "operation": "standard-survey", "years": [{"year": 1, "fuel_tonnes": 623.36, "fuel_cost_sek": 7480369.0, "maintenance_cost_sek": 342000.0, "total_cost_sek": 7822369.0}, {"year": 2, "fuel_tonnes": 623.36, "fuel_cost_sek": 7704780.0, "maintenance_cost_sek": 348840.0, "total_cost_sek": 8053620.0}, {"year": 3, "fuel_tonnes": 623.36, "fuel_cost_sek": 7935924.0, "maintenance_cost_sek": 355817.0, "total_cost_sek": 8291741.0}, {"year": 4, "fuel_tonnes": 623.36, "fuel_cost_sek": 8174001.0, "maintenance_cost_sek": 362933.0, "total_cost_sek": 8536934.0}, {"year": 5, "fuel_tonnes": 623.36, "fuel_cost_sek": 8419221.0, "maintenance_cost_sek": 370192.0, "total_cost_sek": 8789413.0}, {"year": 6, "fuel_tonnes": 623.36, "fuel_cost_sek": 8671798.0, "maintenance_cost_sek": 377596.0, "total_cost_sek": 9049394.0}, {"year": 7, "fuel_tonnes": 623.36, "fuel_cost_sek": 8931952.0, "maintenance_cost_sek": 385148.0, "total_cost_sek": 9317100.0}, {"year": 8, "fuel_tonnes": 623.36, "fuel_cost_sek": 9199911.0, "maintenance_cost_sek": 392850.0, "total_cost_sek": 9592761.0}, {"year": 9, "fuel_tonnes": 623.36, "fuel_cost_sek": 9475908.0, "maintenance_cost_sek": 400708.0, "total_cost_sek": 9876616.0}, {"year": 10, "fuel_tonnes": 623.36, "fuel_cost_sek": 9760185.0, "maintenance_cost_sek": 408722.0, "total_cost_sek": 10168907.0}], "lifetime": {"total_fuel_tonnes": 6233.6, "total_fuel_cost_sek": 85754049.0, "total_maintenance_sek": 3744806.0, "total_cost_sek": 89498855.0}}, "scope2-mets-de": {"name": "Diesel-Elektrisk 4 genset", "type": "diesel_electric", "operation": "standard-survey", "years": [{"year": 1, "fuel_tonnes": 644.59, "fuel_cost_sek": 7735066.0, "maintenance_cost_sek": 190000.0, "total_cost_sek": 7925066.0}, {"year": 2, "fuel_tonnes": 644.59, "fuel_cost_sek": 7967118.0, "maintenance_cost_sek": 193800.0, "total_cost_sek": 8160918.0}, {"year": 3, "fuel_tonnes": 644.59, "fuel_cost_sek": 8206131.0, "maintenance_cost_sek": 197676.0, "total_cost_sek": 8403807.0}, {"year": 4, "fuel_tonnes": 644.59, "fuel_cost_sek": 8452315.0, "maintenance_cost_sek": 201630.0, "total_cost_sek": 8653945.0}, {"year": 5, "fuel_tonnes": 644.59, "fuel_cost_sek": 8705884.0, "maintenance_cost_sek": 205662.0, "total_cost_sek": 8911546.0}, {"year": 6, "fuel_tonnes": 644.59, "fuel_cost_sek": 8967061.0, "maintenance_cost_sek": 209775.0, "total_cost_sek": 9176836.0}, {"year": 7, "fuel_tonnes": 644.59, "fuel_cost_sek": 9236073.0, "maintenance_cost_sek": 213971.0, "total_cost_sek": 9450044.0}, {"year": 8, "fuel_tonnes": 644.59, "fuel_cost_sek": 9513155.0, "maintenance_cost_sek": 218250.0, "total_cost_sek": 9731405.0}, {"year": 9, "fuel_tonnes": 644.59, "fuel_cost_sek": 9798550.0, "maintenance_cost_sek": 222615.0, "total_cost_sek": 10021165.0}, {"year": 10, "fuel_tonnes": 644.59, "fuel_cost_sek": 10092506.0, "maintenance_cost_sek": 227068.0, "total_cost_sek": 10319574.0}], "lifetime": {"total_fuel_tonnes": 6445.9, "total_fuel_cost_sek": 88673859.0, "total_maintenance_sek": 2080447.0, "total_cost_sek": 90754306.0}}, "scope3-zem-de": {"name": "Diesel-Elektrisk 3 genset", "type": "diesel_electric", "operation": "standard-survey", "years": [{"year": 1, "fuel_tonnes": 644.59, "fuel_cost_sek": 7735066.0, "maintenance_cost_sek": 190000.0, "total_cost_sek": 7925066.0}, {"year": 2, "fuel_tonnes": 644.59, "fuel_cost_sek": 7967118.0, "maintenance_cost_sek": 193800.0, "total_cost_sek": 8160918.0}, {"year": 3, "fuel_tonnes": 644.59, "fuel_cost_sek": 8206131.0, "maintenance_cost_sek": 197676.0, "total_cost_sek": 8403807.0}, {"year": 4, "fuel_tonnes": 644.59, "fuel_cost_sek": 8452315.0, "maintenance_cost_sek": 201630.0, "total_cost_sek": 8653945.0}, {"year": 5, "fuel_tonnes": 644.59, "fuel_cost_sek": 8705884.0, "maintenance_cost_sek": 205662.0, "total_cost_sek": 8911546.0}, {"year": 6, "fuel_tonnes": 644.59, "fuel_cost_sek": 8967061.0, "maintenance_cost_sek": 209775.0, "total_cost_sek": 9176836.0}, {"year": 7, "fuel_tonnes": 644.59, "fuel_cost_sek": 9236073.0, "maintenance_cost_sek": 213971.0, "total_cost_sek": 9450044.0}, {"year": 8, "fuel_tonnes": 644.59, "fuel_cost_sek": 9513155.0, "maintenance_cost_sek": 218250.0, "total_cost_sek": 9731405.0}, {"year": 9, "fuel_tonnes": 644.59, "fuel_cost_sek": 9798550.0, "maintenance_cost_sek": 222615.0, "total_cost_sek": 10021165.0}, {"year": 10, "fuel_tonnes": 644.59, "fuel_cost_sek": 10092506.0, "maintenance_cost_sek": 227068.0, "total_cost_sek": 10319574.0}], "lifetime": {"total_fuel_tonnes": 6445.9, "total_fuel_cost_sek": 88673859.0, "total_maintenance_sek": 2080447.0, "total_cost_sek": 90754306.0}}, "scope4-traditional": {"name": "Traditionell Mekanisk", "type": "diesel", "operation": "traditional-survey", "years": [{"year": 1, "fuel_tonnes": 690.65, "fuel_cost_sek": 8287786.0, "maintenance_cost_sek": 468000.0, "total_cost_sek": 8755786.0}, {"year": 2, "fuel_tonnes": 690.65, "fuel_cost_sek": 8536419.0, "maintenance_cost_sek": 477360.0, "total_cost_sek": 9013779.0}, {"year": 3, "fuel_tonnes": 690.65, "fuel_cost_sek": 8792512.0, "maintenance_cost_sek": 486907.0, "total_cost_sek": 9279419.0}, {"year": 4, "fuel_tonnes": 690.65, "fuel_cost_sek": 9056287.0, "maintenance_cost_sek": 496645.0, "total_cost_sek": 9552932.0}, {"year": 5, "fuel_tonnes": 690.65, "fuel_cost_sek": 9327976.0, "maintenance_cost_sek": 506578.0, "total_cost_sek": 9834554.0}, {"year": 6, "fuel_tonnes": 690.65, "fuel_cost_sek": 9607815.0, "maintenance_cost_sek": 516710.0, "total_cost_sek": 10124525.0}, {"year": 7, "fuel_tonnes": 690.65, "fuel_cost_sek": 9896049.0, "maintenance_cost_sek": 527044.0, "total_cost_sek": 10423093.0}, {"year": 8, "fuel_tonnes": 690.65, "fuel_cost_sek": 10192931.0, "maintenance_cost_sek": 537585.0, "total_cost_sek": 10730516.0}, {"year": 9, "fuel_tonnes": 690.65, "fuel_cost_sek": 10498719.0, "maintenance_cost_sek": 548337.0, "total_cost_sek": 11047056.0}, {"year": 10, "fuel_tonnes": 690.65, "fuel_cost_sek": 10813680.0, "maintenance_cost_sek": 559303.0, "total_cost_sek": 11372983.0}], "lifetime": {"total_fuel_tonnes": 6906.5, "total_fuel_cost_sek": 95010174.0, "total_maintenance_sek": 5124469.0, "total_cost_sek": 100134643.0}}}, "scope_params": {"scope1-scania-hybrid": {"type": "hybrid", "prop_engine_id": "scania-dw6-440", "genset_engine_id": "scania-dw6-440-genset", "engine_max_kw": 440.0, "bsfc_curve": [[0.1, 260.0], [0.15, 245.0], [0.2, 230.0], [0.25, 220.0], [0.5, 205.0], [0.75, 198.0], [1.0, 202.0]], "eta_chain": 0.9219, "genset_kw": 440.0, "genset_max_kw": 440.0, "genset_count": 2, "genset_bsfc_curve": [[0.1, 240.0], [0.15, 225.0], [0.2, 215.0], [0.25, 210.0], [0.5, 200.0], [0.75, 195.0], [1.0, 200.0]], "survey_hours": 3800, "transit_hours": 1500, "dp_rov_hours": 1200, "transit_fuel_tonnes_yr1": 364.489, "battery_enabled": true, "maintenance_yr1_sek": 342000.0, "maint_prop_diesel_sek_per_h": 20.0, "maint_genset_sek_per_h": 20.0, "maint_electric_sek_per_h": 0.0, "hotel_kw": 50.0, "fuel_escalation": 0.03, "maint_escalation": 0.02, "scope_engine_config": {"prop_engine_id": "scania-dw6-440", "prop_count": 2, "prop_role": "mechanical", "genset_engine_id": "scania-dw6-440-genset", "genset_count": 2, "electric_motor_id": "danfoss-295", "electric_motor_count": 2}, "scope_name": "Scania DW6 Hybrid", "hybrid_electric_threshold_kw": 295.0, "capex_msek": 25.0, "engine_map": {"transit": {"prop_diesel_count": 2, "genset_count": 1, "electric_count": 2}, "survey": {"prop_diesel_count": 2, "genset_count": 1, "electric_count": 2}, "dp_rov": {"prop_diesel_count": 0, "genset_count": 1, "electric_count": 2}, "dock": {"prop_diesel_count": 0, "genset_count": 0, "electric_count": 0}}, "maint_factor": 1.0, "engine_groups": [{"engine_id": "scania-dw6-440", "name": "Scania DW6 440kW Propulsion", "role": "propulsion", "count": 2, "overhaul_interval_h": 0, "overhaul_cost_sek": 0, "lifespan_h": 30000, "lifespan_replacement_cost_sek": 1000000, "modes": {"transit": {"running": 2}, "survey": {"running": 2}, "dp_rov": {"running": 0}, "dock": {"running": 0}}}, {"engine_id": "scania-dw6-440-genset", "name": "Scania DW6 440kW Genset", "role": "genset", "count": 2, "overhaul_interval_h": 0, "overhaul_cost_sek": 0, "lifespan_h": 30000, "lifespan_replacement_cost_sek": 1000000, "modes": {"transit": {"running": 1}, "survey": {"running": 1}, "dp_rov": {"running": 1}, "dock": {"running": 0}}}, {"engine_id": "danfoss-295", "name": "Danfoss 295kW Hybrid Electric Motor", "role": "electric", "count": 2, "overhaul_interval_h": 30000, "overhaul_cost_sek": 0, "lifespan_h": 60000, "lifespan_replacement_cost_sek": 0, "modes": {"transit": {"running": 2}, "survey": {"running": 2}, "dp_rov": {"running": 2}, "dock": {"running": 0}}}]}, "scope2-mets-de": {"type": "diesel_electric", "prop_engine_id": "danfoss-750", "genset_engine_id": "scania-dw6-440-genset", "engine_max_kw": 750.0, "bsfc_curve": [], "eta_chain": 0.9219, "genset_kw": 440.0, "genset_max_kw": 440.0, "genset_count": 4, "genset_bsfc_curve": [[0.1, 240.0], [0.15, 225.0], [0.2, 215.0], [0.25, 210.0], [0.5, 200.0], [0.75, 195.0], [1.0, 200.0]], "survey_hours": 3800, "transit_hours": 1500, "dp_rov_hours": 1200, "transit_fuel_tonnes_yr1": 385.7137, "battery_enabled": true, "maintenance_yr1_sek": 190000.0, "maint_prop_diesel_sek_per_h": 0.0, "maint_genset_sek_per_h": 20.0, "maint_electric_sek_per_h": 0.0, "hotel_kw": 50.0, "fuel_escalation": 0.03, "maint_escalation": 0.02, "scope_engine_config": {"prop_engine_id": "danfoss-750", "prop_count": 2, "prop_role": "electrical", "genset_engine_id": "scania-dw6-440-genset", "genset_count": 4}, "scope_name": "Diesel-Elektrisk 4 genset", "capex_msek": 35.0, "engine_map": {"transit": {"prop_diesel_count": 0, "genset_count": 3, "electric_count": 2}, "survey": {"prop_diesel_count": 0, "genset_count": 1, "electric_count": 2}, "dp_rov": {"prop_diesel_count": 0, "genset_count": 1, "electric_count": 2}, "dock": {"prop_diesel_count": 0, "genset_count": 1, "electric_count": 0}}, "maint_factor": 1.0, "engine_groups": [{"engine_id": "danfoss-750", "name": "Danfoss 750kW Electric Motor", "role": "propulsion", "count": 2, "overhaul_interval_h": 30000, "overhaul_cost_sek": 0, "lifespan_h": 60000, "lifespan_replacement_cost_sek": 0, "modes": {"transit": {"running": 2}, "survey": {"running": 2}, "dp_rov": {"running": 2}, "dock": {"running": 0}}}, {"engine_id": "scania-dw6-440-genset", "name": "Scania DW6 440kW Genset", "role": "genset", "count": 4, "overhaul_interval_h": 0, "overhaul_cost_sek": 0, "lifespan_h": 30000, "lifespan_replacement_cost_sek": 1000000, "modes": {"transit": {"running": 3}, "survey": {"running": 1}, "dp_rov": {"running": 1}, "dock": {"running": 0}}}]}, "scope3-zem-de": {"type": "diesel_electric", "prop_engine_id": "danfoss-600", "genset_engine_id": "scania-dw6-440-genset", "engine_max_kw": 600.0, "bsfc_curve": [], "eta_chain": 0.9219, "genset_kw": 440.0, "genset_max_kw": 440.0, "genset_count": 3, "genset_bsfc_curve": [[0.1, 240.0], [0.15, 225.0], [0.2, 215.0], [0.25, 210.0], [0.5, 200.0], [0.75, 195.0], [1.0, 200.0]], "survey_hours": 3800, "transit_hours": 1500, "dp_rov_hours": 1200, "transit_fuel_tonnes_yr1": 385.7137, "battery_enabled": true, "maintenance_yr1_sek": 190000.0, "maint_prop_diesel_sek_per_h": 0.0, "maint_genset_sek_per_h": 20.0, "maint_electric_sek_per_h": 0.0, "hotel_kw": 50.0, "fuel_escalation": 0.03, "maint_escalation": 0.02, "scope_engine_config": {"prop_engine_id": "danfoss-600", "prop_count": 2, "prop_role": "electrical", "genset_engine_id": "scania-dw6-440-genset", "genset_count": 3}, "scope_name": "Diesel-Elektrisk 3 genset", "capex_msek": 30.0, "engine_map": {"transit": {"prop_diesel_count": 0, "genset_count": 3, "electric_count": 2}, "survey": {"prop_diesel_count": 0, "genset_count": 1, "electric_count": 2}, "dp_rov": {"prop_diesel_count": 0, "genset_count": 1, "electric_count": 2}, "dock": {"prop_diesel_count": 0, "genset_count": 1, "electric_count": 0}}, "maint_factor": 1.0, "engine_groups": [{"engine_id": "danfoss-600", "name": "Danfoss 600kW Electric Motor", "role": "propulsion", "count": 2, "overhaul_interval_h": 30000, "overhaul_cost_sek": 0, "lifespan_h": 60000, "lifespan_replacement_cost_sek": 0, "modes": {"transit": {"running": 2}, "survey": {"running": 2}, "dp_rov": {"running": 2}, "dock": {"running": 0}}}, {"engine_id": "scania-dw6-440-genset", "name": "Scania DW6 440kW Genset", "role": "genset", "count": 3, "overhaul_interval_h": 0, "overhaul_cost_sek": 0, "lifespan_h": 30000, "lifespan_replacement_cost_sek": 1000000, "modes": {"transit": {"running": 3}, "survey": {"running": 1}, "dp_rov": {"running": 1}, "dock": {"running": 0}}}]}, "scope4-traditional": {"type": "diesel", "prop_engine_id": "yanmar-750", "genset_engine_id": "genset-75kw", "engine_max_kw": 750.0, "bsfc_curve": [[0.05, 380.0], [0.1, 340.0], [0.15, 310.0], [0.2, 290.0], [0.25, 270.0], [0.5, 220.0], [0.75, 200.0], [1.0, 205.0]], "eta_chain": 0.97, "genset_kw": 75.0, "genset_max_kw": 75.0, "genset_count": 2, "genset_bsfc_curve": [[0.1, 310.0], [0.15, 280.0], [0.2, 260.0], [0.25, 245.0], [0.5, 220.0], [0.75, 210.0], [1.0, 215.0]], "survey_hours": 5000, "transit_hours": 1500, "dp_rov_hours": 0, "transit_fuel_tonnes_yr1": 358.9883, "battery_enabled": false, "maintenance_yr1_sek": 468000.0, "maint_prop_diesel_sek_per_h": 30.0, "maint_genset_sek_per_h": 12.0, "maint_electric_sek_per_h": 0.0, "hotel_kw": 50.0, "fuel_escalation": 0.03, "maint_escalation": 0.02, "scope_engine_config": {"prop_engine_id": "yanmar-750", "prop_count": 2, "prop_role": "mechanical", "genset_engine_id": "genset-75kw", "genset_count": 2}, "scope_name": "Traditionell Mekanisk", "capex_msek": 15.0, "engine_map": {"transit": {"prop_diesel_count": 2, "genset_count": 1, "electric_count": 0}, "survey": {"prop_diesel_count": 2, "genset_count": 1, "electric_count": 0}, "dp_rov": {"prop_diesel_count": 0, "genset_count": 0, "electric_count": 0}, "dock": {"prop_diesel_count": 0, "genset_count": 1, "electric_count": 0}}, "maint_factor": 1.0, "engine_groups": [{"engine_id": "yanmar-750", "name": "Yanmar 750kW Marine Diesel", "role": "propulsion", "count": 2, "overhaul_interval_h": 15000, "overhaul_cost_sek": 1000000, "lifespan_h": 40000, "lifespan_replacement_cost_sek": 3000000, "modes": {"transit": {"running": 2}, "survey": {"running": 2}, "dp_rov": {"running": 0}, "dock": {"running": 0}}}, {"engine_id": "genset-75kw", "name": "Generisk 75kW Hotellgenset", "role": "genset", "count": 2, "overhaul_interval_h": 15000, "overhaul_cost_sek": 200000, "lifespan_h": 30000, "lifespan_replacement_cost_sek": 0, "modes": {"transit": {"running": 1}, "survey": {"running": 1}, "dp_rov": {"running": 0}, "dock": {"running": 0}}}]}}, "sea_trial": {"6.3": {"axel_kw": 99.4, "bsfc": 0.244}, "7.0": {"axel_kw": 135.0, "bsfc": 0.242}, "8.3": {"axel_kw": 171.3, "bsfc": 0.24}, "9.0": {"axel_kw": 241.8, "bsfc": 0.237}, "10.0": {"axel_kw": 314.5, "bsfc": 0.233}, "11.0": {"axel_kw": 461.4, "bsfc": 0.225}, "12.0": {"axel_kw": 619.9, "bsfc": 0.216}, "13.0": {"axel_kw": 873.7, "bsfc": 0.211}, "14.0": {"axel_kw": 1141.1, "bsfc": 0.205}, "15.0": {"axel_kw": 1141.1, "bsfc": 0.204}, "16.0": {"axel_kw": 1609.7, "bsfc": 0.202}, "17.0": {"axel_kw": 1779.5, "bsfc": 0.203}, "18.0": {"axel_kw": 1948.3, "bsfc": 0.203}}, "default_speed_distribution": [{"knop": 6.3, "fraction": 0.07}, {"knop": 7.0, "fraction": 0.7}, {"knop": 8.3, "fraction": 0.07}, {"knop": 9.0, "fraction": 0.06}, {"knop": 10.0, "fraction": 0.1}], "speed_presets": {"low": [0.5, 0.3, 0.15, 0.05, 0.0], "mixed": [0.2, 0.3, 0.25, 0.15, 0.1], "high": [0.05, 0.1, 0.3, 0.35, 0.2]}, "dp_rov_defaults": {"thruster_installed_kw": 300.0, "thruster_avg_load_pct": 0.5, "prop_kw_per_shaft": 50.0, "hotel_kw": 30.0}, "co2_kg_per_kg_fuel": 3.206, "engine_catalog": {"danfoss-295": {"id": "danfoss-295", "name": "Danfoss 295kW Hybrid Electric Motor", "type": "electric_motor", "power_kw": 295.0, "bsfc_curve": [], "maint_sek_per_h": 0.0, "maint_intervals": [{"hours": 5000, "cost_sek": 0}, {"hours": 20000, "cost_sek": 0}], "overhaul": {"interval_h": 30000, "cost_sek": 0, "lifespan_h": 60000, "replacement_cost_sek": 0}}, "danfoss-600": {"id": "danfoss-600", "name": "Danfoss 600kW Electric Motor", "type": "electric_motor", "power_kw": 600.0, "bsfc_curve": [], "maint_sek_per_h": 0.0, "maint_intervals": [{"hours": 5000, "cost_sek": 0}, {"hours": 20000, "cost_sek": 0}], "overhaul": {"interval_h": 30000, "cost_sek": 0, "lifespan_h": 60000, "replacement_cost_sek": 0}}, "danfoss-750": {"id": "danfoss-750", "name": "Danfoss 750kW Electric Motor", "type": "electric_motor", "power_kw": 750.0, "bsfc_curve": [], "maint_sek_per_h": 0.0, "maint_intervals": [{"hours": 5000, "cost_sek": 0}, {"hours": 20000, "cost_sek": 0}], "overhaul": {"interval_h": 30000, "cost_sek": 0, "lifespan_h": 60000, "replacement_cost_sek": 0}}, "genset-75kw": {"id": "genset-75kw", "name": "Generisk 75kW Hotellgenset", "type": "genset", "power_kw": 75.0, "bsfc_curve": [[0.1, 310.0], [0.15, 280.0], [0.2, 260.0], [0.25, 245.0], [0.5, 220.0], [0.75, 210.0], [1.0, 215.0]], "maint_sek_per_h": 12.0, "maint_intervals": [{"hours": 500, "cost_sek": 3500}, {"hours": 1000, "cost_sek": 5000}], "overhaul": {"interval_h": 15000, "cost_sek": 200000, "lifespan_h": 30000, "replacement_cost_sek": 0}}, "penta-d13-380": {"id": "penta-d13-380", "name": "Volvo Penta D13 380kW Genset", "type": "genset", "power_kw": 380.0, "bsfc_curve": [[0.1, 245.0], [0.15, 230.0], [0.2, 218.0], [0.25, 212.0], [0.5, 202.0], [0.75, 197.0], [1.0, 202.0]], "maint_sek_per_h": 20.0, "maint_intervals": [{"hours": 500, "cost_sek": 6000}, {"hours": 1000, "cost_sek": 8000}], "overhaul": {"interval_h": 0, "cost_sek": 0, "lifespan_h": 30000, "replacement_cost_sek": 1000000}}, "scania-dw6-440-genset": {"id": "scania-dw6-440-genset", "name": "Scania DW6 440kW Genset", "type": "genset", "power_kw": 440.0, "bsfc_curve": [[0.1, 240.0], [0.15, 225.0], [0.2, 215.0], [0.25, 210.0], [0.5, 200.0], [0.75, 195.0], [1.0, 200.0]], "maint_sek_per_h": 20.0, "maint_intervals": [{"hours": 500, "cost_sek": 6000}, {"hours": 1000, "cost_sek": 8000}], "overhaul": {"interval_h": 0, "cost_sek": 0, "lifespan_h": 30000, "replacement_cost_sek": 1000000}}, "scania-dw6-440": {"id": "scania-dw6-440", "name": "Scania DW6 440kW Propulsion", "type": "diesel", "power_kw": 440.0, "bsfc_curve": [[0.1, 260.0], [0.15, 245.0], [0.2, 230.0], [0.25, 220.0], [0.5, 205.0], [0.75, 198.0], [1.0, 202.0]], "maint_sek_per_h": 20.0, "maint_intervals": [{"hours": 500, "cost_sek": 6000}, {"hours": 1000, "cost_sek": 8000}], "overhaul": {"interval_h": 0, "cost_sek": 0, "lifespan_h": 30000, "replacement_cost_sek": 1000000}}, "yanmar-750": {"id": "yanmar-750", "name": "Yanmar 750kW Marine Diesel", "type": "diesel", "power_kw": 750.0, "bsfc_curve": [[0.05, 380.0], [0.1, 340.0], [0.15, 310.0], [0.2, 290.0], [0.25, 270.0], [0.5, 220.0], [0.75, 200.0], [1.0, 205.0]], "maint_sek_per_h": 30.0, "maint_intervals": [{"hours": 500, "cost_sek": 9000}, {"hours": 1000, "cost_sek": 12000}], "overhaul": {"interval_h": 15000, "cost_sek": 1000000, "lifespan_h": 40000, "replacement_cost_sek": 3000000}}}, "risk": {"vendor_lock_in": {"vessel": {"loss_of_hire_kr_per_day": 25000, "failure_probability_per_year": 0.05}, "components": {"scania-dw6-prop": {"name": "Scania DW6 440kW Framdrift", "replaceability": 1, "alternative_suppliers": 1, "lead_time_weeks": 24, "scopes": ["scope1-scania-hybrid"], "note": "Mekanisk koppling via ZF 3055A — byte kräver motor+låda+fundament"}, "zf-3055a-gearbox": {"name": "ZF 3055A Växellåda (PTO/PTI)", "replaceability": 2, "alternative_suppliers": 2, "lead_time_weeks": 20, "scopes": ["scope1-scania-hybrid"], "note": "Specifik PTO/PTI-konfiguration för hybrid, Twin Disc möjligt alternativ"}, "lyngaa-pto-pti": {"name": "Lyngå Marine PTO/PTI Styrning", "replaceability": 1, "alternative_suppliers": 1, "lead_time_weeks": 16, "scopes": ["scope1-scania-hybrid"], "note": "Proprietärt styrsystem — inga direkta alternativ utan omdesign"}, "scania-dw6-genset": {"name": "Scania DW6 440kW Genset", "replaceability": 3, "alternative_suppliers": 3, "lead_time_weeks": 12, "scopes": ["scope1-scania-hybrid", "scope2-mets-de", "scope3-zem-de"], "note": "Standardgenset — kan bytas till Volvo Penta/CAT med nytt fundament"}, "danfoss-295": {"name": "Danfoss 295kW Elmotor", "replaceability": 4, "alternative_suppliers": 4, "lead_time_weeks": 6, "scopes": ["scope1-scania-hybrid"], "note": "Standard PM-motor — begränsad av ZF-lådans vridmoment/vikt"}, "danfoss-750": {"name": "Danfoss 750kW Elmotor", "replaceability": 5, "alternative_suppliers": 4, "lead_time_weeks": 6, "scopes": ["scope2-mets-de"], "note": "Standardflänsar, direkt på axel — enkel att byta"}, "danfoss-600": {"name": "Danfoss 600kW Elmotor", "replaceability": 5, "alternative_suppliers": 4, "lead_time_weeks": 6, "scopes": ["scope3-zem-de"], "note": "Standardflänsar, direkt på axel — enkel att byta"}, "mets-integration": {"name": "S2 Systemintegration", "replaceability": 2, "alternative_suppliers": 1, "lead_time_weeks": 12, "scopes": ["scope2-mets-de"], "note": "S2-specifik DC-buss och EMS — byte kräver ny systemdesign"}, "zem-integration": {"name": "S3 Systemintegration", "replaceability": 2, "alternative_suppliers": 1, "lead_time_weeks": 12, "scopes": ["scope3-zem-de"], "note": "S3-specifik integration — byte kräver ny systemdesign"}, "yanmar-750": {"name": "Yanmar 750kW Framdrift", "replaceability": 2, "alternative_suppliers": 2, "lead_time_weeks": 18, "scopes": ["scope4-traditional"], "note": "Mekanisk koppling — byte kräver motor+växellåda+fundament"}, "genset-75kw-hotel": {"name": "75kW Hotellgenset", "replaceability": 5, "alternative_suppliers": 5, "lead_time_weeks": 4, "scopes": ["scope4-traditional"], "note": "Standardprodukt — enkelt att byta"}}}, "obsolescence": {"regulation": {"imo_eexi_tightening_year": 2030, "imo_probability_stricter": 0.7, "eu_ets_maritime_year": 2027, "eu_ets_probability": 0.9, "co2_cost_sek_per_ton_2030": 1500, "co2_cost_sek_per_ton_2035": 2500}, "scopes": {"scope1-scania-hybrid": {"flexibility_score": 2, "component_modularity": 2, "fuel_conversion_difficulty": 4, "forced_upgrade_cost_msek": 8.0, "upgrade_lead_time_months": 18, "redundancy": {"genset_total": 2, "genset_min_operational": 1, "genset_loss_impact": "50% el-kapacitet borta, DP omöjligt, survey degraderad", "prop_diesel_total": 2, "prop_diesel_redundancy": false, "prop_loss_kw": 440, "prop_loss_impact": "Halv framdrift på en axel. Transit max ~8kn (en motor). Survey möjlig med begränsad fart. Danfoss 295kW kan delvis kompensera på drabbad axel.", "single_point_of_failure": ["DW6 prop BB", "DW6 prop SB", "ZF 3055A BB", "ZF 3055A SB", "Lyngå PTO-styrning"]}, "note": "Mekanisk prop-diesel låser bränsletyp. Genset kan bytas men DW6 prop kräver total ombyggnad av drivlina. Lyngå-styrning proprietär.", "risks": ["DW6 framdrift kan inte konverteras till metanol/LNG", "ZF PTO/PTI-logik specifik för denna konfiguration", "Lyngå styrsystem saknar standardiserat gränssnitt", "Komplex felsökning: mek+el+PTO kräver specialkompetens", "DW6 prop-haveri = 440kW förlust på en axel, ingen redundans"]}, "scope2-mets-de": {"flexibility_score": 4, "component_modularity": 4, "fuel_conversion_difficulty": 2, "forced_upgrade_cost_msek": 4.0, "upgrade_lead_time_months": 10, "redundancy": {"genset_total": 4, "genset_min_operational": 1, "genset_loss_impact": "3 av 4 kvar — full operativ kapacitet utom transit (kräver 4). DP/survey: oförändrat.", "prop_diesel_total": 0, "prop_diesel_redundancy": true, "prop_loss_kw": 0, "prop_loss_impact": "Elmotor-haveri: tappar en axel men resterande genset + elmotor ger fortfarande framdrift.", "single_point_of_failure": ["DC-buss S2", "Huvudtavla"]}, "note": "DE-arkitektur: byt genset till metanol/LNG, resten av drivlinan orörd. Elmotorer standardiserade. S2 systemintegration dock specifik.", "risks": ["S2 systemintegration — specifik EMS/DC-buss design", "4× genset kräver koordinerad uppgradering vid bränslebyte"]}, "scope3-zem-de": {"flexibility_score": 4, "component_modularity": 4, "fuel_conversion_difficulty": 2, "forced_upgrade_cost_msek": 4.0, "upgrade_lead_time_months": 10, "redundancy": {"genset_total": 4, "genset_min_operational": 1, "genset_loss_impact": "3 av 4 kvar — full operativ kapacitet utom transit (kräver 4). DP/survey: oförändrat.", "prop_diesel_total": 0, "prop_diesel_redundancy": true, "prop_loss_kw": 0, "prop_loss_impact": "Elmotor-haveri: tappar en axel men resterande genset + elmotor ger fortfarande framdrift.", "single_point_of_failure": ["DC-buss S3", "Huvudtavla"]}, "note": "Samma DE-fördel som S2. S3 systemintegration dock specifik.", "risks": ["S3 systemintegration — specifik design", "3× genset kräver koordinerad uppgradering vid bränslebyte"]}, "scope4-traditional": {"flexibility_score": 1, "component_modularity": 1, "fuel_conversion_difficulty": 5, "forced_upgrade_cost_msek": 12.0, "upgrade_lead_time_months": 24, "redundancy": {"genset_total": 2, "genset_min_operational": 1, "genset_loss_impact": "1 av 2 kvar — hotel OK, men ingen reserv", "prop_diesel_total": 2, "prop_diesel_redundancy": false, "prop_loss_kw": 750, "prop_loss_impact": "Halv framdrift — en axel borta. Ingen el-backup. Max ~7kn.", "single_point_of_failure": ["Yanmar BB", "Yanmar SB", "Växellåda BB", "Växellåda SB"]}, "note": "Allt låst — mekanisk Yanmar + växellåda = total ombyggnad vid bränslebyte. Ingen elektrisk infrastruktur att bygga vidare på.", "risks": ["Ingen elektrisk infrastruktur — konvertering = nybygge", "CII-rating försämras över tid utan möjlighet till optimering", "Yanmar 750kW specifik — få alternativ", "Motorhaveri = 750kW förlust, ingen el-kompensation"]}}}, "risk_per_scope": {"scope1-scania-hybrid": {"vendor_risk_kr_yr": 462000.0, "obsolescence_kr_yr": 373333.0, "flexibility_score": 2, "component_modularity": 2, "fuel_conversion_difficulty": 4, "forced_upgrade_cost_msek": 8.0, "redundancy": {"genset_total": 2, "genset_min_operational": 1, "genset_loss_impact": "50% el-kapacitet borta, DP omöjligt, survey degraderad", "prop_diesel_total": 2, "prop_diesel_redundancy": false, "prop_loss_kw": 440, "prop_loss_impact": "Halv framdrift på en axel. Transit max ~8kn (en motor). Survey möjlig med begränsad fart. Danfoss 295kW kan delvis kompensera på drabbad axel.", "single_point_of_failure": ["DW6 prop BB", "DW6 prop SB", "ZF 3055A BB", "ZF 3055A SB", "Lyngå PTO-styrning"]}, "risks": ["DW6 framdrift kan inte konverteras till metanol/LNG", "ZF PTO/PTI-logik specifik för denna konfiguration", "Lyngå styrsystem saknar standardiserat gränssnitt", "Komplex felsökning: mek+el+PTO kräver specialkompetens", "DW6 prop-haveri = 440kW förlust på en axel, ingen redundans"]}, "scope2-mets-de": {"vendor_risk_kr_yr": 120750.0, "obsolescence_kr_yr": 186667.0, "flexibility_score": 4, "component_modularity": 4, "fuel_conversion_difficulty": 2, "forced_upgrade_cost_msek": 4.0, "redundancy": {"genset_total": 4, "genset_min_operational": 1, "genset_loss_impact": "3 av 4 kvar — full operativ kapacitet utom transit (kräver 4). DP/survey: oförändrat.", "prop_diesel_total": 0, "prop_diesel_redundancy": true, "prop_loss_kw": 0, "prop_loss_impact": "Elmotor-haveri: tappar en axel men resterande genset + elmotor ger fortfarande framdrift.", "single_point_of_failure": ["DC-buss S2", "Huvudtavla"]}, "risks": ["S2 systemintegration — specifik EMS/DC-buss design", "4× genset kräver koordinerad uppgradering vid bränslebyte"]}, "scope3-zem-de": {"vendor_risk_kr_yr": 120750.0, "obsolescence_kr_yr": 186667.0, "flexibility_score": 4, "component_modularity": 4, "fuel_conversion_difficulty": 2, "forced_upgrade_cost_msek": 4.0, "redundancy": {"genset_total": 4, "genset_min_operational": 1, "genset_loss_impact": "3 av 4 kvar — full operativ kapacitet utom transit (kräver 4). DP/survey: oförändrat.", "prop_diesel_total": 0, "prop_diesel_redundancy": true, "prop_loss_kw": 0, "prop_loss_impact": "Elmotor-haveri: tappar en axel men resterande genset + elmotor ger fortfarande framdrift.", "single_point_of_failure": ["DC-buss S3", "Huvudtavla"]}, "risks": ["S3 systemintegration — specifik design", "3× genset kräver koordinerad uppgradering vid bränslebyte"]}, "scope4-traditional": {"vendor_risk_kr_yr": 66500.0, "obsolescence_kr_yr": 560000.0, "flexibility_score": 1, "component_modularity": 1, "fuel_conversion_difficulty": 5, "forced_upgrade_cost_msek": 12.0, "redundancy": {"genset_total": 2, "genset_min_operational": 1, "genset_loss_impact": "1 av 2 kvar — hotel OK, men ingen reserv", "prop_diesel_total": 2, "prop_diesel_redundancy": false, "prop_loss_kw": 750, "prop_loss_impact": "Halv framdrift — en axel borta. Ingen el-backup. Max ~7kn.", "single_point_of_failure": ["Yanmar BB", "Yanmar SB", "Växellåda BB", "Växellåda SB"]}, "risks": ["Ingen elektrisk infrastruktur — konvertering = nybygge", "CII-rating försämras över tid utan möjlighet till optimering", "Yanmar 750kW specifik — få alternativ", "Motorhaveri = 750kW förlust, ingen el-kompensation"]}}}};
+const ENGINE_CATALOG = COMPARISON_DATA.engine_catalog || {};
+const SCOPE_COLORS = {
+  "scope1-scania-hybrid": "#e76f51",
+  "scope2-mets-de": "#2a9d8f",
+  "scope3-zem-de": "#264653",
+  "scope4-traditional": "#6c757d"
+};
+
+const STORAGE_KEY = "ng_config_overrides";
+let overrides = {};
+let originalValues = {};
+let changeCount = 0;
+
+// Load existing overrides on page load
+function loadOverrides() {
+  try {
+    let stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      overrides = JSON.parse(stored);
+    }
+  } catch(e) {}
+}
+
+// Save overrides to localStorage
+function saveOverrides() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides));
+  } catch(e) {}
+}
+
+// Apply stored overrides to input fields
+function applyStoredToInputs() {
+  document.querySelectorAll('.cfg-input').forEach(input => {
+    let key = input.dataset.key;
+    if (overrides[key] !== undefined) {
+      input.value = overrides[key];
+      input.classList.add('modified');
+    }
+  });
+}
+
+// Store original values from DOM
+function captureOriginals() {
+  document.querySelectorAll('.cfg-input').forEach(input => {
+    originalValues[input.dataset.key] = input.value;
+  });
+}
+
+// Update status bar
+function updateStatus() {
+  changeCount = Object.keys(overrides).length;
+  let el = document.getElementById('change-status');
+  if (changeCount === 0) {
+    el.textContent = "Inga ändringar";
+    el.className = "status";
+  } else {
+    el.textContent = `${changeCount} parameter${changeCount > 1 ? 'ar' : ''} ändrad${changeCount > 1 ? 'e' : ''}`;
+    el.className = "status has-changes";
+  }
+}
+
+// Handle input change
+function onInputChange(e) {
+  let input = e.target;
+  let key = input.dataset.key;
+  let val = input.value;
+  let orig = originalValues[key];
+
+  if (val !== orig) {
+    overrides[key] = val;
+    input.classList.add('modified');
+  } else {
+    delete overrides[key];
+    input.classList.remove('modified');
+  }
+  saveOverrides();
+  updateStatus();
+}
+
+// Reset all overrides
+function resetAll() {
+  overrides = {};
+  saveOverrides();
+  document.querySelectorAll('.cfg-input').forEach(input => {
+    let key = input.dataset.key;
+    if (originalValues[key] !== undefined) {
+      input.value = originalValues[key];
+    }
+    input.classList.remove('modified');
+  });
+  // Re-render all dynamic elements
+  renderScopeConfigurator();
+  updateUsageCells();
+  recalcAllMaintRates();
+  renderMaintModel();
+  updateBatteryMetadata();
+  updateStatus();
+}
+
+// Apply and navigate to dashboard
+function applyAndGo() {
+  saveOverrides();
+  window.location.href = "comparison.html";
+}
+
+// ======================================
+// Scope Configurator — motor-swap dropdowns
+// ======================================
+function enginesByType(type) {
+  return Object.values(ENGINE_CATALOG).filter(e => e.type === type);
+}
+function enginesByTypes(types) {
+  return Object.values(ENGINE_CATALOG).filter(e => types.includes(e.type));
+}
+
+function fmtKw(kw) { return kw >= 1000 ? (kw/1000).toFixed(1) + ' MW' : kw + ' kW'; }
+
+function renderScopeConfigurator() {
+  let container = document.getElementById('scope-configurator');
+  if (!container) return;
+  container.innerHTML = '';
+
+  let scopeParams = COMPARISON_DATA.scope_params || {};
+
+  for (let [scopeId, sp] of Object.entries(scopeParams)) {
+    let sec = sp.scope_engine_config || {};
+    let scopeName = sp.scope_name || scopeId;
+    let color = SCOPE_COLORS[scopeId] || '#6c757d';
+
+    let card = document.createElement('div');
+    card.className = 'scope-card';
+    card.style.borderLeft = `3px solid ${color}`;
+
+    let html = `<div class="sc-name">${scopeName}</div>`;
+    html += `<div class="sc-row" style="margin-bottom:4px;"><span class="badge badge-${sp.type === 'hybrid' ? 'diesel' : sp.type === 'diesel' ? 'diesel' : 'genset'}">${sp.type}</span></div>`;
+
+    // --- Propulsion engine ---
+    let propRole = sec.prop_role || 'mechanical';
+    let propTypes = propRole === 'electrical' ? ['electric_motor'] : ['diesel'];
+    let propOptions = enginesByTypes(propTypes);
+    let currentPropId = overrides[`scope_swap.${scopeId}.prop_engine`] || sec.prop_engine_id || '';
+    let propCount = sec.prop_count || 2;
+
+    html += `<div class="sc-row" style="margin-top:8px;"><strong>Framdrivning</strong> <span style="color:#6c757d; font-size:11px;">(${propRole === 'electrical' ? 'elmotor' : 'mekanisk'}, ${propCount}st)</span></div>`;
+    html += `<div class="sc-row"><select class="scope-select" data-scope="${scopeId}" data-slot="prop_engine">`;
+    for (let eng of propOptions) {
+      let sel = eng.id === currentPropId ? ' selected' : '';
+      html += `<option value="${eng.id}"${sel}>${eng.name} (${fmtKw(eng.power_kw)})</option>`;
+    }
+    html += `</select></div>`;
+
+    // --- Genset ---
+    if (sec.genset_engine_id) {
+      let gsOptions = enginesByType('genset');
+      let currentGsId = overrides[`scope_swap.${scopeId}.genset_engine`] || sec.genset_engine_id;
+      let gsCount = parseInt(overrides[`scope_swap.${scopeId}.genset_count`]) || sec.genset_count || 0;
+
+      html += `<div class="sc-row" style="margin-top:8px;"><strong>Genset</strong></div>`;
+      html += `<div class="sc-row"><select class="scope-select" data-scope="${scopeId}" data-slot="genset_engine">`;
+      for (let eng of gsOptions) {
+        let sel = eng.id === currentGsId ? ' selected' : '';
+        html += `<option value="${eng.id}"${sel}>${eng.name} (${fmtKw(eng.power_kw)})</option>`;
+      }
+      html += `</select>`;
+      html += ` <span style="font-size:12px; color:#6c757d;">×</span> `;
+      html += `<input type="number" class="scope-count" data-scope="${scopeId}" data-slot="genset_count" value="${gsCount}" min="1" max="8" step="1" style="width:44px; text-align:center;">`;
+      html += `<span class="edit-unit">st</span></div>`;
+    }
+
+    // --- Electric motor (hybrid only) ---
+    if (sec.electric_motor_id) {
+      let elOptions = enginesByType('electric_motor');
+      let currentElId = overrides[`scope_swap.${scopeId}.electric_motor`] || sec.electric_motor_id;
+
+      html += `<div class="sc-row" style="margin-top:8px;"><strong>Elmotor (hybrid)</strong> <span style="color:#6c757d; font-size:11px;">(${sec.electric_motor_count || 2}st)</span></div>`;
+      html += `<div class="sc-row"><select class="scope-select" data-scope="${scopeId}" data-slot="electric_motor">`;
+      for (let eng of elOptions) {
+        let sel = eng.id === currentElId ? ' selected' : '';
+        html += `<option value="${eng.id}"${sel}>${eng.name} (${fmtKw(eng.power_kw)})</option>`;
+      }
+      html += `</select></div>`;
+    }
+
+    // --- CAPEX ---
+    let capex = overrides[`scope.${scopeId}.capex_msek`] || sp.capex_msek || 0;
+    html += `<div class="sc-row" style="margin-top:8px; padding-top:8px; border-top:1px solid #e9ecef;">`;
+    html += `<strong>CAPEX:</strong> `;
+    html += `<input type="number" class="edit-input cfg-input" data-key="scope.${scopeId}.capex_msek" value="${capex}" min="0" max="100" step="0.1" style="width:70px;">`;
+    html += `<span class="edit-unit">MSEK</span></div>`;
+
+    // --- Summary: vad som ändrats ---
+    let swapKeys = Object.keys(overrides).filter(k => k.startsWith(`scope_swap.${scopeId}.`));
+    if (swapKeys.length > 0) {
+      html += `<div style="margin-top:6px; padding:4px 8px; background:#fff3cd; border-radius:4px; font-size:11px; color:#856404;">`;
+      html += `⚡ ${swapKeys.length} motorval ändrad${swapKeys.length > 1 ? 'e' : ''}`;
+      html += `</div>`;
+    }
+
+    card.innerHTML = html;
+    container.appendChild(card);
+  }
+
+  // Attach listeners to scope selects and counts
+  container.querySelectorAll('.scope-select').forEach(sel => {
+    sel.addEventListener('change', onScopeEngineChange);
+  });
+  container.querySelectorAll('.scope-count').forEach(inp => {
+    inp.addEventListener('input', onScopeEngineChange);
+  });
+}
+
+// ======================================
+// Dynamic "Används i" — rebuilds from scope configs + overrides
+// ======================================
+function buildCurrentScopeEngineMap() {
+  // Returns: { engine_id → [{scope_id, scope_name, role, count}] }
+  let map = {};
+  let scopeParams = COMPARISON_DATA.scope_params || {};
+
+  for (let [scopeId, sp] of Object.entries(scopeParams)) {
+    let sec = sp.scope_engine_config || {};
+    let scopeName = sp.scope_name || scopeId;
+
+    // Resolve current selections (override or default)
+    let propId = overrides[`scope_swap.${scopeId}.prop_engine`] || sec.prop_engine_id;
+    let gsId = overrides[`scope_swap.${scopeId}.genset_engine`] || sec.genset_engine_id;
+    let gsCount = parseInt(overrides[`scope_swap.${scopeId}.genset_count`]) || sec.genset_count || 0;
+    let elId = sec.electric_motor_id; // electric motor swap override
+    if (overrides[`scope_swap.${scopeId}.electric_motor`]) {
+      elId = overrides[`scope_swap.${scopeId}.electric_motor`];
+    }
+    let propRole = sec.prop_role || 'mechanical';
+    let propCount = sec.prop_count || 2;
+
+    // Engine groups may pool prop+genset (e.g. scope1: 4× DW6 pool)
+    // Check if engine_groups has a different count for this engine
+    let egCounts = {};
+    for (let g of (sp.engine_groups || [])) {
+      egCounts[g.engine_id] = g.count;
+    }
+
+    if (propId) {
+      let displayCount = egCounts[propId] || propCount;
+      let roleLabel = propRole === 'electrical' ? 'propulsion (el)' : 'propulsion (mek)';
+      // If prop engine appears in engine_groups with a higher count, it's pooled
+      if (egCounts[propId] && egCounts[propId] > propCount) {
+        displayCount = egCounts[propId];
+        roleLabel = `pool (${displayCount}st)`;
+      }
+      if (!map[propId]) map[propId] = [];
+      map[propId].push({scope_id: scopeId, scope_name: scopeName, role: roleLabel, count: displayCount});
+    }
+
+    if (gsId && gsId !== propId) {
+      let displayCount = egCounts[gsId] || gsCount;
+      if (!map[gsId]) map[gsId] = [];
+      map[gsId].push({scope_id: scopeId, scope_name: scopeName, role: 'genset', count: displayCount});
+    }
+
+    if (elId) {
+      if (!map[elId]) map[elId] = [];
+      map[elId].push({scope_id: scopeId, scope_name: scopeName, role: 'elmotor (hybrid)', count: sec.electric_motor_count || 2});
+    }
+  }
+  return map;
+}
+
+function updateUsageCells() {
+  let map = buildCurrentScopeEngineMap();
+
+  document.querySelectorAll('.usage-cell').forEach(cell => {
+    let engId = cell.dataset.engineId;
+    let usages = map[engId] || [];
+
+    if (usages.length === 0) {
+      cell.innerHTML = '<span style="color:#adb5bd;">—</span>';
+      return;
+    }
+
+    let html = '';
+    for (let u of usages) {
+      let color = SCOPE_COLORS[u.scope_id] || '#6c757d';
+      html += `<div style="font-size:11px; margin-bottom:2px; white-space:nowrap;">`;
+      html += `<span style="display:inline-block;width:3px;height:10px;background:${color};border-radius:1px;margin-right:4px;vertical-align:middle;"></span>`;
+      html += `<strong>${u.scope_name}</strong>`;
+      if (u.count) html += `<span style="color:#6c757d;"> × ${u.count}</span>`;
+      html += `<span style="color:#adb5bd; font-size:10px; margin-left:4px;">${u.role}</span>`;
+      html += `</div>`;
+    }
+    cell.innerHTML = html;
+  });
+}
+
+function onScopeEngineChange(e) {
+  let el = e.target;
+  let scopeId = el.dataset.scope;
+  let slot = el.dataset.slot;
+  let val = el.value;
+
+  // Get default from scope_engine_config
+  let sec = (COMPARISON_DATA.scope_params[scopeId] || {}).scope_engine_config || {};
+  let defaultVal;
+  if (slot === 'genset_count') {
+    defaultVal = String(sec.genset_count || 0);
+  } else {
+    defaultVal = sec[slot + '_id'] || '';
+  }
+
+  let key = `scope_swap.${scopeId}.${slot}`;
+  if (val !== defaultVal) {
+    overrides[key] = val;
+    el.style.background = '#fff3cd';
+  } else {
+    delete overrides[key];
+    el.style.background = '';
+  }
+
+  // When engine changes → cascade: set override keys for BSFC, maint, OH
+  if (slot.endsWith('_engine')) {
+    cascadeEngineSwap(scopeId, slot, val);
+  }
+
+  saveOverrides();
+  updateStatus();
+  updateUsageCells();
+}
+
+function cascadeEngineSwap(scopeId, slot, newEngineId) {
+  let eng = ENGINE_CATALOG[newEngineId];
+  if (!eng) return;
+
+  let sp = COMPARISON_DATA.scope_params[scopeId];
+  if (!sp) return;
+
+  // Determine which role this engine fills
+  if (slot === 'prop_engine') {
+    // Update propulsion BSFC curve
+    if (eng.bsfc_curve && eng.bsfc_curve.length > 0) {
+      for (let [loadFrac, bsfc] of eng.bsfc_curve) {
+        let pct = Math.round(loadFrac * 100);
+        overrides[`engine.${newEngineId}.bsfc.${pct}`] = String(bsfc);
+      }
+    }
+    // Update propulsion maintenance
+    overrides[`scope_swap.${scopeId}.prop_maint_sek_per_h`] = String(eng.maint_sek_per_h);
+    overrides[`scope_swap.${scopeId}.prop_engine_kw`] = String(eng.power_kw);
+  }
+
+  if (slot === 'genset_engine') {
+    // Update genset BSFC curve
+    if (eng.bsfc_curve && eng.bsfc_curve.length > 0) {
+      for (let [loadFrac, bsfc] of eng.bsfc_curve) {
+        let pct = Math.round(loadFrac * 100);
+        overrides[`engine.${newEngineId}.bsfc.${pct}`] = String(bsfc);
+      }
+    }
+    // Update genset maintenance
+    overrides[`scope_swap.${scopeId}.genset_maint_sek_per_h`] = String(eng.maint_sek_per_h);
+    overrides[`scope_swap.${scopeId}.genset_engine_kw`] = String(eng.power_kw);
+  }
+
+  if (slot === 'electric_motor') {
+    overrides[`scope_swap.${scopeId}.electric_maint_sek_per_h`] = String(eng.maint_sek_per_h);
+    overrides[`scope_swap.${scopeId}.electric_engine_kw`] = String(eng.power_kw);
+  }
+
+  // Set OH overrides from engine catalog
+  if (eng.overhaul) {
+    overrides[`overhaul.${newEngineId}.interval_h`] = String(eng.overhaul.interval_h);
+    overrides[`overhaul.${newEngineId}.cost_sek`] = String(eng.overhaul.cost_sek);
+    overrides[`overhaul.${newEngineId}.lifespan_h`] = String(eng.overhaul.lifespan_h);
+    overrides[`overhaul.${newEngineId}.repl_cost_sek`] = String(eng.overhaul.replacement_cost_sek);
+  }
+}
+
+// ======================================
+// Live maintenance rate recalculation
+// Formula: max_interval = max(all intervals), total = Σ (max_interval / interval) × cost, rate = total / max_interval
+// ======================================
+function getServiceIntervalsForEngine(engineId) {
+  // Collect all svc-input elements for this engine and read their CURRENT values
+  let inputs = document.querySelectorAll(`.svc-input[data-engine="${engineId}"]`);
+  let intervals = [];
+  inputs.forEach(inp => {
+    let hours = parseInt(inp.dataset.interval);
+    let cost = parseFloat(inp.value) || 0;
+    if (hours > 0) intervals.push({hours, cost});
+  });
+  return intervals;
+}
+
+function calcMaintRate(intervals) {
+  if (!intervals || intervals.length === 0) return 0;
+  let maxI = Math.max(...intervals.map(i => i.hours));
+  if (maxI <= 0) return 0;
+  let total = intervals.reduce((sum, i) => sum + Math.floor(maxI / i.hours) * i.cost, 0);
+  return Math.round((total / maxI) * 100) / 100;
+}
+
+function recalcMaintRate(engineId) {
+  let intervals = getServiceIntervalsForEngine(engineId);
+  let rate = calcMaintRate(intervals);
+
+  // Update ALL live-maint-rate displays for this engine (Section 2 + Section 7)
+  document.querySelectorAll(`.live-maint-rate[data-engine-id="${engineId}"]`).forEach(el => {
+    el.textContent = rate.toFixed(2);
+    el.style.color = rate !== parseFloat(el.dataset.originalRate || rate) ? '#b45309' : '';
+  });
+
+  // Also update engine catalog maint rate so cascadeEngineSwap uses fresh data
+  if (ENGINE_CATALOG[engineId]) {
+    ENGINE_CATALOG[engineId].maint_sek_per_h = rate;
+  }
+}
+
+function recalcAllMaintRates() {
+  // Get unique engine IDs from svc inputs
+  let engineIds = new Set();
+  document.querySelectorAll('.svc-input').forEach(inp => engineIds.add(inp.dataset.engine));
+  engineIds.forEach(eid => recalcMaintRate(eid));
+}
+
+// ======================================
+// Section 7: Dynamic maintenance model table
+// ======================================
+function renderMaintModel() {
+  let tbody = document.getElementById('maint-model-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  // Build from engine catalog + current svc inputs
+  let engineIds = new Set();
+  document.querySelectorAll('.svc-input').forEach(inp => engineIds.add(inp.dataset.engine));
+
+  engineIds.forEach(engineId => {
+    let intervals = getServiceIntervalsForEngine(engineId);
+    let rate = calcMaintRate(intervals);
+    if (rate <= 0) return;
+
+    let engName = (ENGINE_CATALOG[engineId] || {}).name || engineId;
+    let basisParts = intervals.map(i => {
+      let costFmt = i.cost.toLocaleString('sv-SE').replace(/\s/g, ' ');
+      return `${i.hours}h/${costFmt} kr`;
+    });
+
+    let tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${engName}</td>
+      <td><strong class="live-maint-rate" data-engine-id="${engineId}">${rate.toFixed(2)}</strong> kr/h</td>
+      <td class="bsfc-mini">${basisParts.join(' ')}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ======================================
+// Section 8: Dynamic battery metadata
+// ======================================
+function updateBatteryMetadata() {
+  let appliesEl = document.getElementById('battery-applies-to');
+  if (!appliesEl) return;
+
+  // Find which scopes are hybrid (battery applies to hybrid scopes)
+  let scopeParams = COMPARISON_DATA.scope_params || {};
+  let hybridScopes = [];
+  for (let [sid, sp] of Object.entries(scopeParams)) {
+    if (sp.type === 'hybrid') {
+      hybridScopes.push(sp.scope_name || sid);
+    }
+  }
+  appliesEl.textContent = hybridScopes.length > 0 ? hybridScopes.join(', ') : 'Ingen';
+}
+
+// ======================================
+// Enhanced onInputChange — triggers downstream recalc
+// ======================================
+let _origOnInputChange = onInputChange;
+onInputChange = function(e) {
+  _origOnInputChange(e);
+
+  let key = e.target.dataset.key || '';
+
+  // If a service cost changed → recalc maint rate for that engine
+  if (key.match(/^engine\.[^.]+\.svc\./)) {
+    let engineId = key.split('.')[1];
+    recalcMaintRate(engineId);
+    renderMaintModel();
+  }
+};
+
+// ======================================
+// Enhanced scope engine change — also refresh maint model + battery
+// ======================================
+let _origOnScopeEngineChange = onScopeEngineChange;
+onScopeEngineChange = function(e) {
+  _origOnScopeEngineChange(e);
+  renderMaintModel();
+  updateBatteryMetadata();
+};
+
+// Init
+document.addEventListener('DOMContentLoaded', function() {
+  loadOverrides();
+  renderScopeConfigurator();
+  updateUsageCells();
+  captureOriginals();
+  applyStoredToInputs();
+  updateStatus();
+
+  // Store original maint rates for change detection
+  document.querySelectorAll('.live-maint-rate').forEach(el => {
+    el.dataset.originalRate = el.textContent.trim();
+  });
+
+  // Initial dynamic renders
+  recalcAllMaintRates();
+  renderMaintModel();
+  updateBatteryMetadata();
+
+  // Attach listeners
+  document.querySelectorAll('.cfg-input').forEach(input => {
+    input.addEventListener('input', onInputChange);
+  });
+});
+</script>
+
+</body>
+</html>

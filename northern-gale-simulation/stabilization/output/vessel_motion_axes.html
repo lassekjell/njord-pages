@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Vessel Motion — Roll, Pitch & Heave</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a1628; color: #e0e8f0; font-family: -apple-system, 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+  .container { max-width: 900px; padding: 32px; }
+  h1 { text-align: center; font-size: 22px; margin-bottom: 8px; color: #fff; }
+  .subtitle { text-align: center; font-size: 13px; color: #8899aa; margin-bottom: 28px; }
+  .cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  .card { background: #131f33; border-radius: 12px; padding: 20px; text-align: center; border: 1px solid #1e3050; }
+  .card h2 { font-size: 16px; margin-bottom: 4px; }
+  .card .axis { font-size: 12px; color: #8899aa; margin-bottom: 12px; }
+  .card svg { display: block; margin: 0 auto 12px; }
+  .card p { font-size: 12px; color: #99aabb; line-height: 1.5; text-align: left; }
+  .roll h2 { color: #ff6b6b; }
+  .pitch h2 { color: #4ecdc4; }
+  .heave h2 { color: #ffe66d; }
+  .data { margin-top: 10px; font-family: 'SF Mono', monospace; font-size: 11px; color: #6688aa; text-align: left; }
+  .data span { color: #aabbcc; }
+  .footer { text-align: center; margin-top: 24px; font-size: 11px; color: #556677; }
+</style>
+</head>
+<body>
+<div id="njord-password-gate">
+  <div class="njord-gate-box">
+    <div class="ns-logo">NS</div>
+    <h2>Njord Survey — Internal</h2>
+    <form onsubmit="return njordCheckPass()">
+      <input type="password" id="njord-gate-pwd" class="njord-gate-input"
+             placeholder="Enter password" autocomplete="off">
+      <button type="submit" class="njord-gate-btn">Open</button>
+    </form>
+    <div id="njord-gate-err" class="njord-gate-err">Incorrect password</div>
+  </div>
+</div>
+<div class="container">
+  <h1>Vessel Motion — Roll, Pitch & Heave</h1>
+  <div class="subtitle">Northern Gale — Catamaran survey vessel</div>
+
+  <div class="cards">
+    <!-- ROLL -->
+    <div class="card roll">
+      <h2>Roll</h2>
+      <div class="axis">Rotation about longitudinal axis (X)</div>
+      <svg width="200" height="160" viewBox="0 0 200 160">
+        <!-- Water -->
+        <rect x="0" y="100" width="200" height="60" fill="#0a2a4a" opacity="0.5"/>
+        <path d="M0,105 Q50,95 100,105 Q150,115 200,105 L200,160 L0,160Z" fill="#1a4a7a" opacity="0.3"/>
+
+        <!-- Center line (vertical reference) -->
+        <line x1="100" y1="30" x2="100" y2="130" stroke="#334455" stroke-width="1" stroke-dasharray="4,4"/>
+
+        <!-- Vessel cross-section - tilted -->
+        <g transform="rotate(-15, 100, 95)">
+          <!-- Left hull -->
+          <rect x="55" y="85" width="16" height="22" rx="3" fill="#4a6a8a" stroke="#6a8aaa" stroke-width="1.5"/>
+          <!-- Right hull -->
+          <rect x="129" y="85" width="16" height="22" rx="3" fill="#4a6a8a" stroke="#6a8aaa" stroke-width="1.5"/>
+          <!-- Bridge deck -->
+          <rect x="60" y="78" width="80" height="10" rx="2" fill="#3a5a7a" stroke="#5a7a9a" stroke-width="1"/>
+          <!-- Wheelhouse -->
+          <rect x="82" y="65" width="36" height="14" rx="2" fill="#2a4a6a" stroke="#5a7a9a" stroke-width="1"/>
+        </g>
+
+        <!-- Roll arrow -->
+        <path d="M60,45 A40,40 0 0,1 140,45" fill="none" stroke="#ff6b6b" stroke-width="2.5" marker-end="url(#arrowRoll)"/>
+        <path d="M140,45 A40,40 0 0,1 60,45" fill="none" stroke="#ff6b6b" stroke-width="2.5" stroke-dasharray="6,4"/>
+
+        <defs>
+          <marker id="arrowRoll" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L8,3 L0,6" fill="#ff6b6b"/>
+          </marker>
+        </defs>
+
+        <!-- Label -->
+        <text x="100" y="38" text-anchor="middle" fill="#ff6b6b" font-size="12" font-weight="700">ROLL</text>
+
+        <!-- +/- labels -->
+        <text x="42" y="60" text-anchor="middle" fill="#ff6b6b" font-size="10">Port ↑</text>
+        <text x="158" y="60" text-anchor="middle" fill="#ff6b6b" font-size="10">Stbd ↑</text>
+      </svg>
+      <p>Side-to-side tilting. The <strong>dominant motion</strong> on Northern Gale. Driven by beam seas and the catamaran's high metacentric height (GM).</p>
+      <div class="data">
+        Mild: <span>±6.5°</span><br>
+        Rough: <span>±12.9°</span><br>
+        Period: <span>~4 s</span>
+      </div>
+    </div>
+
+    <!-- PITCH -->
+    <div class="card pitch">
+      <h2>Pitch</h2>
+      <div class="axis">Rotation about transverse axis (Y)</div>
+      <svg width="200" height="160" viewBox="0 0 200 160">
+        <!-- Water -->
+        <rect x="0" y="100" width="200" height="60" fill="#0a2a4a" opacity="0.5"/>
+        <path d="M0,108 Q50,98 100,108 Q150,118 200,108 L200,160 L0,160Z" fill="#1a4a7a" opacity="0.3"/>
+
+        <!-- Center reference -->
+        <line x1="100" y1="30" x2="100" y2="130" stroke="#334455" stroke-width="1" stroke-dasharray="4,4"/>
+
+        <!-- Vessel side view - tilted bow up -->
+        <g transform="rotate(8, 100, 92)">
+          <!-- Hull -->
+          <path d="M30,88 L30,100 Q30,108 40,108 L160,108 Q175,108 180,98 L180,88 Q175,82 165,82 L45,82 Q33,82 30,88Z" fill="#4a6a8a" stroke="#6a8aaa" stroke-width="1.5"/>
+          <!-- Superstructure -->
+          <rect x="70" y="72" width="60" height="12" rx="2" fill="#3a5a7a" stroke="#5a7a9a" stroke-width="1"/>
+          <!-- Wheelhouse -->
+          <rect x="85" y="62" width="30" height="11" rx="2" fill="#2a4a6a" stroke="#5a7a9a" stroke-width="1"/>
+          <!-- Bow marker -->
+          <text x="175" y="80" fill="#4ecdc4" font-size="9" font-weight="600">BOW</text>
+          <!-- Stern marker -->
+          <text x="22" y="80" fill="#4ecdc4" font-size="9" font-weight="600">STERN</text>
+        </g>
+
+        <!-- Pitch arrow -->
+        <path d="M55,50 A45,35 0 0,1 145,50" fill="none" stroke="#4ecdc4" stroke-width="2.5" marker-end="url(#arrowPitch)"/>
+        <path d="M145,50 A45,35 0 0,1 55,50" fill="none" stroke="#4ecdc4" stroke-width="2.5" stroke-dasharray="6,4"/>
+
+        <defs>
+          <marker id="arrowPitch" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L8,3 L0,6" fill="#4ecdc4"/>
+          </marker>
+        </defs>
+
+        <!-- Label -->
+        <text x="100" y="40" text-anchor="middle" fill="#4ecdc4" font-size="12" font-weight="700">PITCH</text>
+
+        <!-- +/- -->
+        <text x="148" y="45" fill="#4ecdc4" font-size="10">Bow ↑</text>
+      </svg>
+      <p>Bow up/down tilting. Well-controlled in moderate conditions due to the catamaran's long waterline. Increases sharply in head seas.</p>
+      <div class="data">
+        Mild: <span>range 3.1° (+1° trim)</span><br>
+        Rough: <span>range 14.6°</span><br>
+        Factor: <span>4.7×</span>
+      </div>
+    </div>
+
+    <!-- HEAVE -->
+    <div class="card heave">
+      <h2>Heave</h2>
+      <div class="axis">Vertical translation (Z)</div>
+      <svg width="200" height="160" viewBox="0 0 200 160">
+        <!-- Water surface -->
+        <rect x="0" y="90" width="200" height="70" fill="#0a2a4a" opacity="0.5"/>
+        <path d="M0,95 Q25,85 50,95 Q75,105 100,95 Q125,85 150,95 Q175,105 200,95 L200,160 L0,160Z" fill="#1a4a7a" opacity="0.3"/>
+
+        <!-- Reference waterline -->
+        <line x1="20" y1="95" x2="180" y2="95" stroke="#ffe66d" stroke-width="0.5" stroke-dasharray="3,3" opacity="0.4"/>
+
+        <!-- Vessel at high position -->
+        <g opacity="0.35">
+          <path d="M55,68 L55,78 Q55,83 62,83 L138,83 Q148,83 150,78 L150,68 Q147,63 140,63 L65,63 Q57,63 55,68Z" fill="#4a6a8a" stroke="#6a8aaa" stroke-width="1"/>
+        </g>
+
+        <!-- Vessel at current position -->
+        <g>
+          <path d="M55,82 L55,92 Q55,97 62,97 L138,97 Q148,97 150,92 L150,82 Q147,77 140,77 L65,77 Q57,77 55,82Z" fill="#4a6a8a" stroke="#6a8aaa" stroke-width="1.5"/>
+          <rect x="78" y="70" width="44" height="8" rx="2" fill="#3a5a7a" stroke="#5a7a9a" stroke-width="1"/>
+          <rect x="88" y="62" width="24" height="9" rx="2" fill="#2a4a6a" stroke="#5a7a9a" stroke-width="1"/>
+        </g>
+
+        <!-- Vessel at low position -->
+        <g opacity="0.35">
+          <path d="M55,96 L55,106 Q55,111 62,111 L138,111 Q148,111 150,106 L150,96 Q147,91 140,91 L65,91 Q57,91 55,96Z" fill="#4a6a8a" stroke="#6a8aaa" stroke-width="1"/>
+        </g>
+
+        <!-- Heave arrow -->
+        <line x1="170" y1="58" x2="170" y2="118" stroke="#ffe66d" stroke-width="2"/>
+        <polygon points="170,55 165,63 175,63" fill="#ffe66d"/>
+        <polygon points="170,121 165,113 175,113" fill="#ffe66d"/>
+
+        <!-- Label -->
+        <text x="172" y="92" fill="#ffe66d" font-size="12" font-weight="700" text-anchor="start"> HEAVE</text>
+
+        <!-- +/- -->
+        <text x="30" y="72" fill="#ffe66d" font-size="9" opacity="0.6">UP</text>
+        <text x="28" y="116" fill="#ffe66d" font-size="9" opacity="0.6">DOWN</text>
+      </svg>
+      <p>Vertical bodily movement — the whole vessel rises and falls with the waves. Critical for survey equipment and heave compensation.</p>
+      <div class="data">
+        Mild: <span>±0.45 m</span><br>
+        Rough: <span>±1.36 m</span><br>
+        Factor: <span>3.0×</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Northern Gale — Catamaran survey vessel &nbsp;|&nbsp; Data from Kongsberg Seapath 320 &nbsp;|&nbsp; Njord Survey
+  </div>
+</div>
+</body>
+</html>

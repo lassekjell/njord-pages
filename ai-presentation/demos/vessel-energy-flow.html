@@ -1,0 +1,4126 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Northern Gale — Energy Flow</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0a0e1a;
+  --surface: #111827;
+  --surface2: #1a2035;
+  --border: #2a3050;
+  --text: #e2e8f0;
+  --text-dim: #94a3b8;
+  --text-muted: #64748b;
+  --scope1: #e65100;
+  --scope1-glow: rgba(230,81,0,0.4);
+  --scope-active: #e65100;
+  --electric: #38bdf8;
+  --mechanical: #f59e0b;
+  --battery-green: #22c55e;
+  --thruster-cyan: #06b6d4;
+  --genset-purple: #a78bfa;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+  height: 100vh;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  grid-template-rows: 56px 1fr;
+  height: 100vh;
+}
+
+/* === HEADER === */
+.header {
+  grid-column: 1 / -1;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+}
+.header h1 { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+.badge {
+  background: var(--scope-active); color: #fff;
+  font-size: 11px; padding: 2px 8px; border-radius: 4px;
+  font-weight: 700; letter-spacing: 0.5px;
+}
+.mode-switcher {
+  display: flex; gap: 4px; background: var(--bg); padding: 4px; border-radius: 8px;
+}
+.mode-btn {
+  padding: 6px 16px; border: none; background: transparent;
+  color: var(--text-dim); font-size: 13px; font-weight: 500;
+  border-radius: 6px; cursor: pointer; transition: all 0.3s; font-family: inherit;
+}
+.mode-btn.active { background: var(--scope-active); color: #fff; box-shadow: 0 2px 8px var(--scope1-glow); }
+.mode-btn:hover:not(.active) { color: var(--text); background: var(--surface2); }
+
+/* === VESSEL VIEW === */
+.vessel-view {
+  position: relative; display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  background: radial-gradient(ellipse at center, #0f1729 0%, var(--bg) 70%);
+}
+/* Ambient water-glow overlay */
+.vessel-view::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 800px 400px at 50% 50%, rgba(6,182,212,0.03) 0%, transparent 70%);
+  pointer-events: none;
+}
+/* Subtle animated water-stripe texture */
+.vessel-view::after {
+  content: ''; position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    0deg, transparent 0px,
+    rgba(56,189,248,0.014) 1px,
+    transparent 2px
+  );
+  animation: waterShift 8s linear infinite;
+  pointer-events: none;
+}
+@keyframes waterShift { to { transform: translateY(20px); } }
+
+.vessel-svg { width: 100%; height: 100%; }
+
+/* === DASHBOARD === */
+.dashboard {
+  background: var(--surface); border-left: 1px solid var(--border);
+  display: block; overflow-y: auto; padding: 12px;
+}
+.dashboard::-webkit-scrollbar { width: 4px; }
+.dashboard::-webkit-scrollbar-track { background: var(--surface); }
+.dashboard::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.dash-placeholder { text-align: center; }
+.ph-title { font-size: 28px; font-weight: 800; color: var(--border); margin-bottom: 8px; letter-spacing: 3px; }
+.ph-sub { font-size: 12px; color: var(--text-muted); }
+
+/* === DASHBOARD SECTIONS (Fas 4) === */
+.dash-section {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 13px 15px; margin-bottom: 10px;
+}
+.dash-section h3 {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--text-muted); margin-bottom: 9px;
+}
+/* Speed */
+.speed-display { display: flex; align-items: baseline; gap: 8px; }
+.speed-val  { font-size: 34px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--text); }
+.speed-unit { font-size: 12px; color: var(--text-muted); font-weight: 600; letter-spacing: 2px; }
+/* KPI grid */
+.kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.kpi { background: var(--bg); border: 1px solid var(--border); border-radius: 7px; padding: 7px 9px; }
+.kpi-label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 2px; }
+.kpi-value { font-size: 19px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.kpi-unit  { font-size: 10px; color: var(--text-dim); }
+.kpi-mech .kpi-value  { color: var(--mechanical); }
+.kpi-elec .kpi-value  { color: var(--electric); }
+.kpi-total .kpi-value { color: var(--text); }
+.kpi-hotel .kpi-value { color: var(--genset-purple); }
+/* Power bars */
+.power-bars { display: flex; flex-direction: column; gap: 6px; }
+.pb-row   { display: flex; align-items: center; gap: 6px; }
+.pb-label { font-size: 9px; color: var(--text-muted); width: 60px; flex-shrink: 0; }
+.pb-track { flex: 1; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; }
+.pb-fill  { height: 100%; border-radius: 4px; transition: width 1s ease; width: 0%; }
+.pb-mech  { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.pb-elec  { background: linear-gradient(90deg, #38bdf8, #7dd3fc); }
+.pb-thr   { background: linear-gradient(90deg, #06b6d4, #67e8f9); }
+.pb-hotel { background: linear-gradient(90deg, #a78bfa, #c4b5fd); }
+.pb-val   { font-size: 9px; color: var(--text-dim); width: 46px; text-align: right;
+            font-variant-numeric: tabular-nums; flex-shrink: 0; }
+/* Battery */
+.batt-bar-track { position: relative; height: 26px; background: var(--bg); border: 1px solid var(--border);
+                  border-radius: 6px; overflow: hidden; margin-bottom: 5px; }
+.batt-bar-fill  { height: 100%; border-radius: 6px; transition: width 1s ease, background 0.5s ease;
+                  background: linear-gradient(90deg, #16a34a, #22c55e, #4ade80); }
+.batt-bar-fill.delivering { background: linear-gradient(90deg, #dc2626, #ef4444, #f87171); }
+.batt-bar-pct   { position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+                  font-size: 11px; font-weight: 700; color: var(--text); }
+.batt-limits    { display: flex; justify-content: space-between; font-size: 8px;
+                  color: var(--text-muted); margin-bottom: 7px; }
+.batt-info-row  { display: flex; gap: 7px; }
+.batt-info-box  { flex: 1; background: var(--bg); border: 1px solid var(--border);
+                  border-radius: 6px; padding: 5px 8px; }
+.batt-info-lbl  { font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 2px; }
+.batt-status, .batt-power { font-size: 13px; font-weight: 700; }
+.batt-status.standby, .batt-power.standby   { color: var(--text-muted); }
+.batt-status.charging, .batt-power.charging { color: var(--battery-green); }
+.batt-status.delivering, .batt-power.delivering { color: #ef4444; }
+/* Engine cards (2×3 grid) */
+.eng-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.eng-card { background: var(--bg); border: 1px solid var(--border); border-radius: 7px;
+            padding: 7px 8px; transition: border-color 0.4s, opacity 0.4s, box-shadow 0.4s; }
+.eng-card.running     { border-color: rgba(245,158,11,0.5); box-shadow: 0 0 8px rgba(245,158,11,0.12); }
+.eng-card.electric-on { border-color: rgba(56,189,248,0.5); box-shadow: 0 0 8px rgba(56,189,248,0.12); }
+.eng-card.genset-on   { border-color: rgba(167,139,250,0.5); box-shadow: 0 0 8px rgba(167,139,250,0.12); }
+.eng-card.off         { opacity: 0.38; }
+.eng-name  { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+.eng-name.mech { color: var(--mechanical); }
+.eng-name.elec { color: var(--electric); }
+.eng-name.gs   { color: var(--genset-purple); }
+.eng-power  { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums;
+              color: var(--text); margin-bottom: 3px; }
+.eng-row    { display: flex; align-items: center; gap: 5px; }
+.eng-dot    { width: 6px; height: 6px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
+.eng-dot.active { background: var(--battery-green); animation: dotPulse 1.5s ease-in-out infinite; }
+@keyframes dotPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+.eng-status { font-size: 9px; color: var(--text-muted); }
+/* Mode description */
+.mode-desc { font-size: 11px; color: var(--text-dim); line-height: 1.6; margin: 0; }
+
+/* === FAS 6: SCOPE SWITCHER === */
+.scope-switcher { display: flex; gap: 4px; margin-right: 8px; }
+.scope-pill {
+  padding: 4px 10px; border: 2px solid transparent; background: transparent;
+  color: var(--text-muted); font-size: 11px; font-weight: 600; border-radius: 6px;
+  cursor: pointer; transition: all 0.25s; font-family: inherit; white-space: nowrap;
+}
+.scope-pill:hover { color: var(--text); }
+.scope-pill.active { color: #fff; }
+
+/* === FAS 5: AUTO-PLAY BUTTON === */
+.auto-play-btn {
+  padding: 6px 14px; background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text-dim); font-size: 12px; font-weight: 600; border-radius: 6px;
+  cursor: pointer; font-family: inherit; transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
+}
+.auto-play-btn:hover { border-color: var(--scope1); color: var(--text); }
+.auto-play-btn.playing { background: var(--scope1); color: #fff; border-color: var(--scope1); }
+
+/* === FAS 5: TIMELINE BAR === */
+.timeline-bar {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 10px 16px 14px;
+  background: linear-gradient(to top, rgba(10,14,26,0.92) 0%, transparent 100%);
+  flex-direction: column; gap: 6px; pointer-events: none;
+}
+.tl-track { display: flex; height: 6px; border-radius: 3px; overflow: hidden; gap: 2px; }
+.tl-seg   { height: 100%; border-radius: 2px; opacity: 0.4; transition: opacity 0.3s, filter 0.3s; }
+.tl-seg.active { opacity: 1; filter: brightness(1.5); }
+.tl-label { font-size: 11px; color: var(--text-dim); text-align: center; font-weight: 600; letter-spacing: 0.3px; }
+
+/* === FAS 5: TOOLTIP === */
+.svg-tooltip {
+  position: absolute; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 7px 11px; font-size: 11px; color: var(--text);
+  max-width: 220px; box-shadow: 0 4px 14px rgba(0,0,0,0.45);
+  pointer-events: none; z-index: 100; transition: opacity 0.15s; line-height: 1.45;
+}
+
+/* === FAS 5: VESSEL ROTATE (heading drift) === */
+#vesselRotate { transform-box: fill-box; transform-origin: 50% 50%; transition: transform 1.5s ease; }
+
+/* === FAS 5: RESPONSIVE === */
+@media (max-width: 1200px) {
+  .app { grid-template-columns: 1fr; grid-template-rows: 56px 1fr auto; }
+  .dashboard { border-left: none; border-top: 1px solid var(--border); max-height: 40vh; overflow-y: auto; }
+}
+
+/* === SVG COMPONENT STATES === */
+.comp { transition: opacity 0.5s ease, filter 0.5s ease; }
+
+/* === ENERGY FLOW LINES === */
+.flow-line {
+  fill: none;
+  stroke-dasharray: 6 4;
+  stroke-linecap: round;
+  animation: flowMove 0.8s linear infinite;
+  transition: opacity 0.6s ease;
+}
+@keyframes flowMove { to { stroke-dashoffset: -20; } }
+
+.flow-label {
+  font-size: 8px;
+  fill: #94a3b8;
+  text-anchor: middle;
+  pointer-events: none;
+  font-family: 'Inter', system-ui, sans-serif;
+  transition: opacity 0.6s ease;
+}
+
+/* === PROPELLER SPIN === */
+@keyframes propSpin { to { transform: rotate(360deg); } }
+.prop-spin {
+  animation: propSpin 1.5s linear infinite;
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+}
+
+/* === VESSEL FLOAT (outer wrapper, no SVG transform conflict) === */
+@keyframes vesselFloat {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-3px); }
+}
+#vesselGroup { animation: vesselFloat 4s ease-in-out infinite; }
+
+/* === THRUSTER JETS === */
+.thruster-jet { pointer-events: none; transition: opacity 0.4s ease; }
+
+/* SVG label font */
+.vl { font-family: 'Inter', system-ui, sans-serif; }
+
+/* === FAS 8: ENERGY PARTICLES === */
+.energy-particle { pointer-events: none; }
+
+/* === FAS 8: MODE BTN PULSE RING === */
+.mode-btn { position: relative; overflow: visible; }
+.mode-btn.active::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 8px;
+  border: 2px solid var(--scope-active);
+  animation: btnPulse 2.5s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes btnPulse {
+  0%, 100% { opacity: 0.45; transform: scale(1); }
+  50%       { opacity: 0.08; transform: scale(1.06); }
+}
+
+/* === FAS 8: LOADING SPLASH === */
+#loadingSplash { transition: opacity 0.5s ease; }
+@keyframes loadProgress { from { width: 0%; } to { width: 100%; } }
+
+/* === FAS 7: FUEL TICKER === */
+.fuel-ticker {
+  padding: 11px 13px;
+  border-bottom: 1px solid var(--border);
+}
+.fuel-row {
+  display: flex;
+  gap: 24px;
+  margin: 6px 0 4px;
+}
+.fuel-value { display: flex; align-items: baseline; gap: 3px; }
+.fuel-num {
+  font-size: 28px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  transition: color 0.3s;
+  min-width: 56px;
+}
+.fuel-unit { font-size: 12px; color: var(--text-dim); }
+.fuel-detail {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+.fuel-ticker.zero .fuel-num { color: #22c55e; }
+
+/* === FAS 7: DP FUEL COMPARE === */
+.dp-fuel-compare {
+  background: rgba(6,182,212,0.08);
+  border: 1px solid rgba(6,182,212,0.2);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-top: 8px;
+  font-size: 11px;
+}
+.compare-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 0;
+}
+.compare-label { color: var(--text-dim); }
+.compare-val { font-weight: 600; }
+.compare-val.green { color: #22c55e; }
+.compare-val.red   { color: #ef4444; }
+.savings-row {
+  border-top: 1px solid rgba(255,255,255,0.1);
+  margin-top: 4px;
+  padding-top: 4px;
+  font-weight: 700;
+}
+
+/* === FAS 10: SPEED SLIDER === */
+.speed-control { padding: 10px 15px; }
+.slider-row { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+.slider-label { font-size: 10px; color: var(--text-muted); width: 28px; flex-shrink: 0; }
+.speed-slider {
+  flex: 1; -webkit-appearance: none; height: 6px;
+  border-radius: 3px; background: var(--bg); outline: none;
+}
+.speed-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--scope-active); cursor: pointer;
+  box-shadow: 0 0 8px var(--scope1-glow); transition: box-shadow 0.2s;
+}
+.speed-slider::-webkit-slider-thumb:hover { box-shadow: 0 0 14px var(--scope1-glow); }
+.speed-slider::-moz-range-thumb {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--scope-active); cursor: pointer; border: none;
+}
+.slider-info { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); }
+.speed-control.hidden { display: none; }
+
+/* === FAS 10: CO₂ TICKER === */
+.co2-num {
+  color: #fb923c;
+  font-size: 22px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  min-width: 56px;
+}
+.co2-row {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+/* === FAS 10: DAGSKOSTNAD === */
+.cost-panel { padding: 13px 15px; }
+.cost-num {
+  font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums;
+  color: #fbbf24;
+}
+.cost-unit { font-size: 12px; color: var(--text-dim); margin-left: 2px; }
+.cost-detail { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+.workday-summary { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+.workday-summary h4 {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 8px;
+}
+.wd-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+.wd-item {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 6px; padding: 6px 8px; text-align: center;
+}
+.wd-label { display: block; font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 2px; }
+.wd-val { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text); }
+.co2-text { color: #fb923c; }
+.cost-text { color: #fbbf24; }
+.wd-comparison { font-size: 9px; color: var(--text-muted); margin-top: 6px; line-height: 1.5; }
+.wd-comparison .cheapest { color: #22c55e; font-weight: 700; }
+.wd-comparison .priciest { color: #ef4444; }
+
+/* === FAS 7: SEA TRIAL GRAPH === */
+#seaTrialSection { padding: 11px 13px; border-top: 1px solid var(--border); }
+#seaTrialSection h3 {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--text-muted); margin-bottom: 8px;
+}
+.sea-trial-canvas-wrap { position: relative; height: 160px; }
+.sea-trial-legend {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-top: 6px;
+}
+.st-dot {
+  width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0;
+}
+.active-dot {
+  background: var(--scope-active);
+  box-shadow: 0 0 6px var(--scope-active);
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<style>
+/* ─── PASSWORD GATE ─── */
+#njord-password-gate {
+  position: fixed; inset: 0; z-index: 99999;
+  background: #0a1e2a;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+#njord-password-gate.unlocked {
+  opacity: 0; visibility: hidden; pointer-events: none;
+}
+.njord-gate-box { text-align: center; max-width: 380px; width: 90%; }
+.njord-gate-box h2 {
+  color: white; font-size: 1.1rem; font-weight: 500;
+  margin-bottom: 1.5rem; opacity: 0.8;
+}
+.njord-gate-box .ns-logo {
+  width: 60px; height: 60px; background: #da2129; border-radius: 12px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 1.4rem; color: white; margin-bottom: 1.5rem;
+}
+.njord-gate-input {
+  width: 100%; padding: 0.85rem 1.2rem;
+  border: 2px solid rgba(255,255,255,0.15); border-radius: 10px;
+  background: rgba(255,255,255,0.07); color: white;
+  font-family: inherit; font-size: 1rem; outline: none;
+  transition: border-color 0.2s; margin-bottom: 0.75rem;
+}
+.njord-gate-input::placeholder { color: rgba(255,255,255,0.35); }
+.njord-gate-input:focus { border-color: #21bdbe; }
+.njord-gate-input.error {
+  border-color: #da2129;
+  animation: njord-shake 0.4s ease;
+}
+.njord-gate-btn {
+  width: 100%; padding: 0.85rem; border: none; border-radius: 10px;
+  background: #da2129; color: white; font-family: inherit;
+  font-size: 0.95rem; font-weight: 600; cursor: pointer;
+  transition: background 0.2s;
+}
+.njord-gate-btn:hover { background: #84160e; }
+.njord-gate-err {
+  color: #da2129; font-size: 0.8rem; margin-top: 0.75rem;
+  opacity: 0; transition: opacity 0.3s;
+}
+.njord-gate-err.visible { opacity: 1; }
+@keyframes njord-shake {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+</style>
+</head>
+<body>
+<div id="njord-password-gate">
+  <div class="njord-gate-box">
+    <div class="ns-logo">NS</div>
+    <h2>Njord Survey — Internal</h2>
+    <form onsubmit="return njordCheckPass()">
+      <input type="password" id="njord-gate-pwd" class="njord-gate-input"
+             placeholder="Enter password" autocomplete="off">
+      <button type="submit" class="njord-gate-btn">Open</button>
+    </form>
+    <div id="njord-gate-err" class="njord-gate-err">Incorrect password</div>
+  </div>
+</div>
+
+
+<!-- Fas 8: Loading splash -->
+<div id="loadingSplash" style="position:fixed;inset:0;background:#0a0e1a;display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:9999">
+  <div style="font-size:22px;font-weight:800;color:#e2e8f0;letter-spacing:2px;margin-bottom:6px">NORTHERN GALE</div>
+  <div style="font-size:11px;color:#64748b;letter-spacing:1px">ENERGY FLOW VISUALIZATION</div>
+  <div style="width:180px;height:3px;background:#1e293b;margin-top:18px;border-radius:2px;overflow:hidden">
+    <div style="height:100%;background:var(--scope-active);animation:loadProgress 1.2s ease-out forwards"></div>
+  </div>
+</div>
+
+<div class="app">
+
+<!-- HEADER -->
+<div class="header">
+  <h1>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M2 20L4 14H20L22 20"/>
+      <path d="M6.5 14L7 7H17L17.5 14"/>
+      <path d="M12 7V3"/>
+    </svg>
+    Northern Gale
+    <span class="badge" id="scopeBadge">SCOPE 1</span>
+  </h1>
+  <div class="scope-switcher" id="scopeSwitcher"></div>
+  <div class="mode-switcher" id="modeSwitcher"></div>
+  <button id="autoPlayBtn" class="auto-play-btn" onclick="toggleAutoPlay()">&#9654; Spela arbetsdag</button>
+</div>
+
+<!-- VESSEL VIEW -->
+<div class="vessel-view">
+  <svg class="vessel-svg" viewBox="0 0 900 500" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="glow-mech"    x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="3" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <filter id="glow-elec"    x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="4" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <filter id="glow-genset"  x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="3" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <filter id="glow-battery" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="4" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <filter id="glow-thruster" x="-70%" y="-70%" width="240%" height="240%">
+        <feGaussianBlur stdDeviation="5" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <!-- Fas 8: particle glow -->
+      <filter id="particleGlow" x="-100%" y="-100%" width="300%" height="300%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <!-- Fas 8: water wave pattern -->
+      <pattern id="waterWaves" width="120" height="120" patternUnits="userSpaceOnUse">
+        <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(56,189,248,0.022)" stroke-width="0.5"/>
+        <circle cx="60" cy="60" r="30" fill="none" stroke="rgba(56,189,248,0.013)" stroke-width="0.5"/>
+      </pattern>
+    </defs>
+
+    <!-- Fas 8: animated water background -->
+    <rect id="waterBg" width="900" height="500" fill="url(#waterWaves)" opacity="0.6">
+      <animateTransform attributeName="transform" type="translate"
+        values="0,0;-60,-60" dur="28s" repeatCount="indefinite"/>
+    </rect>
+
+    <!-- Water ripples at stern (absolute coords: akter at x≈185, centre y=250) -->
+    <g opacity="0.4">
+      <circle cx="170" cy="250" r="5" fill="none" stroke="#38bdf8" stroke-width="0.5">
+        <animate attributeName="r"       values="5;50"  dur="3s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.5;0" dur="3s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="170" cy="250" r="5" fill="none" stroke="#38bdf8" stroke-width="0.5">
+        <animate attributeName="r"       values="5;50"  dur="3s" repeatCount="indefinite" begin="1s"/>
+        <animate attributeName="opacity" values="0.5;0" dur="3s" repeatCount="indefinite" begin="1s"/>
+      </circle>
+      <circle cx="170" cy="250" r="5" fill="none" stroke="#38bdf8" stroke-width="0.5">
+        <animate attributeName="r"       values="5;50"  dur="3s" repeatCount="indefinite" begin="2s"/>
+        <animate attributeName="opacity" values="0.5;0" dur="3s" repeatCount="indefinite" begin="2s"/>
+      </circle>
+    </g>
+
+    <!--
+      VESSEL GROUP
+      #vesselGroup  = outer wrapper for CSS float animation (no SVG transform here)
+      #vesselRotate = CSS heading rotation wrapper (no SVG transform attribute here)
+      innermost <g> = SVG translate(300,350) for centering (no CSS animation here)
+      Three layers avoid CSS vs SVG transform conflicts (BUG-VA-002).
+    -->
+    <g id="vesselGroup">
+    <g id="vesselRotate">
+    <g transform="translate(450, 250)">
+
+      <!-- ============================================ HULLS + STRUCTURE (horizontal, bog → right) -->
+      <!-- BB hull (upper) -->
+      <path d="M-205,-90 C-242,-90 -262,-70 -272,-60 C-276,-55 -276,-50 -272,-50
+               L222,-50 C262,-50 282,-65 282,-70 C282,-75 262,-90 222,-90 Z"
+            fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" opacity="0.9"/>
+      <!-- SB hull (lower) -->
+      <path d="M-205,90 C-242,90 -262,70 -272,60 C-276,55 -276,50 -272,50
+               L222,50 C262,50 282,65 282,70 C282,75 262,90 222,90 Z"
+            fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" opacity="0.9"/>
+      <!-- Cross deck -->
+      <rect x="-85" y="-50" width="195" height="100" rx="4" fill="#1a2744" stroke="#334155" stroke-width="1"/>
+      <!-- Bridge (bow side, right) -->
+      <rect x="67" y="-30" width="56" height="60" rx="6" fill="#0f172a" stroke="#475569" stroke-width="1.5"/>
+      <rect x="75" y="-22" width="40" height="36" rx="3" fill="#1e3a5f" opacity="0.5"/>
+      <text x="95" y="-2" text-anchor="middle" class="vl" font-size="8" fill="#94a3b8">BRIDGE</text>
+      <!-- Vessel name below hull -->
+      <text x="0" y="115" text-anchor="middle" class="vl" font-size="11" font-weight="700" fill="#e2e8f0">NORTHERN GALE</text>
+      <text x="0" y="128" text-anchor="middle" class="vl" font-size="8" fill="#64748b">CATAMARAN SURVEY VESSEL</text>
+
+      <!-- ============================================ ENERGY FLOW LINES (behind components) -->
+
+      <!-- Genset 1 → Bus (genset1 bottom-center → bus at y=0) -->
+      <path id="flow-gen1-bus"       class="flow-line" d="M-65,-14 L-65,0"  stroke="#a78bfa" stroke-width="2" opacity="0"/>
+      <text id="label-flow-gen1-bus" class="flow-label" x="-78" y="-7" opacity="0"></text>
+
+      <!-- Genset 2 → Bus (genset2 top-center → bus at y=0) -->
+      <path id="flow-gen2-bus"       class="flow-line" d="M-65,14 L-65,3"   stroke="#a78bfa" stroke-width="2" opacity="0"/>
+      <text id="label-flow-gen2-bus" class="flow-label" x="-78" y="10" opacity="0"></text>
+
+      <!-- Genset 3 → Bus (Scope 2/3) -->
+      <path id="flow-gen3-bus"       class="flow-line" d="M-29,-14 L-29,0"  stroke="#a78bfa" stroke-width="2" opacity="0"/>
+      <text id="label-flow-gen3-bus" class="flow-label" x="-42" y="-7" opacity="0"></text>
+
+      <!-- Genset 4 → Bus (Scope 2) -->
+      <path id="flow-gen4-bus"       class="flow-line" d="M-29,14 L-29,3"   stroke="#a78bfa" stroke-width="2" opacity="0"/>
+      <text id="label-flow-gen4-bus" class="flow-label" x="-42" y="10" opacity="0"></text>
+
+      <!-- Bus → Danfoss BB (bus left end → Danfoss-BB right edge) -->
+      <path id="flow-bus-danfoss-bb"       class="flow-line" d="M-82,0 L-123,-75" stroke="#38bdf8" stroke-width="2" opacity="0"/>
+      <text id="label-flow-bus-danfoss-bb" class="flow-label" x="-96" y="-42" opacity="0"></text>
+
+      <!-- Bus → Danfoss SB -->
+      <path id="flow-bus-danfoss-sb"       class="flow-line" d="M-82,0 L-123,75"  stroke="#38bdf8" stroke-width="2" opacity="0"/>
+      <text id="label-flow-bus-danfoss-sb" class="flow-label" x="-96" y="42" opacity="0"></text>
+
+      <!-- Bus → Hotel (bus right end → hotel left edge) -->
+      <path id="flow-bus-hotel"       class="flow-line" d="M100,0 L80,0"    stroke="#a78bfa" stroke-width="1.5" opacity="0"/>
+      <text id="label-flow-bus-hotel" class="flow-label" x="90" y="-8" opacity="0"></text>
+
+      <!-- Bus ↔ Battery (along bus through battery) -->
+      <path id="flow-bus-battery"       class="flow-line" d="M10,0 L62,0"   stroke="#22c55e" stroke-width="2" opacity="0"/>
+      <text id="label-flow-bus-battery" class="flow-label" x="36" y="-8" opacity="0"></text>
+
+      <!-- Shore → Hotel (dock mode): from below vessel up to hotel bottom -->
+      <path id="flow-shore-hotel"       class="flow-line" d="M106,130 L106,14" stroke="#22c55e" stroke-width="2" opacity="0"/>
+      <text id="label-flow-shore-hotel" class="flow-label" x="118" y="72" opacity="0"></text>
+
+      <!-- Bus → Thruster 1 (bow port, upper): bus right → T1 -->
+      <path id="flow-bus-thruster1"       class="flow-line" d="M100,0 L220,-73" stroke="#06b6d4" stroke-width="1.5" opacity="0"/>
+      <text id="label-flow-bus-thruster1" class="flow-label" x="165" y="-44" opacity="0"></text>
+
+      <!-- Bus → Thruster 2 (bow stbd, lower) -->
+      <path id="flow-bus-thruster2"       class="flow-line" d="M100,0 L220,73"  stroke="#06b6d4" stroke-width="1.5" opacity="0"/>
+      <text id="label-flow-bus-thruster2" class="flow-label" x="165" y="44" opacity="0"></text>
+
+      <!-- Bus → Thruster 3 (stern port, upper): bus left → T3 -->
+      <path id="flow-bus-thruster3"       class="flow-line" d="M-82,0 L-235,-73" stroke="#06b6d4" stroke-width="1.5" opacity="0"/>
+      <text id="label-flow-bus-thruster3" class="flow-label" x="-162" y="-44" opacity="0"></text>
+
+      <!-- Bus → Thruster 4 (stern stbd, lower) -->
+      <path id="flow-bus-thruster4"       class="flow-line" d="M-82,0 L-235,73"  stroke="#06b6d4" stroke-width="1.5" opacity="0"/>
+      <text id="label-flow-bus-thruster4" class="flow-label" x="-162" y="44" opacity="0"></text>
+
+      <!-- Mech BB: DW6-BB right edge → prop-BB -->
+      <path id="flow-mech-bb"       class="flow-line" d="M-178,-75 L-249,-70" stroke="#f59e0b" stroke-width="3" opacity="0"/>
+      <text id="label-flow-mech-bb" class="flow-label" x="-210" y="-78" opacity="0"></text>
+
+      <!-- Mech SB: DW6-SB right edge → prop-SB -->
+      <path id="flow-mech-sb"       class="flow-line" d="M-178,75 L-249,70"  stroke="#f59e0b" stroke-width="3" opacity="0"/>
+      <text id="label-flow-mech-sb" class="flow-label" x="-210" y="82" opacity="0"></text>
+
+      <!-- ============================================ FAS 8: BOW WAVE (bog → right) -->
+      <g id="bowWave" style="opacity:0;transition:opacity 0.8s ease">
+        <ellipse cx="308" cy="0" rx="9" ry="38"
+          fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="1.5">
+          <animate attributeName="rx"      values="9;15;9"          dur="2s"   repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.14;0.06;0.14"  dur="2s"   repeatCount="indefinite"/>
+        </ellipse>
+        <ellipse cx="320" cy="0" rx="5" ry="25"
+          fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="1">
+          <animate attributeName="rx"      values="5;10;5"          dur="2.5s" repeatCount="indefinite"/>
+        </ellipse>
+      </g>
+
+      <!-- ============================================ FAS 8: WAKE LINES (akter → left) -->
+      <g id="wakeLines" style="opacity:0;transition:opacity 0.8s ease">
+        <line x1="-280" y1="-20" x2="-380" y2="-46" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+        <line x1="-280" y1="20"  x2="-380" y2="46"  stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+        <line x1="-285" y1="-10" x2="-370" y2="-28" stroke="rgba(255,255,255,0.03)" stroke-width="0.5"/>
+        <line x1="-285" y1="10"  x2="-370" y2="28"  stroke="rgba(255,255,255,0.03)" stroke-width="0.5"/>
+      </g>
+
+      <!-- ============================================ FAS 8: SHORE POWER (from below, dock mode) -->
+      <g id="shorePowerGroup" style="opacity:0;transition:opacity 0.6s ease">
+        <!-- Power cable from shore (below) to vessel -->
+        <line id="flow-shore-bus" x1="0" y1="168" x2="0" y2="100"
+          stroke="#22c55e" stroke-width="2.5" stroke-dasharray="7,3" opacity="0.85">
+          <animate attributeName="stroke-dashoffset" values="0;-20" dur="1.2s" repeatCount="indefinite"/>
+        </line>
+        <!-- Plug icon -->
+        <rect x="-14" y="168" width="28" height="28" rx="5" fill="#22c55e" opacity="0.15"/>
+        <line x1="-6"  y1="174" x2="-6"  y2="181" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="6"   y1="174" x2="6"   y2="181" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M-10,182 L10,182 L10,186 C10,190 5,192 0,192 C-5,192 -10,190 -10,186 Z"
+          fill="none" stroke="#22c55e" stroke-width="1.5"/>
+        <line x1="0" y1="192" x2="0" y2="196" stroke="#22c55e" stroke-width="2" stroke-linecap="round"/>
+        <text x="0" y="210" text-anchor="middle" class="vl"
+          font-size="8" font-weight="700" fill="#22c55e" letter-spacing="0.08em"
+          opacity="0.9">LANDSTRÖM</text>
+      </g>
+
+      <!-- ============================================ MODE LABEL PILL -->
+      <g id="modeBadge">
+        <rect id="modeBadgeRect" x="-60" y="-140" width="120" height="24" rx="12" fill="#e65100" opacity="0.92"/>
+        <text id="modeLabelText" x="0" y="-124" text-anchor="middle" class="vl" font-size="10" font-weight="700" fill="white">⚡ TRANSIT 14 KN</text>
+      </g>
+
+      <!-- ============================================ HOTEL LOAD -->
+      <g id="hotelLoad" class="comp">
+        <rect x="80" y="-14" width="52" height="28" rx="4" fill="#0f172a" stroke="#a78bfa" stroke-width="1" opacity="0.9"/>
+        <text id="hotelLabel" x="106" y="5" text-anchor="middle" class="vl" font-size="7" fill="#a78bfa">🏠 50 kW</text>
+      </g>
+
+      <!-- ============================================ BATTERY PACK -->
+      <g id="batteryPack" class="comp">
+        <rect x="10" y="-16" width="52" height="32" rx="6" fill="#0a1a0a" stroke="#22c55e" stroke-width="2"/>
+        <rect x="62" y="-7" width="4" height="14" rx="1" fill="#22c55e" opacity="0.7"/>
+        <text x="36" y="1"  text-anchor="middle" class="vl" font-size="7" font-weight="800" fill="#22c55e">BATTERI</text>
+        <text id="battCapLabel" x="36" y="12" text-anchor="middle" class="vl" font-size="6" fill="#64748b">150 kWh</text>
+      </g>
+
+      <!-- ============================================ ELECTRIC BUS BAR (horizontal) -->
+      <rect id="busBar" x="-82" y="-3" width="182" height="6" rx="3" fill="#a78bfa" opacity="0.25"/>
+
+      <!-- ============================================ GENSETS (stacked Y, left of bus) -->
+      <!-- Gen 1: above centerline -->
+      <g id="genset1" class="comp">
+        <rect x="-82" y="-42" width="34" height="28" rx="4" fill="#1a1a2e" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="-65" y="-31" text-anchor="middle" class="vl" font-size="6" font-weight="700" fill="#a78bfa">GEN 1</text>
+        <text id="genset1Label" x="-65" y="-20" text-anchor="middle" class="vl" font-size="5" fill="#94a3b8">DW6 440</text>
+      </g>
+      <!-- Gen 2: below centerline -->
+      <g id="genset2" class="comp">
+        <rect x="-82" y="14" width="34" height="28" rx="4" fill="#1a1a2e" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="-65" y="25" text-anchor="middle" class="vl" font-size="6" font-weight="700" fill="#a78bfa">GEN 2</text>
+        <text id="genset2Label" x="-65" y="36" text-anchor="middle" class="vl" font-size="5" fill="#94a3b8">DW6 440</text>
+      </g>
+      <!-- Gen 3 (Scope 2/3 — hidden by default) -->
+      <g id="genset3" class="comp" style="display:none">
+        <rect x="-46" y="-42" width="34" height="28" rx="4" fill="#1a1a2e" stroke="#a78bfa" stroke-width="1.2" opacity="0.75"/>
+        <text x="-29" y="-31" text-anchor="middle" class="vl" font-size="6" font-weight="700" fill="#a78bfa">GEN 3</text>
+        <text id="genset3Label" x="-29" y="-20" text-anchor="middle" class="vl" font-size="5" fill="#64748b">DW6 440</text>
+      </g>
+      <!-- Gen 4 (Scope 2 only — hidden by default) -->
+      <g id="genset4" class="comp" style="display:none">
+        <rect x="-46" y="14" width="34" height="28" rx="4" fill="#1a1a2e" stroke="#a78bfa" stroke-width="1.2" opacity="0.75"/>
+        <text x="-29" y="25" text-anchor="middle" class="vl" font-size="6" font-weight="700" fill="#a78bfa">GEN 4</text>
+        <text id="genset4Label" x="-29" y="36" text-anchor="middle" class="vl" font-size="5" fill="#64748b">DW6 440</text>
+      </g>
+
+      <!-- ============================================ ELECTRIC MOTORS (Danfoss) -->
+      <g id="enginePortElec" class="comp">
+        <rect x="-165" y="-92" width="42" height="34" rx="4" fill="#0c1929" stroke="#38bdf8" stroke-width="1.5"/>
+        <text id="elecNameBB"  x="-144" y="-78" text-anchor="middle" class="vl" font-size="6" font-weight="700" fill="#38bdf8">DANFOSS</text>
+        <text id="elecPowerBB" x="-144" y="-68" text-anchor="middle" class="vl" font-size="6" fill="#94a3b8">295 kW</text>
+        <text x="-144" y="-60" text-anchor="middle" class="vl" font-size="5" fill="#64748b">BB</text>
+      </g>
+      <g id="engineStbdElec" class="comp">
+        <rect x="-165" y="58" width="42" height="34" rx="4" fill="#0c1929" stroke="#38bdf8" stroke-width="1.5"/>
+        <text id="elecNameSB"  x="-144" y="72" text-anchor="middle" class="vl" font-size="6" font-weight="700" fill="#38bdf8">DANFOSS</text>
+        <text id="elecPowerSB" x="-144" y="82" text-anchor="middle" class="vl" font-size="6" fill="#94a3b8">295 kW</text>
+        <text x="-144" y="90" text-anchor="middle" class="vl" font-size="5" fill="#64748b">SB</text>
+      </g>
+
+      <!-- ============================================ MECHANICAL ENGINES (DW6) -->
+      <g id="enginePortMech" class="comp">
+        <rect x="-228" y="-92" width="50" height="34" rx="4" fill="#1a1a2e" stroke="#f59e0b" stroke-width="1.5"/>
+        <text id="mechNameBB"  x="-203" y="-78" text-anchor="middle" class="vl" font-size="7" font-weight="700" fill="#f59e0b">DW6</text>
+        <text id="mechPowerBB" x="-203" y="-68" text-anchor="middle" class="vl" font-size="6" fill="#94a3b8">440 kW</text>
+        <text x="-203" y="-60" text-anchor="middle" class="vl" font-size="5" fill="#64748b">BB</text>
+      </g>
+      <g id="engineStbdMech" class="comp">
+        <rect x="-228" y="58" width="50" height="34" rx="4" fill="#1a1a2e" stroke="#f59e0b" stroke-width="1.5"/>
+        <text id="mechNameSB"  x="-203" y="72" text-anchor="middle" class="vl" font-size="7" font-weight="700" fill="#f59e0b">DW6</text>
+        <text id="mechPowerSB" x="-203" y="82" text-anchor="middle" class="vl" font-size="6" fill="#94a3b8">440 kW</text>
+        <text x="-203" y="90" text-anchor="middle" class="vl" font-size="5" fill="#64748b">SB</text>
+      </g>
+
+      <!-- ============================================ PROPELLERS (akter, left) -->
+      <g id="propPort">
+        <circle cx="-265" cy="-70" r="16" fill="none" stroke="#38bdf8" stroke-width="1" opacity="0.2"/>
+        <g id="propPortBlades">
+          <line x1="-265" y1="-86" x2="-265" y2="-54" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="-281" y1="-70" x2="-249" y2="-70" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
+        </g>
+      </g>
+      <g id="propStbd">
+        <circle cx="-265" cy="70" r="16" fill="none" stroke="#38bdf8" stroke-width="1" opacity="0.2"/>
+        <g id="propStbdBlades">
+          <line x1="-265" y1="54"  x2="-265" y2="86"  stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="-281" y1="70"  x2="-249" y2="70"  stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
+        </g>
+      </g>
+
+      <!-- Prop wash — expands leftward from akter (cx animates toward more negative x) -->
+      <g id="propWash" opacity="0">
+        <ellipse cx="-295" cy="-70" rx="3" ry="12" fill="none" stroke="#38bdf8" stroke-width="0.8">
+          <animate attributeName="rx"      values="3;24"          dur="1.5s" repeatCount="indefinite"/>
+          <animate attributeName="cx"      values="-295;-340"     dur="1.5s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.6;0"         dur="1.5s" repeatCount="indefinite"/>
+        </ellipse>
+        <ellipse cx="-295" cy="70" rx="3" ry="12" fill="none" stroke="#38bdf8" stroke-width="0.8">
+          <animate attributeName="rx"      values="3;24"          dur="1.5s" repeatCount="indefinite" begin="0.3s"/>
+          <animate attributeName="cx"      values="-295;-340"     dur="1.5s" repeatCount="indefinite" begin="0.3s"/>
+          <animate attributeName="opacity" values="0.6;0"         dur="1.5s" repeatCount="indefinite" begin="0.3s"/>
+        </ellipse>
+      </g>
+
+      <!-- ============================================ THRUSTERS (4× vertical tunnel, horizontal layout) -->
+      <!-- T1: Bow Port (upper, near bow) — vertical tunnel -->
+      <g id="thruster1" class="comp">
+        <rect x="215" y="-92" width="10" height="38" rx="5" fill="#06b6d4" opacity="0.2"/>
+        <circle cx="220" cy="-73" r="6" fill="#06b6d4">
+          <animate attributeName="opacity" values="0;0.85;0" dur="1.2s" repeatCount="indefinite"/>
+        </circle>
+        <text id="thrLabel1" x="233" y="-70" text-anchor="start" class="vl" font-size="5" fill="#06b6d4" font-weight="600">T1 75kW</text>
+      </g>
+      <!-- T2: Bow Stbd (lower, near bow) -->
+      <g id="thruster2" class="comp">
+        <rect x="215" y="54" width="10" height="38" rx="5" fill="#06b6d4" opacity="0.2"/>
+        <circle cx="220" cy="73" r="6" fill="#06b6d4">
+          <animate attributeName="opacity" values="0;0.85;0" dur="1.2s" repeatCount="indefinite" begin="0.3s"/>
+        </circle>
+        <text id="thrLabel2" x="233" y="76" text-anchor="start" class="vl" font-size="5" fill="#06b6d4" font-weight="600">T2 75kW</text>
+      </g>
+      <!-- T3: Stern Port (upper, near stern) -->
+      <g id="thruster3" class="comp">
+        <rect x="-240" y="-92" width="10" height="38" rx="5" fill="#06b6d4" opacity="0.2"/>
+        <circle cx="-235" cy="-73" r="6" fill="#06b6d4">
+          <animate attributeName="opacity" values="0;0.85;0" dur="1.2s" repeatCount="indefinite" begin="0.6s"/>
+        </circle>
+        <text id="thrLabel3" x="-235" y="-98" text-anchor="middle" class="vl" font-size="5" fill="#06b6d4" font-weight="600">T3 75kW</text>
+      </g>
+      <!-- T4: Stern Stbd (lower, near stern) -->
+      <g id="thruster4" class="comp">
+        <rect x="-240" y="54" width="10" height="38" rx="5" fill="#06b6d4" opacity="0.2"/>
+        <circle cx="-235" cy="73" r="6" fill="#06b6d4">
+          <animate attributeName="opacity" values="0;0.85;0" dur="1.2s" repeatCount="indefinite" begin="0.9s"/>
+        </circle>
+        <text id="thrLabel4" x="-235" y="102" text-anchor="middle" class="vl" font-size="5" fill="#06b6d4" font-weight="600">T4 75kW</text>
+      </g>
+
+      <!-- ============================================ THRUSTER JETS (jets expand up/down from tunnel ends) -->
+      <!-- T1 jets: upper jet (y=-98) and lower jet (y=-48) -->
+      <g id="jet-t1-left" class="thruster-jet" opacity="0">
+        <circle cx="220" cy="-98" r="3" fill="#06b6d4">
+          <animate attributeName="r"       values="3;14" dur="1s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.7;0" dur="1s" repeatCount="indefinite"/>
+        </circle>
+      </g>
+      <g id="jet-t1-right" class="thruster-jet" opacity="0">
+        <circle cx="220" cy="-48" r="3" fill="#06b6d4">
+          <animate attributeName="r"       values="3;14" dur="1s" repeatCount="indefinite" begin="0.15s"/>
+          <animate attributeName="opacity" values="0.7;0" dur="1s" repeatCount="indefinite" begin="0.15s"/>
+        </circle>
+      </g>
+      <!-- T2 jets: upper jet (y=48) and lower jet (y=98) -->
+      <g id="jet-t2-left" class="thruster-jet" opacity="0">
+        <circle cx="220" cy="48" r="3" fill="#06b6d4">
+          <animate attributeName="r"       values="3;14" dur="1s" repeatCount="indefinite" begin="0.3s"/>
+          <animate attributeName="opacity" values="0.7;0" dur="1s" repeatCount="indefinite" begin="0.3s"/>
+        </circle>
+      </g>
+      <g id="jet-t2-right" class="thruster-jet" opacity="0">
+        <circle cx="220" cy="98" r="3" fill="#06b6d4">
+          <animate attributeName="r"       values="3;14" dur="1s" repeatCount="indefinite" begin="0.45s"/>
+          <animate attributeName="opacity" values="0.7;0" dur="1s" repeatCount="indefinite" begin="0.45s"/>
+        </circle>
+      </g>
+      <!-- T3 jets: upper (y=-98) and lower (y=-48) at x=-235 -->
+      <g id="jet-t3-left" class="thruster-jet" opacity="0">
+        <circle cx="-235" cy="-98" r="3" fill="#06b6d4">
+          <animate attributeName="r"       values="3;14" dur="1s" repeatCount="indefinite" begin="0.6s"/>
+          <animate attributeName="opacity" values="0.7;0" dur="1s" repeatCount="indefinite" begin="0.6s"/>
+        </circle>
+      </g>
+      <g id="jet-t3-right" class="thruster-jet" opacity="0">
+        <circle cx="-235" cy="-48" r="3" fill="#06b6d4">
+          <animate attributeName="r"       values="3;14" dur="1s" repeatCount="indefinite" begin="0.75s"/>
+          <animate attributeName="opacity" values="0.7;0" dur="1s" repeatCount="indefinite" begin="0.75s"/>
+        </circle>
+      </g>
+      <!-- T4 jets: upper (y=48) and lower (y=98) at x=-235 -->
+      <g id="jet-t4-left" class="thruster-jet" opacity="0">
+        <circle cx="-235" cy="48" r="3" fill="#06b6d4">
+          <animate attributeName="r"       values="3;14" dur="1s" repeatCount="indefinite" begin="0.9s"/>
+          <animate attributeName="opacity" values="0.7;0" dur="1s" repeatCount="indefinite" begin="0.9s"/>
+        </circle>
+      </g>
+      <g id="jet-t4-right" class="thruster-jet" opacity="0">
+        <circle cx="-235" cy="98" r="3" fill="#06b6d4">
+          <animate attributeName="r"       values="3;14" dur="1s" repeatCount="indefinite" begin="1.05s"/>
+          <animate attributeName="opacity" values="0.7;0" dur="1s" repeatCount="indefinite" begin="1.05s"/>
+        </circle>
+      </g>
+
+    </g><!-- /translate(450,250) -->
+    </g><!-- /vesselRotate -->
+    </g><!-- /vesselGroup -->
+
+    <!-- Legend (static, outside float group) -->
+    <g transform="translate(16, 480)">
+      <circle cx="4"   cy="0" r="4" fill="#f59e0b"/>
+      <text x="14"  y="4" class="vl" font-size="9" fill="#94a3b8">Mekanisk</text>
+      <circle cx="94"  cy="0" r="4" fill="#38bdf8"/>
+      <text x="104" y="4" class="vl" font-size="9" fill="#94a3b8">Elektrisk</text>
+      <circle cx="184" cy="0" r="4" fill="#22c55e"/>
+      <text x="194" y="4" class="vl" font-size="9" fill="#94a3b8">Batteri</text>
+      <circle cx="264" cy="0" r="4" fill="#06b6d4"/>
+      <text x="274" y="4" class="vl" font-size="9" fill="#94a3b8">Thrustrar</text>
+      <circle cx="358" cy="0" r="4" fill="#a78bfa"/>
+      <text x="368" y="4" class="vl" font-size="9" fill="#94a3b8">Genset/Hotel</text>
+    </g>
+  </svg>
+
+  <!-- Timeline bar (auto-play) -->
+  <div id="timelineBar" class="timeline-bar" style="display:none">
+    <div class="tl-track" id="tlTrack"></div>
+    <div class="tl-label" id="tlLabel">06:00 — Kaj</div>
+  </div>
+
+  <!-- SVG Tooltip -->
+  <div id="svgTooltip" class="svg-tooltip" style="opacity:0"></div>
+
+</div>
+
+<!-- DASHBOARD (Fas 4) -->
+<div class="dashboard" id="dashboardPanel">
+
+  <!-- S1: Speed -->
+  <div class="dash-section">
+    <h3>Fart</h3>
+    <div class="speed-display">
+      <span class="speed-val" id="dSpeed">14.0</span>
+      <span class="speed-unit">KNOP</span>
+    </div>
+  </div>
+
+  <!-- S1b: Speed Slider (Fas 10) -->
+  <div class="dash-section speed-control hidden" id="speedControl">
+    <h3>Fartjustering</h3>
+    <div class="slider-row">
+      <span class="slider-label">6 kn</span>
+      <input type="range" id="speedSlider" min="6.3" max="14" step="0.5" value="14"
+        class="speed-slider" />
+      <span class="slider-label">14 kn</span>
+    </div>
+    <div class="slider-info">
+      <span id="sliderSpeed">14.0 kn</span>
+      <span id="sliderPower">1141 kW</span>
+    </div>
+  </div>
+
+  <!-- S2: KPI cards (2×2) -->
+  <div class="dash-section">
+    <h3>Effektöversikt</h3>
+    <div class="kpi-grid">
+      <div class="kpi kpi-mech">
+        <div class="kpi-label">Propulsion</div>
+        <div class="kpi-value" id="dKpiProp">1142</div>
+        <div class="kpi-unit">kW</div>
+      </div>
+      <div class="kpi kpi-elec">
+        <div class="kpi-label">Elektrisk Last</div>
+        <div class="kpi-value" id="dKpiElec">312</div>
+        <div class="kpi-unit">kW</div>
+      </div>
+      <div class="kpi kpi-total">
+        <div class="kpi-label">Total System</div>
+        <div class="kpi-value" id="dKpiTotal">1192</div>
+        <div class="kpi-unit">kW</div>
+      </div>
+      <div class="kpi kpi-hotel">
+        <div class="kpi-label">Hotel</div>
+        <div class="kpi-value" id="dKpiHotel">50</div>
+        <div class="kpi-unit">kW</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S3: Fuel ticker -->
+  <div class="dash-section fuel-ticker" id="fuelTicker">
+    <h3>Bränsleförbrukning</h3>
+    <div class="fuel-row">
+      <div class="fuel-value">
+        <span class="fuel-num" id="fuelKgH">0.0</span>
+        <span class="fuel-unit">kg/h</span>
+      </div>
+      <div class="fuel-value">
+        <span class="fuel-num" id="fuelLH">0.0</span>
+        <span class="fuel-unit">L/h</span>
+      </div>
+    </div>
+    <!-- CO₂ rad (Fas 10) -->
+    <div class="fuel-row co2-row">
+      <div class="fuel-value">
+        <span class="co2-num" id="co2KgH">0.0</span>
+        <span class="fuel-unit">kg CO₂/h</span>
+      </div>
+    </div>
+    <div class="fuel-detail" id="fuelDetail"></div>
+    <!-- DP fuel comparison box -->
+    <div class="dp-fuel-compare" id="dpFuelCompare" style="display:none">
+      <div class="compare-row">
+        <span class="compare-label">Med batteri:</span>
+        <span class="compare-val green" id="dpFuelWithBat">— kg/h</span>
+      </div>
+      <div class="compare-row">
+        <span class="compare-label">Utan batteri:</span>
+        <span class="compare-val red" id="dpFuelNoBat">— kg/h</span>
+      </div>
+      <div class="compare-row savings-row">
+        <span class="compare-label">Besparing:</span>
+        <span class="compare-val" id="dpFuelSaving" style="color:var(--scope-active)">—%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- S3b: Dagskostnad (Fas 10) -->
+  <div class="dash-section cost-panel" id="costPanel">
+    <h3>Driftskostnad</h3>
+    <div class="cost-row">
+      <span class="cost-num" id="costSekH">0</span>
+      <span class="cost-unit">SEK/h</span>
+    </div>
+    <div class="cost-detail">MGO: 12 000 SEK/ton</div>
+    <div class="workday-summary">
+      <h4>Arbetsdag (10h)</h4>
+      <div class="wd-grid">
+        <div class="wd-item">
+          <span class="wd-label">Bränsle</span>
+          <span class="wd-val" id="wdFuel">—</span>
+        </div>
+        <div class="wd-item">
+          <span class="wd-label">CO₂</span>
+          <span class="wd-val co2-text" id="wdCO2">—</span>
+        </div>
+        <div class="wd-item">
+          <span class="wd-label">Kostnad</span>
+          <span class="wd-val cost-text" id="wdCost">—</span>
+        </div>
+      </div>
+      <div class="wd-comparison" id="wdComparison"></div>
+    </div>
+  </div>
+
+  <!-- S4: Power bars -->
+  <div class="dash-section">
+    <h3>Effektfördelning</h3>
+    <div class="power-bars">
+      <div class="pb-row">
+        <div class="pb-label">DW6 Mek</div>
+        <div class="pb-track"><div class="pb-fill pb-mech" id="dBarMechFill"></div></div>
+        <div class="pb-val" id="dBarMechVal">— kW</div>
+      </div>
+      <div class="pb-row">
+        <div class="pb-label">Danfoss El</div>
+        <div class="pb-track"><div class="pb-fill pb-elec" id="dBarElecFill"></div></div>
+        <div class="pb-val" id="dBarElecVal">— kW</div>
+      </div>
+      <div class="pb-row">
+        <div class="pb-label">Thrustrar</div>
+        <div class="pb-track"><div class="pb-fill pb-thr" id="dBarThrFill"></div></div>
+        <div class="pb-val" id="dBarThrVal">— kW</div>
+      </div>
+      <div class="pb-row">
+        <div class="pb-label">Hotel</div>
+        <div class="pb-track"><div class="pb-fill pb-hotel" id="dBarHotelFill"></div></div>
+        <div class="pb-val" id="dBarHotelVal">— kW</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S4: Battery -->
+  <div class="dash-section" id="battSection">
+    <h3>Batteri — Scania RES3 150 kWh</h3>
+    <div class="batt-bar-track">
+      <div class="batt-bar-fill" id="dBattFill" style="width:72%"></div>
+      <span class="batt-bar-pct" id="dBattPct">72%</span>
+    </div>
+    <div class="batt-limits">
+      <span>20% min</span>
+      <span>105 kWh användb.</span>
+      <span>90% max</span>
+    </div>
+    <div class="batt-info-row">
+      <div class="batt-info-box">
+        <div class="batt-info-lbl">Status</div>
+        <div class="batt-status standby" id="dBattStatus">Standby</div>
+      </div>
+      <div class="batt-info-box">
+        <div class="batt-info-lbl">Effekt</div>
+        <div class="batt-power standby" id="dBattPwr">0 kW</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S5: Engine cards (2×3 grid) -->
+  <div class="dash-section">
+    <h3>Motorer &amp; Genset</h3>
+    <div class="eng-grid" id="engGrid">
+      <div class="eng-card running" id="dCardMechBB">
+        <div class="eng-name mech">DW6 BB</div>
+        <div class="eng-power">440 kW</div>
+        <div class="eng-row"><span class="eng-dot active"></span><span class="eng-status">100% last</span></div>
+      </div>
+      <div class="eng-card running" id="dCardMechSB">
+        <div class="eng-name mech">DW6 SB</div>
+        <div class="eng-power">440 kW</div>
+        <div class="eng-row"><span class="eng-dot active"></span><span class="eng-status">100% last</span></div>
+      </div>
+      <div class="eng-card electric-on" id="dCardElecBB">
+        <div class="eng-name elec">Danfoss BB</div>
+        <div class="eng-power">131 kW</div>
+        <div class="eng-row"><span class="eng-dot active"></span><span class="eng-status">El-boost</span></div>
+      </div>
+      <div class="eng-card electric-on" id="dCardElecSB">
+        <div class="eng-name elec">Danfoss SB</div>
+        <div class="eng-power">131 kW</div>
+        <div class="eng-row"><span class="eng-dot active"></span><span class="eng-status">El-boost</span></div>
+      </div>
+      <div class="eng-card genset-on" id="dCardGen1">
+        <div class="eng-name gs">Genset 1</div>
+        <div class="eng-power">334 kW</div>
+        <div class="eng-row"><span class="eng-dot active"></span><span class="eng-status">75.9% last</span></div>
+      </div>
+      <div class="eng-card off" id="dCardGen2">
+        <div class="eng-name gs">Genset 2</div>
+        <div class="eng-power">— kW</div>
+        <div class="eng-row"><span class="eng-dot"></span><span class="eng-status">Standby</span></div>
+      </div>
+      <div class="eng-card off" id="dCardGen3" style="display:none">
+        <div class="eng-name gs">Genset 3</div>
+        <div class="eng-power">— kW</div>
+        <div class="eng-row"><span class="eng-dot"></span><span class="eng-status">Standby</span></div>
+      </div>
+      <div class="eng-card off" id="dCardGen4" style="display:none">
+        <div class="eng-name gs">Genset 4</div>
+        <div class="eng-power">— kW</div>
+        <div class="eng-row"><span class="eng-dot"></span><span class="eng-status">Standby</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S7: Sea trial speed-power graph -->
+  <div class="dash-section" id="seaTrialSection">
+    <h3>Speed-Power Curve — Sjöprov</h3>
+    <div class="sea-trial-canvas-wrap">
+      <canvas id="seaTrialChart"></canvas>
+    </div>
+    <div class="sea-trial-legend">
+      <span class="st-dot" style="background:#38bdf8"></span> Sjöprovsdata
+      <span class="st-dot active-dot"></span> Aktuell driftpunkt
+    </div>
+  </div>
+
+  <!-- S8: Mode description -->
+  <div class="dash-section">
+    <h3>Driftläge</h3>
+    <p class="mode-desc" id="dModeDesc"></p>
+  </div>
+
+</div>
+
+</div><!-- /.app -->
+
+<script>
+const ALL_SCOPES   = {
+  "scope1-scania-hybrid": {
+    "vessel": {
+      "name": "Northern Gale",
+      "type": "catamaran",
+      "hotel_at_sea_kw": 50,
+      "hotel_at_dock_kw": 30
+    },
+    "scope": {
+      "id": "scope1-scania-hybrid",
+      "name": "Scania DW6 Hybrid",
+      "type": "hybrid"
+    },
+    "propulsion": {
+      "mechanical": {
+        "count": 2,
+        "engine_id": "scania-dw6-440",
+        "engine_name": "Scania DW6 440kW Propulsion",
+        "power_kw": 440,
+        "gearbox": "ZF 3055A"
+      },
+      "electric": {
+        "count": 2,
+        "engine_id": "danfoss-295",
+        "engine_name": "Danfoss 295kW Hybrid Electric Motor",
+        "power_kw": 295
+      }
+    },
+    "gensets": {
+      "count": 2,
+      "engine_id": "scania-dw6-440-genset",
+      "engine_name": "Scania DW6 440kW Genset",
+      "power_kw": 440
+    },
+    "thrusters": {
+      "count": 4,
+      "power_kw_each": 75,
+      "total_kw": 300
+    },
+    "battery": {
+      "capacity_kwh": 150,
+      "usable_kwh": 105,
+      "max_discharge_kw": 150,
+      "soc_min": 20,
+      "soc_max": 90,
+      "peak_shave_trigger_pct": 85,
+      "efficiency_discharge": 0.95,
+      "efficiency_charge": 0.93
+    },
+    "electrical_system": {
+      "vfd_efficiency": 0.97,
+      "cable_efficiency": 0.99,
+      "motor_efficiency": 0.96,
+      "chain_efficiency": 0.9219
+    },
+    "modes": {
+      "transit": {
+        "label": "Transit 14 kn",
+        "icon": "⚡",
+        "speed_kn": 14.0,
+        "mech_per_shaft_kw": 440,
+        "elec_per_shaft_kw": 130.5,
+        "gensets_running": 1,
+        "genset_load_kw": 333.1,
+        "genset_load_per_unit_kw": 333.1,
+        "genset_load_pct": 75.7,
+        "thrusters_active": false,
+        "thrusters_kw": 0,
+        "hotel_kw": 50,
+        "total_propulsion_kw": 1141,
+        "battery_mode": "standby",
+        "description": "2× Scania DW6 440kW Propulsion (440kW/axel) + 2× Danfoss 295kW Hybrid Electric Motor el-boost (130.5kW/axel). 1 genset @ 75.7% last.",
+        "fuel_kg_h": 242.8,
+        "fuel_l_h": 291.8,
+        "fuel_breakdown": "2× Scania DW6 440kW Propulsion: 178 kg/h + 1× Genset: 65 kg/h",
+        "co2_kg_h": 778.4,
+        "cost_sek_h": 2914.0
+      },
+      "survey": {
+        "label": "Sjömätning 7 kn",
+        "icon": "🗺️",
+        "speed_kn": 7.0,
+        "mech_per_shaft_kw": 0,
+        "elec_per_shaft_kw": 68,
+        "gensets_running": 2,
+        "genset_load_kw": 196.4,
+        "genset_load_per_unit_kw": 98.2,
+        "genset_load_pct": 22.3,
+        "thrusters_active": false,
+        "thrusters_kw": 0,
+        "hotel_kw": 50,
+        "total_propulsion_kw": 135,
+        "battery_mode": "standby",
+        "description": "El-only @ 7.0 kn. Genset demand 196.4 kW → 2 genset @ 22.3% last.",
+        "fuel_kg_h": 41.8,
+        "fuel_l_h": 50.2,
+        "fuel_breakdown": "2× Genset @ 22%: 42 kg/h",
+        "co2_kg_h": 134.0,
+        "cost_sek_h": 502.0
+      },
+      "dp": {
+        "label": "DP/ROV",
+        "icon": "⚓",
+        "speed_kn": 0,
+        "mech_per_shaft_kw": 0,
+        "elec_per_shaft_kw": 100,
+        "gensets_running": 2,
+        "gensets_running_no_battery": 2,
+        "genset_load_kw": 429.7,
+        "genset_load_per_unit_kw": 214.8,
+        "genset_load_pct": 48.8,
+        "genset_load_kw_no_battery": 592.4,
+        "genset_load_per_unit_kw_no_battery": 296.2,
+        "genset_load_pct_no_battery": 67.3,
+        "thrusters_active": true,
+        "thrusters_kw": 150,
+        "thrusters_peak_kw": 300,
+        "hotel_kw": 50,
+        "total_propulsion_kw": 200,
+        "battery_mode": "peak_shaving",
+        "description": "DP-station, 4× thrustrar (75kW). Med batteri: 2 genset @ 48.8%. Utan batteri: 2 genset @ 67.3%.",
+        "fuel_kg_h": 86.1,
+        "fuel_l_h": 103.5,
+        "fuel_kg_h_no_battery": 116.4,
+        "fuel_l_h_no_battery": 139.9,
+        "fuel_savings_pct": 26.0,
+        "fuel_breakdown": "2× Genset @ 49%: 86 kg/h",
+        "co2_kg_h": 276.0,
+        "cost_sek_h": 1033.0,
+        "co2_kg_h_no_battery": 373.2,
+        "cost_sek_h_no_battery": 1397.0
+      },
+      "dock": {
+        "label": "Kaj",
+        "icon": "🔌",
+        "speed_kn": 0,
+        "mech_per_shaft_kw": 0,
+        "elec_per_shaft_kw": 0,
+        "gensets_running": 0,
+        "genset_load_kw": 0,
+        "genset_load_per_unit_kw": 0,
+        "genset_load_pct": 0,
+        "thrusters_active": false,
+        "thrusters_kw": 0,
+        "hotel_kw": 30,
+        "total_propulsion_kw": 0,
+        "battery_mode": "charging",
+        "description": "Landström. Noll bränsleförbrukning. Batteri laddar.",
+        "fuel_kg_h": 0,
+        "fuel_l_h": 0,
+        "fuel_breakdown": "Landström",
+        "co2_kg_h": 0.0,
+        "cost_sek_h": 0.0
+      }
+    },
+    "sea_trial": [
+      {
+        "speed_kn": 6.3,
+        "axel_kw": 99.4,
+        "fuel_lph": 28.2,
+        "bsfc": 0.244,
+        "total_fuel_l_h": 56.4,
+        "total_fuel_kg_h": 46.9,
+        "co2_kg_h": 150.4,
+        "cost_sek_h": 563.0
+      },
+      {
+        "speed_kn": 7.0,
+        "axel_kw": 135.0,
+        "fuel_lph": 38.0,
+        "bsfc": 0.242,
+        "total_fuel_l_h": 76.0,
+        "total_fuel_kg_h": 63.2,
+        "co2_kg_h": 202.7,
+        "cost_sek_h": 759.0
+      },
+      {
+        "speed_kn": 8.3,
+        "axel_kw": 171.3,
+        "fuel_lph": 47.8,
+        "bsfc": 0.24,
+        "total_fuel_l_h": 95.6,
+        "total_fuel_kg_h": 79.5,
+        "co2_kg_h": 255.0,
+        "cost_sek_h": 954.0
+      },
+      {
+        "speed_kn": 9.0,
+        "axel_kw": 241.8,
+        "fuel_lph": 66.5,
+        "bsfc": 0.237,
+        "total_fuel_l_h": 133.0,
+        "total_fuel_kg_h": 110.7,
+        "co2_kg_h": 354.8,
+        "cost_sek_h": 1328.0
+      },
+      {
+        "speed_kn": 10.0,
+        "axel_kw": 314.5,
+        "fuel_lph": 85.2,
+        "bsfc": 0.233,
+        "total_fuel_l_h": 170.4,
+        "total_fuel_kg_h": 141.8,
+        "co2_kg_h": 454.5,
+        "cost_sek_h": 1701.0
+      },
+      {
+        "speed_kn": 11.0,
+        "axel_kw": 461.4,
+        "fuel_lph": 120.5,
+        "bsfc": 0.225,
+        "total_fuel_l_h": 241.0,
+        "total_fuel_kg_h": 200.5,
+        "co2_kg_h": 642.8,
+        "cost_sek_h": 2406.0
+      },
+      {
+        "speed_kn": 12.0,
+        "axel_kw": 619.9,
+        "fuel_lph": 155.7,
+        "bsfc": 0.216,
+        "total_fuel_l_h": 311.4,
+        "total_fuel_kg_h": 259.1,
+        "co2_kg_h": 830.6,
+        "cost_sek_h": 3109.0
+      },
+      {
+        "speed_kn": 13.0,
+        "axel_kw": 873.7,
+        "fuel_lph": 213.9,
+        "bsfc": 0.211,
+        "total_fuel_l_h": 427.8,
+        "total_fuel_kg_h": 355.9,
+        "co2_kg_h": 1141.1,
+        "cost_sek_h": 4271.0
+      },
+      {
+        "speed_kn": 14.0,
+        "axel_kw": 1141.1,
+        "fuel_lph": 272.0,
+        "bsfc": 0.205,
+        "total_fuel_l_h": 544.0,
+        "total_fuel_kg_h": 452.6,
+        "co2_kg_h": 1451.1,
+        "cost_sek_h": 5431.0
+      },
+      {
+        "speed_kn": 15.0,
+        "axel_kw": 1141.1,
+        "fuel_lph": 325.1,
+        "bsfc": 0.204,
+        "total_fuel_l_h": 650.2,
+        "total_fuel_kg_h": 541.0,
+        "co2_kg_h": 1734.3,
+        "cost_sek_h": 6492.0
+      },
+      {
+        "speed_kn": 16.0,
+        "axel_kw": 1609.7,
+        "fuel_lph": 378.1,
+        "bsfc": 0.202,
+        "total_fuel_l_h": 756.2,
+        "total_fuel_kg_h": 629.2,
+        "co2_kg_h": 2017.1,
+        "cost_sek_h": 7550.0
+      },
+      {
+        "speed_kn": 17.0,
+        "axel_kw": 1779.5,
+        "fuel_lph": 419.0,
+        "bsfc": 0.203,
+        "total_fuel_l_h": 838.0,
+        "total_fuel_kg_h": 697.2,
+        "co2_kg_h": 2235.3,
+        "cost_sek_h": 8367.0
+      },
+      {
+        "speed_kn": 18.0,
+        "axel_kw": 1948.3,
+        "fuel_lph": 459.9,
+        "bsfc": 0.203,
+        "total_fuel_l_h": 919.8,
+        "total_fuel_kg_h": 765.3,
+        "co2_kg_h": 2453.5,
+        "cost_sek_h": 9183.0
+      }
+    ],
+    "bsfc": {
+      "scania-dw6-440": {
+        "name": "Scania DW6 440kW Propulsion",
+        "power_kw": 440,
+        "bsfc_curve": [
+          {
+            "load_pct": 10,
+            "bsfc_gkwh": 260.0
+          },
+          {
+            "load_pct": 15,
+            "bsfc_gkwh": 245.0
+          },
+          {
+            "load_pct": 20,
+            "bsfc_gkwh": 230.0
+          },
+          {
+            "load_pct": 25,
+            "bsfc_gkwh": 220.0
+          },
+          {
+            "load_pct": 50,
+            "bsfc_gkwh": 205.0
+          },
+          {
+            "load_pct": 75,
+            "bsfc_gkwh": 198.0
+          },
+          {
+            "load_pct": 100,
+            "bsfc_gkwh": 202.0
+          }
+        ]
+      },
+      "scania-dw6-440-genset": {
+        "name": "Scania DW6 440kW Genset",
+        "power_kw": 440,
+        "bsfc_curve": [
+          {
+            "load_pct": 10,
+            "bsfc_gkwh": 240.0
+          },
+          {
+            "load_pct": 15,
+            "bsfc_gkwh": 225.0
+          },
+          {
+            "load_pct": 20,
+            "bsfc_gkwh": 215.0
+          },
+          {
+            "load_pct": 25,
+            "bsfc_gkwh": 210.0
+          },
+          {
+            "load_pct": 50,
+            "bsfc_gkwh": 200.0
+          },
+          {
+            "load_pct": 75,
+            "bsfc_gkwh": 195.0
+          },
+          {
+            "load_pct": 100,
+            "bsfc_gkwh": 200.0
+          }
+        ]
+      },
+      "danfoss-295": {
+        "name": "Danfoss 295kW Hybrid Electric Motor",
+        "power_kw": 295,
+        "bsfc_curve": []
+      }
+    },
+    "fuel_density_kg_per_liter": 0.832,
+    "co2_factor_kg_per_kg_fuel": 3.206,
+    "fuel_price_sek_per_kg": 12.0,
+    "fuel_price_sek_per_ton": 12000,
+    "workday": {
+      "total_hours": 10,
+      "profile": [
+        {
+          "mode": "dock",
+          "hours": 0.5
+        },
+        {
+          "mode": "transit",
+          "hours": 2.0
+        },
+        {
+          "mode": "survey",
+          "hours": 4.0
+        },
+        {
+          "mode": "dp",
+          "hours": 2.0
+        },
+        {
+          "mode": "survey",
+          "hours": 1.0
+        },
+        {
+          "mode": "transit",
+          "hours": 1.0
+        },
+        {
+          "mode": "dock",
+          "hours": 0.5
+        }
+      ]
+    }
+  },
+  "scope2-mets-de": {
+    "vessel": {
+      "name": "Northern Gale",
+      "type": "catamaran",
+      "hotel_at_sea_kw": 50,
+      "hotel_at_dock_kw": 30
+    },
+    "scope": {
+      "id": "scope2-mets-de",
+      "name": "Diesel-Elektrisk 4 genset",
+      "type": "diesel_electric"
+    },
+    "propulsion": {
+      "mechanical": {
+        "count": 0,
+        "engine_id": "",
+        "engine_name": "Scania DW6",
+        "power_kw": 0,
+        "gearbox": "ZF 3055A"
+      },
+      "electric": {
+        "count": 2,
+        "engine_id": "danfoss-750",
+        "engine_name": "Danfoss 750kW Electric Motor",
+        "power_kw": 750
+      }
+    },
+    "gensets": {
+      "count": 4,
+      "engine_id": "scania-dw6-440-genset",
+      "engine_name": "Scania DW6 440kW Genset",
+      "power_kw": 440
+    },
+    "thrusters": {
+      "count": 4,
+      "power_kw_each": 75,
+      "total_kw": 300
+    },
+    "battery": {
+      "capacity_kwh": 150,
+      "usable_kwh": 105,
+      "max_discharge_kw": 150,
+      "soc_min": 20,
+      "soc_max": 90,
+      "peak_shave_trigger_pct": 85,
+      "efficiency_discharge": 0.95,
+      "efficiency_charge": 0.93
+    },
+    "electrical_system": {
+      "vfd_efficiency": 0.97,
+      "cable_efficiency": 0.99,
+      "motor_efficiency": 0.96,
+      "chain_efficiency": 0.9219
+    },
+    "modes": {
+      "transit": {
+        "label": "Transit 14 kn",
+        "icon": "⚡",
+        "speed_kn": 14.0,
+        "mech_per_shaft_kw": 0,
+        "elec_per_shaft_kw": 570.5,
+        "gensets_running": 3,
+        "genset_load_kw": 1287.8,
+        "genset_load_per_unit_kw": 429.3,
+        "genset_load_pct": 97.6,
+        "thrusters_active": false,
+        "thrusters_kw": 0,
+        "hotel_kw": 50,
+        "total_propulsion_kw": 1141,
+        "battery_mode": "standby",
+        "description": "El-drift 14.0 kn. 2× Danfoss 750kW Electric Motor (570.5kW/axel). 3 genset @ 97.6% last.",
+        "fuel_kg_h": 257.0,
+        "fuel_l_h": 308.8,
+        "fuel_breakdown": "3× Genset @ 98%: 257 kg/h",
+        "co2_kg_h": 823.9,
+        "cost_sek_h": 3084.0
+      },
+      "survey": {
+        "label": "Sjömätning 7 kn",
+        "icon": "🗺️",
+        "speed_kn": 7.0,
+        "mech_per_shaft_kw": 0,
+        "elec_per_shaft_kw": 68,
+        "gensets_running": 1,
+        "genset_load_kw": 196.4,
+        "genset_load_per_unit_kw": 196.4,
+        "genset_load_pct": 44.6,
+        "thrusters_active": false,
+        "thrusters_kw": 0,
+        "hotel_kw": 50,
+        "total_propulsion_kw": 135,
+        "battery_mode": "standby",
+        "description": "El-only @ 7.0 kn. Genset demand 196.4 kW → 1 genset @ 44.6% last.",
+        "fuel_kg_h": 39.7,
+        "fuel_l_h": 47.7,
+        "fuel_breakdown": "1× Genset @ 45%: 40 kg/h",
+        "co2_kg_h": 127.3,
+        "cost_sek_h": 476.0
+      },
+      "dp": {
+        "label": "DP/ROV",
+        "icon": "⚓",
+        "speed_kn": 0,
+        "mech_per_shaft_kw": 0,
+        "elec_per_shaft_kw": 100,
+        "gensets_running": 2,
+        "gensets_running_no_battery": 3,
+        "genset_load_kw": 429.7,
+        "genset_load_per_unit_kw": 214.8,
+        "genset_load_pct": 48.8,
+        "genset_load_kw_no_battery": 592.4,
+        "genset_load_per_unit_kw_no_battery": 197.5,
+        "genset_load_pct_no_battery": 44.9,
+        "thrusters_active": true,
+        "thrusters_kw": 150,
+        "thrusters_peak_kw": 300,
+        "hotel_kw": 50,
+        "total_propulsion_kw": 200,
+        "battery_mode": "peak_shaving",
+        "description": "DP-station, 4× thrustrar (75kW). Med batteri: 2 genset @ 48.8%. Utan batteri: 3 genset @ 44.9%.",
+        "fuel_kg_h": 86.1,
+        "fuel_l_h": 103.5,
+        "fuel_kg_h_no_battery": 119.7,
+        "fuel_l_h_no_battery": 143.9,
+        "fuel_savings_pct": 28.1,
+        "fuel_breakdown": "2× Genset @ 49%: 86 kg/h",
+        "co2_kg_h": 276.0,
+        "cost_sek_h": 1033.0,
+        "co2_kg_h_no_battery": 383.8,
+        "cost_sek_h_no_battery": 1436.0
+      },
+      "dock": {
+        "label": "Kaj",
+        "icon": "🔌",
+        "speed_kn": 0,
+        "mech_per_shaft_kw": 0,
+        "elec_per_shaft_kw": 0,
+        "gensets_running": 0,
+        "genset_load_kw": 0,
+        "genset_load_per_unit_kw": 0,
+        "genset_load_pct": 0,
+        "thrusters_active": false,
+        "thrusters_kw": 0,
+        "hotel_kw": 30,
+        "total_propulsion_kw": 0,
+        "battery_mode": "charging",
+        "description": "Landström. Noll bränsleförbrukning. Batteri laddar.",
+        "fuel_kg_h": 0,
+        "fuel_l_h": 0,
+        "fuel_breakdown": "Landström",
+        "co2_kg_h": 0.0,
+        "cost_sek_h": 0.0
+      }
+    },
+    "sea_trial": [
+      {
+        "speed_kn": 6.3,
+        "axel_kw": 99.4,
+        "fuel_lph": 28.2,
+        "bsfc": 0.244,
+        "total_fuel_l_h": 56.4,
+        "total_fuel_kg_h": 46.9,
+        "co2_kg_h": 150.4,
+        "cost_sek_h": 563.0
+      },
+      {
+        "speed_kn": 7.0,
+        "axel_kw": 135.0,
+        "fuel_lph": 38.0,
+        "bsfc": 0.242,
+        "total_fuel_l_h": 76.0,
+        "total_fuel_kg_h": 63.2,
+        "co2_kg_h": 202.7,
+        "cost_sek_h": 759.0
+      },
+      {
+        "speed_kn": 8.3,
+        "axel_kw": 171.3,
+        "fuel_lph": 47.8,
+        "bsfc": 0.24,
+        "total_fuel_l_h": 95.6,
+        "total_fuel_kg_h": 79.5,
+        "co2_kg_h": 255.0,
+        "cost_sek_h": 954.0
+      },
+      {
+        "speed_kn": 9.0,
+        "axel_kw": 241.8,
+        "fuel_lph": 66.5,
+        "bsfc": 0.237,
+        "total_fuel_l_h": 133.0,
+        "total_fuel_kg_h": 110.7,
+        "co2_kg_h": 354.8,
+        "cost_sek_h": 1328.0
+      },
+      {
+        "speed_kn": 10.0,
+        "axel_kw": 314.5,
+        "fuel_lph": 85.2,
+        "bsfc": 0.233,
+        "total_fuel_l_h": 170.4,
+        "total_fuel_kg_h": 141.8,
+        "co2_kg_h": 454.5,
+        "cost_sek_h": 1701.0
+      },
+      {
+        "speed_kn": 11.0,
+        "axel_kw": 461.4,
+        "fuel_lph": 120.5,
+        "bsfc": 0.225,
+        "total_fuel_l_h": 241.0,
+        "total_fuel_kg_h": 200.5,
+        "co2_kg_h": 642.8,
+        "cost_sek_h": 2406.0
+      },
+      {
+        "speed_kn": 12.0,
+        "axel_kw": 619.9,
+        "fuel_lph": 155.7,
+        "bsfc": 0.216,
+        "total_fuel_l_h": 311.4,
+        "total_fuel_kg_h": 259.1,
+        "co2_kg_h": 830.6,
+        "cost_sek_h": 3109.0
+      },
+      {
+        "speed_kn": 13.0,
+        "axel_kw": 873.7,
+        "fuel_lph": 213.9,
+        "bsfc": 0.211,
+        "total_fuel_l_h": 427.8,
+        "total_fuel_kg_h": 355.9,
+        "co2_kg_h": 1141.1,
+        "cost_sek_h": 4271.0
+      },
+      {
+        "speed_kn": 14.0,
+        "axel_kw": 1141.1,
+        "fuel_lph": 272.0,
+        "bsfc": 0.205,
+        "total_fuel_l_h": 544.0,
+        "total_fuel_kg_h": 452.6,
+        "co2_kg_h": 1451.1,
+        "cost_sek_h": 5431.0
+      },
+      {
+        "speed_kn": 15.0,
+        "axel_kw": 1141.1,
+        "fuel_lph": 325.1,
+        "bsfc": 0.204,
+        "total_fuel_l_h": 650.2,
+        "total_fuel_kg_h": 541.0,
+        "co2_kg_h": 1734.3,
+        "cost_sek_h": 6492.0
+      },
+      {
+        "speed_kn": 16.0,
+        "axel_kw": 1609.7,
+        "fuel_lph": 378.1,
+        "bsfc": 0.202,
+        "total_fuel_l_h": 756.2,
+        "total_fuel_kg_h": 629.2,
+        "co2_kg_h": 2017.1,
+        "cost_sek_h": 7550.0
+      },
+      {
+        "speed_kn": 17.0,
+        "axel_kw": 1779.5,
+        "fuel_lph": 419.0,
+        "bsfc": 0.203,
+        "total_fuel_l_h": 838.0,
+        "total_fuel_kg_h": 697.2,
+        "co2_kg_h": 2235.3,
+        "cost_sek_h": 8367.0
+      },
+      {
+        "speed_kn": 18.0,
+        "axel_kw": 1948.3,
+        "fuel_lph": 459.9,
+        "bsfc": 0.203,
+        "total_fuel_l_h": 919.8,
+        "total_fuel_kg_h": 765.3,
+        "co2_kg_h": 2453.5,
+        "cost_sek_h": 9183.0
+      }
+    ],
+    "bsfc": {
+      "danfoss-750": {
+        "name": "Danfoss 750kW Electric Motor",
+        "power_kw": 750,
+        "bsfc_curve": []
+      },
+      "scania-dw6-440-genset": {
+        "name": "Scania DW6 440kW Genset",
+        "power_kw": 440,
+        "bsfc_curve": [
+          {
+            "load_pct": 10,
+            "bsfc_gkwh": 240.0
+          },
+          {
+            "load_pct": 15,
+            "bsfc_gkwh": 225.0
+          },
+          {
+            "load_pct": 20,
+            "bsfc_gkwh": 215.0
+          },
+          {
+            "load_pct": 25,
+            "bsfc_gkwh": 210.0
+          },
+          {
+            "load_pct": 50,
+            "bsfc_gkwh": 200.0
+          },
+          {
+            "load_pct": 75,
+            "bsfc_gkwh": 195.0
+          },
+          {
+            "load_pct": 100,
+            "bsfc_gkwh": 200.0
+          }
+        ]
+      }
+    },
+    "fuel_density_kg_per_liter": 0.832,
+    "co2_factor_kg_per_kg_fuel": 3.206,
+    "fuel_price_sek_per_kg": 12.0,
+    "fuel_price_sek_per_ton": 12000,
+    "workday": {
+      "total_hours": 10,
+      "profile": [
+        {
+          "mode": "dock",
+          "hours": 0.5
+        },
+        {
+          "mode": "transit",
+          "hours": 2.0
+        },
+        {
+          "mode": "survey",
+          "hours": 4.0
+        },
+        {
+          "mode": "dp",
+          "hours": 2.0
+        },
+        {
+          "mode": "survey",
+          "hours": 1.0
+        },
+        {
+          "mode": "transit",
+          "hours": 1.0
+        },
+        {
+          "mode": "dock",
+          "hours": 0.5
+        }
+      ]
+    }
+  },
+  "scope3-zem-de": {
+    "vessel": {
+      "name": "Northern Gale",
+      "type": "catamaran",
+      "hotel_at_sea_kw": 50,
+      "hotel_at_dock_kw": 30
+    },
+    "scope": {
+      "id": "scope3-zem-de",
+      "name": "Diesel-Elektrisk 3 genset",
+      "type": "diesel_electric"
+    },
+    "propulsion": {
+      "mechanical": {
+        "count": 0,
+        "engine_id": "",
+        "engine_name": "Scania DW6",
+        "power_kw": 0,
+        "gearbox": "ZF 3055A"
+      },
+      "electric": {
+        "count": 2,
+        "engine_id": "danfoss-600",
+        "engine_name": "Danfoss 600kW Electric Motor",
+        "power_kw": 600
+      }
+    },
+    "gensets": {
+      "count": 3,
+      "engine_id": "scania-dw6-440-genset",
+      "engine_name": "Scania DW6 440kW Genset",
+      "power_kw": 440
+    },
+    "thrusters": {
+      "count": 4,
+      "power_kw_each": 75,
+      "total_kw": 300
+    },
+    "battery": {
+      "capacity_kwh": 150,
+      "usable_kwh": 105,
+      "max_discharge_kw": 150,
+      "soc_min": 20,
+      "soc_max": 90,
+      "peak_shave_trigger_pct": 85,
+      "efficiency_discharge": 0.95,
+      "efficiency_charge": 0.93
+    },
+    "electrical_system": {
+      "vfd_efficiency": 0.97,
+      "cable_efficiency": 0.99,
+      "motor_efficiency": 0.96,
+      "chain_efficiency": 0.9219
+    },
+    "modes": {
+      "transit": {
+        "label": "Transit 14 kn",
+        "icon": "⚡",
+        "speed_kn": 14.0,
+        "mech_per_shaft_kw": 0,
+        "elec_per_shaft_kw": 570.5,
+        "gensets_running": 3,
+        "genset_load_kw": 1287.8,
+        "genset_load_per_unit_kw": 429.3,
+        "genset_load_pct": 97.6,
+        "thrusters_active": false,
+        "thrusters_kw": 0,
+        "hotel_kw": 50,
+        "total_propulsion_kw": 1141,
+        "battery_mode": "standby",
+        "description": "El-drift 14.0 kn. 2× Danfoss 600kW Electric Motor (570.5kW/axel). 3 genset @ 97.6% last.",
+        "fuel_kg_h": 257.0,
+        "fuel_l_h": 308.8,
+        "fuel_breakdown": "3× Genset @ 98%: 257 kg/h",
+        "co2_kg_h": 823.9,
+        "cost_sek_h": 3084.0
+      },
+      "survey": {
+        "label": "Sjömätning 7 kn",
+        "icon": "🗺️",
+        "speed_kn": 7.0,
+        "mech_per_shaft_kw": 0,
+        "elec_per_shaft_kw": 68,
+        "gensets_running": 1,
+        "genset_load_kw": 196.4,
+        "genset_load_per_unit_kw": 196.4,
+        "genset_load_pct": 44.6,
+        "thrusters_active": false,
+        "thrusters_kw": 0,
+        "hotel_kw": 50,
+        "total_propulsion_kw": 135,
+        "battery_mode": "standby",
+        "description": "El-only @ 7.0 kn. Genset demand 196.4 kW → 1 genset @ 44.6% last.",
+        "fuel_kg_h": 39.7,
+        "fuel_l_h": 47.7,
+        "fuel_breakdown": "1× Genset @ 45%: 40 kg/h",
+        "co2_kg_h": 127.3,
+        "cost_sek_h": 476.0
+      },
+      "dp": {
+        "label": "DP/ROV",
+        "icon": "⚓",
+        "speed_kn": 0,
+        "mech_per_shaft_kw": 0,
+        "elec_per_shaft_kw": 100,
+        "gensets_running": 2,
+        "gensets_running_no_battery": 3,
+        "genset_load_kw": 429.7,
+        "genset_load_per_unit_kw": 214.8,
+        "genset_load_pct": 48.8,
+        "genset_load_kw_no_battery": 592.4,
+        "genset_load_per_unit_kw_no_battery": 197.5,
+        "genset_load_pct_no_battery": 44.9,
+        "thrusters_active": true,
+        "thrusters_kw": 150,
+        "thrusters_peak_kw": 300,
+        "hotel_kw": 50,
+        "total_propulsion_kw": 200,
+        "battery_mode": "peak_shaving",
+        "description": "DP-station, 4× thrustrar (75kW). Med batteri: 2 genset @ 48.8%. Utan batteri: 3 genset @ 44.9%.",
+        "fuel_kg_h": 86.1,
+        "fuel_l_h": 103.5,
+        "fuel_kg_h_no_battery": 119.7,
+        "fuel_l_h_no_battery": 143.9,
+        "fuel_savings_pct": 28.1,
+        "fuel_breakdown": "2× Genset @ 49%: 86 kg/h",
+        "co2_kg_h": 276.0,
+        "cost_sek_h": 1033.0,
+        "co2_kg_h_no_battery": 383.8,
+        "cost_sek_h_no_battery": 1436.0
+      },
+      "dock": {
+        "label": "Kaj",
+        "icon": "🔌",
+        "speed_kn": 0,
+        "mech_per_shaft_kw": 0,
+        "elec_per_shaft_kw": 0,
+        "gensets_running": 0,
+        "genset_load_kw": 0,
+        "genset_load_per_unit_kw": 0,
+        "genset_load_pct": 0,
+        "thrusters_active": false,
+        "thrusters_kw": 0,
+        "hotel_kw": 30,
+        "total_propulsion_kw": 0,
+        "battery_mode": "charging",
+        "description": "Landström. Noll bränsleförbrukning. Batteri laddar.",
+        "fuel_kg_h": 0,
+        "fuel_l_h": 0,
+        "fuel_breakdown": "Landström",
+        "co2_kg_h": 0.0,
+        "cost_sek_h": 0.0
+      }
+    },
+    "sea_trial": [
+      {
+        "speed_kn": 6.3,
+        "axel_kw": 99.4,
+        "fuel_lph": 28.2,
+        "bsfc": 0.244,
+        "total_fuel_l_h": 56.4,
+        "total_fuel_kg_h": 46.9,
+        "co2_kg_h": 150.4,
+        "cost_sek_h": 563.0
+      },
+      {
+        "speed_kn": 7.0,
+        "axel_kw": 135.0,
+        "fuel_lph": 38.0,
+        "bsfc": 0.242,
+        "total_fuel_l_h": 76.0,
+        "total_fuel_kg_h": 63.2,
+        "co2_kg_h": 202.7,
+        "cost_sek_h": 759.0
+      },
+      {
+        "speed_kn": 8.3,
+        "axel_kw": 171.3,
+        "fuel_lph": 47.8,
+        "bsfc": 0.24,
+        "total_fuel_l_h": 95.6,
+        "total_fuel_kg_h": 79.5,
+        "co2_kg_h": 255.0,
+        "cost_sek_h": 954.0
+      },
+      {
+        "speed_kn": 9.0,
+        "axel_kw": 241.8,
+        "fuel_lph": 66.5,
+        "bsfc": 0.237,
+        "total_fuel_l_h": 133.0,
+        "total_fuel_kg_h": 110.7,
+        "co2_kg_h": 354.8,
+        "cost_sek_h": 1328.0
+      },
+      {
+        "speed_kn": 10.0,
+        "axel_kw": 314.5,
+        "fuel_lph": 85.2,
+        "bsfc": 0.233,
+        "total_fuel_l_h": 170.4,
+        "total_fuel_kg_h": 141.8,
+        "co2_kg_h": 454.5,
+        "cost_sek_h": 1701.0
+      },
+      {
+        "speed_kn": 11.0,
+        "axel_kw": 461.4,
+        "fuel_lph": 120.5,
+        "bsfc": 0.225,
+        "total_fuel_l_h": 241.0,
+        "total_fuel_kg_h": 200.5,
+        "co2_kg_h": 642.8,
+        "cost_sek_h": 2406.0
+      },
+      {
+        "speed_kn": 12.0,
+        "axel_kw": 619.9,
+        "fuel_lph": 155.7,
+        "bsfc": 0.216,
+        "total_fuel_l_h": 311.4,
+        "total_fuel_kg_h": 259.1,
+        "co2_kg_h": 830.6,
+        "cost_sek_h": 3109.0
+      },
+      {
+        "speed_kn": 13.0,
+        "axel_kw": 873.7,
+        "fuel_lph": 213.9,
+        "bsfc": 0.211,
+        "total_fuel_l_h": 427.8,
+        "total_fuel_kg_h": 355.9,
+        "co2_kg_h": 1141.1,
+        "cost_sek_h": 4271.0
+      },
+      {
+        "speed_kn": 14.0,
+        "axel_kw": 1141.1,
+        "fuel_lph": 272.0,
+        "bsfc": 0.205,
+        "total_fuel_l_h": 544.0,
+        "total_fuel_kg_h": 452.6,
+        "co2_kg_h": 1451.1,
+        "cost_sek_h": 5431.0
+      },
+      {
+        "speed_kn": 15.0,
+        "axel_kw": 1141.1,
+        "fuel_lph": 325.1,
+        "bsfc": 0.204,
+        "total_fuel_l_h": 650.2,
+        "total_fuel_kg_h": 541.0,
+        "co2_kg_h": 1734.3,
+        "cost_sek_h": 6492.0
+      },
+      {
+        "speed_kn": 16.0,
+        "axel_kw": 1609.7,
+        "fuel_lph": 378.1,
+        "bsfc": 0.202,
+        "total_fuel_l_h": 756.2,
+        "total_fuel_kg_h": 629.2,
+        "co2_kg_h": 2017.1,
+        "cost_sek_h": 7550.0
+      },
+      {
+        "speed_kn": 17.0,
+        "axel_kw": 1779.5,
+        "fuel_lph": 419.0,
+        "bsfc": 0.203,
+        "total_fuel_l_h": 838.0,
+        "total_fuel_kg_h": 697.2,
+        "co2_kg_h": 2235.3,
+        "cost_sek_h": 8367.0
+      },
+      {
+        "speed_kn": 18.0,
+        "axel_kw": 1948.3,
+        "fuel_lph": 459.9,
+        "bsfc": 0.203,
+        "total_fuel_l_h": 919.8,
+        "total_fuel_kg_h": 765.3,
+        "co2_kg_h": 2453.5,
+        "cost_sek_h": 9183.0
+      }
+    ],
+    "bsfc": {
+      "danfoss-600": {
+        "name": "Danfoss 600kW Electric Motor",
+        "power_kw": 600,
+        "bsfc_curve": []
+      },
+      "scania-dw6-440-genset": {
+        "name": "Scania DW6 440kW Genset",
+        "power_kw": 440,
+        "bsfc_curve": [
+          {
+            "load_pct": 10,
+            "bsfc_gkwh": 240.0
+          },
+          {
+            "load_pct": 15,
+            "bsfc_gkwh": 225.0
+          },
+          {
+            "load_pct": 20,
+            "bsfc_gkwh": 215.0
+          },
+          {
+            "load_pct": 25,
+            "bsfc_gkwh": 210.0
+          },
+          {
+            "load_pct": 50,
+            "bsfc_gkwh": 200.0
+          },
+          {
+            "load_pct": 75,
+            "bsfc_gkwh": 195.0
+          },
+          {
+            "load_pct": 100,
+            "bsfc_gkwh": 200.0
+          }
+        ]
+      }
+    },
+    "fuel_density_kg_per_liter": 0.832,
+    "co2_factor_kg_per_kg_fuel": 3.206,
+    "fuel_price_sek_per_kg": 12.0,
+    "fuel_price_sek_per_ton": 12000,
+    "workday": {
+      "total_hours": 10,
+      "profile": [
+        {
+          "mode": "dock",
+          "hours": 0.5
+        },
+        {
+          "mode": "transit",
+          "hours": 2.0
+        },
+        {
+          "mode": "survey",
+          "hours": 4.0
+        },
+        {
+          "mode": "dp",
+          "hours": 2.0
+        },
+        {
+          "mode": "survey",
+          "hours": 1.0
+        },
+        {
+          "mode": "transit",
+          "hours": 1.0
+        },
+        {
+          "mode": "dock",
+          "hours": 0.5
+        }
+      ]
+    }
+  },
+  "scope4-traditional": {
+    "vessel": {
+      "name": "Northern Gale",
+      "type": "catamaran",
+      "hotel_at_sea_kw": 50,
+      "hotel_at_dock_kw": 30
+    },
+    "scope": {
+      "id": "scope4-traditional",
+      "name": "Traditionell Mekanisk",
+      "type": "diesel"
+    },
+    "propulsion": {
+      "mechanical": {
+        "count": 2,
+        "engine_id": "yanmar-750",
+        "engine_name": "Yanmar 750kW Marine Diesel",
+        "power_kw": 750,
+        "gearbox": "TBD"
+      },
+      "electric": {
+        "count": 0,
+        "engine_id": "",
+        "engine_name": "",
+        "power_kw": 0
+      }
+    },
+    "gensets": {
+      "count": 2,
+      "engine_id": "genset-75kw",
+      "engine_name": "Generisk 75kW Hotellgenset",
+      "power_kw": 75
+    },
+    "thrusters": {
+      "count": 0,
+      "power_kw_each": 75,
+      "total_kw": 0
+    },
+    "battery": {
+      "capacity_kwh": 0,
+      "usable_kwh": 0,
+      "max_discharge_kw": 0,
+      "soc_min": 0,
+      "soc_max": 0,
+      "peak_shave_trigger_pct": 85,
+      "efficiency_discharge": 0,
+      "efficiency_charge": 0
+    },
+    "electrical_system": {
+      "vfd_efficiency": 0.97,
+      "cable_efficiency": 0.99,
+      "motor_efficiency": 0.96,
+      "chain_efficiency": 0.9219
+    },
+    "modes": {
+      "transit": {
+        "label": "Transit 14 kn",
+        "icon": "⚡",
+        "speed_kn": 14.0,
+        "mech_per_shaft_kw": 570.5,
+        "elec_per_shaft_kw": 0,
+        "gensets_running": 1,
+        "genset_load_kw": 50,
+        "genset_load_per_unit_kw": 50.0,
+        "genset_load_pct": 66.7,
+        "thrusters_active": false,
+        "thrusters_kw": 0,
+        "hotel_kw": 50,
+        "total_propulsion_kw": 1141,
+        "battery_mode": "none",
+        "description": "Mek-drift 14.0 kn. 2× Yanmar 750kW Marine Diesel (570.5kW/axel). 1 genset @ 66.7% last (hotell).",
+        "fuel_kg_h": 239.1,
+        "fuel_l_h": 287.4,
+        "fuel_breakdown": "2× Yanmar 750kW Marine Diesel: 228 kg/h + 1× Genset: 11 kg/h",
+        "co2_kg_h": 766.6,
+        "cost_sek_h": 2869.0
+      },
+      "survey": {
+        "label": "Sjömätning 7 kn",
+        "icon": "🗺️",
+        "speed_kn": 7.0,
+        "mech_per_shaft_kw": 68,
+        "elec_per_shaft_kw": 0,
+        "gensets_running": 1,
+        "genset_load_kw": 50.0,
+        "genset_load_per_unit_kw": 50.0,
+        "genset_load_pct": 66.7,
+        "thrusters_active": false,
+        "thrusters_kw": 0,
+        "hotel_kw": 50,
+        "total_propulsion_kw": 135,
+        "battery_mode": "standby",
+        "description": "El-only @ 7.0 kn. Genset demand 50.0 kW → 1 genset @ 66.7% last.",
+        "fuel_kg_h": 57.6,
+        "fuel_l_h": 69.3,
+        "fuel_breakdown": "2× Yanmar 750kW Marine Diesel: 47 kg/h + 1× Genset: 11 kg/h",
+        "co2_kg_h": 184.7,
+        "cost_sek_h": 691.0
+      },
+      "dock": {
+        "label": "Kaj",
+        "icon": "🔌",
+        "speed_kn": 0,
+        "mech_per_shaft_kw": 0,
+        "elec_per_shaft_kw": 0,
+        "gensets_running": 0,
+        "genset_load_kw": 0,
+        "genset_load_per_unit_kw": 0,
+        "genset_load_pct": 0,
+        "thrusters_active": false,
+        "thrusters_kw": 0,
+        "hotel_kw": 30,
+        "total_propulsion_kw": 0,
+        "battery_mode": "charging",
+        "description": "Landström. Noll bränsleförbrukning. Batteri laddar.",
+        "fuel_kg_h": 0,
+        "fuel_l_h": 0,
+        "fuel_breakdown": "Landström",
+        "co2_kg_h": 0.0,
+        "cost_sek_h": 0.0
+      }
+    },
+    "sea_trial": [
+      {
+        "speed_kn": 6.3,
+        "axel_kw": 99.4,
+        "fuel_lph": 28.2,
+        "bsfc": 0.244,
+        "total_fuel_l_h": 56.4,
+        "total_fuel_kg_h": 46.9,
+        "co2_kg_h": 150.4,
+        "cost_sek_h": 563.0
+      },
+      {
+        "speed_kn": 7.0,
+        "axel_kw": 135.0,
+        "fuel_lph": 38.0,
+        "bsfc": 0.242,
+        "total_fuel_l_h": 76.0,
+        "total_fuel_kg_h": 63.2,
+        "co2_kg_h": 202.7,
+        "cost_sek_h": 759.0
+      },
+      {
+        "speed_kn": 8.3,
+        "axel_kw": 171.3,
+        "fuel_lph": 47.8,
+        "bsfc": 0.24,
+        "total_fuel_l_h": 95.6,
+        "total_fuel_kg_h": 79.5,
+        "co2_kg_h": 255.0,
+        "cost_sek_h": 954.0
+      },
+      {
+        "speed_kn": 9.0,
+        "axel_kw": 241.8,
+        "fuel_lph": 66.5,
+        "bsfc": 0.237,
+        "total_fuel_l_h": 133.0,
+        "total_fuel_kg_h": 110.7,
+        "co2_kg_h": 354.8,
+        "cost_sek_h": 1328.0
+      },
+      {
+        "speed_kn": 10.0,
+        "axel_kw": 314.5,
+        "fuel_lph": 85.2,
+        "bsfc": 0.233,
+        "total_fuel_l_h": 170.4,
+        "total_fuel_kg_h": 141.8,
+        "co2_kg_h": 454.5,
+        "cost_sek_h": 1701.0
+      },
+      {
+        "speed_kn": 11.0,
+        "axel_kw": 461.4,
+        "fuel_lph": 120.5,
+        "bsfc": 0.225,
+        "total_fuel_l_h": 241.0,
+        "total_fuel_kg_h": 200.5,
+        "co2_kg_h": 642.8,
+        "cost_sek_h": 2406.0
+      },
+      {
+        "speed_kn": 12.0,
+        "axel_kw": 619.9,
+        "fuel_lph": 155.7,
+        "bsfc": 0.216,
+        "total_fuel_l_h": 311.4,
+        "total_fuel_kg_h": 259.1,
+        "co2_kg_h": 830.6,
+        "cost_sek_h": 3109.0
+      },
+      {
+        "speed_kn": 13.0,
+        "axel_kw": 873.7,
+        "fuel_lph": 213.9,
+        "bsfc": 0.211,
+        "total_fuel_l_h": 427.8,
+        "total_fuel_kg_h": 355.9,
+        "co2_kg_h": 1141.1,
+        "cost_sek_h": 4271.0
+      },
+      {
+        "speed_kn": 14.0,
+        "axel_kw": 1141.1,
+        "fuel_lph": 272.0,
+        "bsfc": 0.205,
+        "total_fuel_l_h": 544.0,
+        "total_fuel_kg_h": 452.6,
+        "co2_kg_h": 1451.1,
+        "cost_sek_h": 5431.0
+      },
+      {
+        "speed_kn": 15.0,
+        "axel_kw": 1141.1,
+        "fuel_lph": 325.1,
+        "bsfc": 0.204,
+        "total_fuel_l_h": 650.2,
+        "total_fuel_kg_h": 541.0,
+        "co2_kg_h": 1734.3,
+        "cost_sek_h": 6492.0
+      },
+      {
+        "speed_kn": 16.0,
+        "axel_kw": 1609.7,
+        "fuel_lph": 378.1,
+        "bsfc": 0.202,
+        "total_fuel_l_h": 756.2,
+        "total_fuel_kg_h": 629.2,
+        "co2_kg_h": 2017.1,
+        "cost_sek_h": 7550.0
+      },
+      {
+        "speed_kn": 17.0,
+        "axel_kw": 1779.5,
+        "fuel_lph": 419.0,
+        "bsfc": 0.203,
+        "total_fuel_l_h": 838.0,
+        "total_fuel_kg_h": 697.2,
+        "co2_kg_h": 2235.3,
+        "cost_sek_h": 8367.0
+      },
+      {
+        "speed_kn": 18.0,
+        "axel_kw": 1948.3,
+        "fuel_lph": 459.9,
+        "bsfc": 0.203,
+        "total_fuel_l_h": 919.8,
+        "total_fuel_kg_h": 765.3,
+        "co2_kg_h": 2453.5,
+        "cost_sek_h": 9183.0
+      }
+    ],
+    "bsfc": {
+      "yanmar-750": {
+        "name": "Yanmar 750kW Marine Diesel",
+        "power_kw": 750,
+        "bsfc_curve": [
+          {
+            "load_pct": 5,
+            "bsfc_gkwh": 380.0
+          },
+          {
+            "load_pct": 10,
+            "bsfc_gkwh": 340.0
+          },
+          {
+            "load_pct": 15,
+            "bsfc_gkwh": 310.0
+          },
+          {
+            "load_pct": 20,
+            "bsfc_gkwh": 290.0
+          },
+          {
+            "load_pct": 25,
+            "bsfc_gkwh": 270.0
+          },
+          {
+            "load_pct": 50,
+            "bsfc_gkwh": 220.0
+          },
+          {
+            "load_pct": 75,
+            "bsfc_gkwh": 200.0
+          },
+          {
+            "load_pct": 100,
+            "bsfc_gkwh": 205.0
+          }
+        ]
+      },
+      "genset-75kw": {
+        "name": "Generisk 75kW Hotellgenset",
+        "power_kw": 75,
+        "bsfc_curve": [
+          {
+            "load_pct": 10,
+            "bsfc_gkwh": 310.0
+          },
+          {
+            "load_pct": 15,
+            "bsfc_gkwh": 280.0
+          },
+          {
+            "load_pct": 20,
+            "bsfc_gkwh": 260.0
+          },
+          {
+            "load_pct": 25,
+            "bsfc_gkwh": 245.0
+          },
+          {
+            "load_pct": 50,
+            "bsfc_gkwh": 220.0
+          },
+          {
+            "load_pct": 75,
+            "bsfc_gkwh": 210.0
+          },
+          {
+            "load_pct": 100,
+            "bsfc_gkwh": 215.0
+          }
+        ]
+      }
+    },
+    "fuel_density_kg_per_liter": 0.832,
+    "co2_factor_kg_per_kg_fuel": 3.206,
+    "fuel_price_sek_per_kg": 12.0,
+    "fuel_price_sek_per_ton": 12000,
+    "workday": {
+      "total_hours": 10,
+      "profile": [
+        {
+          "mode": "dock",
+          "hours": 0.5
+        },
+        {
+          "mode": "transit",
+          "hours": 2.0
+        },
+        {
+          "mode": "survey",
+          "hours": 6.0
+        },
+        {
+          "mode": "transit",
+          "hours": 1.0
+        },
+        {
+          "mode": "dock",
+          "hours": 0.5
+        }
+      ]
+    }
+  }
+};
+let   ANIMATION_DATA = ALL_SCOPES["scope1-scania-hybrid"];
+let   currentScopeId = "scope1-scania-hybrid";
+
+// ── Component glow (drop-shadow CSS filter) ──────────────────────────────────
+const GLOW = {
+  mech:     'drop-shadow(0 0 6px rgba(245,158,11,0.65))',
+  elec:     'drop-shadow(0 0 6px rgba(56,189,248,0.65))',
+  genset:   'drop-shadow(0 0 6px rgba(167,139,250,0.65))',
+  battery:  'drop-shadow(0 0 7px rgba(34,197,94,0.65))',
+  thruster: 'drop-shadow(0 0 8px rgba(6,182,212,0.75))',
+};
+
+function setComp(id, active, type) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.opacity = active ? '1' : '0.18';
+  el.style.filter  = active ? GLOW[type] : 'none';
+}
+
+function setPropSpin(active) {
+  ['propPortBlades','propStbdBlades'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('prop-spin', active);
+  });
+}
+
+// ── Flow line helpers ─────────────────────────────────────────────────────────
+
+/** Map power (kW) → stroke width */
+function flowWidth(kw) {
+  if (kw <= 0)   return 0;
+  if (kw <= 50)  return 1.5;
+  if (kw <= 150) return 2;
+  if (kw <= 300) return 2.5;
+  return 3;
+}
+
+/** Show a single flow line at given kW and stroke color */
+function setFlowLine(id, kw, color) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const w = flowWidth(kw);
+  if (w === 0) { el.style.opacity = '0'; return; }
+  el.style.opacity = '0.85';
+  el.setAttribute('stroke-width', w);
+  el.setAttribute('stroke', color);
+}
+
+/** Show/hide the kW label next to a flow line */
+function setFlowLabel(id, kw) {
+  const el = document.getElementById('label-' + id);
+  if (!el) return;
+  if (kw <= 0) { el.style.opacity = '0'; return; }
+  el.style.opacity = '1';
+  el.textContent = Math.round(kw) + ' kW';
+}
+
+/** Hide all flow lines and labels instantly */
+function hideAllFlows() {
+  document.querySelectorAll('.flow-line').forEach(el => { el.style.opacity = '0'; });
+  document.querySelectorAll('.flow-label').forEach(el => { el.style.opacity = '0'; });
+  document.querySelectorAll('.thruster-jet').forEach(el => { el.style.opacity = '0'; });
+  clearIntervals();
+  clearParticles();
+}
+
+// ── Background interval management ───────────────────────────────────────────
+let battInterval  = null;
+let jetInterval   = null;
+let dpSimInterval = null;  // Fas 5: DP peak shaving simulation
+
+function clearIntervals() {
+  if (battInterval)  { clearInterval(battInterval);  battInterval  = null; }
+  if (jetInterval)   { clearInterval(jetInterval);   jetInterval   = null; }
+  if (dpSimInterval) { clearInterval(dpSimInterval); dpSimInterval = null; }
+}
+
+/** Randomly show one side-jet per thruster (simulates DP corrections) */
+function randomizeJets() {
+  [1, 2, 3, 4].forEach(n => {
+    const L = document.getElementById(`jet-t${n}-left`);
+    const R = document.getElementById(`jet-t${n}-right`);
+    if (!L || !R) return;
+    const leftOn = Math.random() < 0.5;
+    L.style.opacity = leftOn ? '1' : '0';
+    R.style.opacity = leftOn ? '0' : '1';
+  });
+}
+
+// ── Fas 4: Dashboard data ─────────────────────────────────────────────────────
+const BATT_STATE = {
+  transit: { soc: 72, status: 'Standby',      power: 0,  charging: false },
+  survey:  { soc: 68, status: 'Laddar',        power: 15, charging: true  },
+  dp:      { soc: 55, status: 'Peak Shaving',  power: 45, charging: false },
+  dock:    { soc: 90, status: 'Full laddning', power: 10, charging: true  },
+};
+
+// ── Fas 4: Dashboard update functions ────────────────────────────────────────
+
+function updateSpeed(mode) {
+  const el = document.getElementById('dSpeed');
+  if (el) el.textContent = (mode.speed_kn || 0).toFixed(1);
+}
+
+function updateKPIs(modeKey, mode) {
+  const elecLoad = (mode.elec_per_shaft_kw || 0) * 2
+                 + (mode.thrusters_kw || 0)
+                 + (mode.hotel_kw || 0);
+  const total = (mode.total_propulsion_kw || 0)
+              + (mode.hotel_kw || 0)
+              + (mode.thrusters_kw || 0);
+  // Fas 8: count-up animation for KPI values
+  const prev = (id) => parseFloat(document.getElementById(id)?.textContent) || 0;
+  const anim = (id, end) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const start = prev(id);
+    const dur = 400;
+    const t0 = performance.now();
+    const step = (now) => {
+      const p = Math.min((now - t0) / dur, 1);
+      el.textContent = Math.round(start + (end - start) * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  };
+  anim('dKpiProp',  mode.total_propulsion_kw || 0);
+  anim('dKpiElec',  elecLoad);
+  anim('dKpiTotal', total);
+  anim('dKpiHotel', mode.hotel_kw || 0);
+}
+
+function updatePowerBars(mode) {
+  const MAX = 1200;
+  const bars = [
+    { id: 'dBarMech',  kw: (mode.mech_per_shaft_kw || 0) * 2 },
+    { id: 'dBarElec',  kw: (mode.elec_per_shaft_kw || 0) * 2 },
+    { id: 'dBarThr',   kw: mode.thrusters_kw || 0             },
+    { id: 'dBarHotel', kw: mode.hotel_kw || 0                 },
+  ];
+  bars.forEach(({ id, kw }) => {
+    const fill = document.getElementById(id + 'Fill');
+    const val  = document.getElementById(id + 'Val');
+    if (fill) fill.style.width = Math.min(100, (kw / MAX) * 100).toFixed(1) + '%';
+    if (val)  val.textContent  = Math.round(kw) + ' kW';
+  });
+}
+
+function updateBattery(modeKey) {
+  const b    = BATT_STATE[modeKey] || BATT_STATE.transit;
+  const fill = document.getElementById('dBattFill');
+  const pct  = document.getElementById('dBattPct');
+  const stat = document.getElementById('dBattStatus');
+  const pwr  = document.getElementById('dBattPwr');
+
+  if (fill) {
+    fill.style.width = b.soc + '%';
+    fill.className   = 'batt-bar-fill' + (b.charging ? '' : b.power > 0 ? ' delivering' : '');
+  }
+  if (pct)  pct.textContent = b.soc + '%';
+  if (stat) {
+    stat.textContent = b.status;
+    stat.className   = 'batt-status ' + (b.charging ? 'charging' : b.power > 0 ? 'delivering' : 'standby');
+  }
+  if (pwr) {
+    const sign = b.charging ? '+' : (b.power > 0 ? '±' : '');
+    pwr.textContent = sign + b.power + ' kW';
+    pwr.className   = 'batt-power ' + (b.charging ? 'charging' : b.power > 0 ? 'delivering' : 'standby');
+  }
+}
+
+function setEngCard(id, on, onClass, powerKw, statusText) {
+  const card = document.getElementById(id);
+  if (!card) return;
+  card.className = 'eng-card' + (on ? ' ' + onClass : ' off');
+  const powerEl  = card.querySelector('.eng-power');
+  const statusEl = card.querySelector('.eng-status');
+  const dotEl    = card.querySelector('.eng-dot');
+  if (powerEl)  powerEl.textContent  = on ? Math.round(powerKw) + ' kW' : '— kW';
+  if (statusEl) statusEl.textContent = statusText;
+  if (dotEl)    dotEl.className      = 'eng-dot' + (on ? ' active' : '');
+}
+
+function updateEngineCards(modeKey, mode) {
+  const mechOn    = mode.mech_per_shaft_kw > 0;
+  const elecOn    = mode.elec_per_shaft_kw > 0;
+  const gsCount   = mode.gensets_running || 0;
+  const mechKw    = mode.mech_per_shaft_kw || 0;
+  const elecKw    = mode.elec_per_shaft_kw || 0;
+  const gsLoad    = mode.genset_load_per_unit_kw || 0;
+  const gsLoadPct = mode.genset_load_pct || 0;
+  const mechMax   = (ANIMATION_DATA.propulsion.mechanical.power_kw || 440);
+  const mechPct   = mechMax > 0 ? Math.round((mechKw / mechMax) * 100) : 0;
+
+  const elecStatus = elecOn
+    ? (modeKey === 'transit' ? 'El-boost' : modeKey === 'dp' ? 'Station-keeping' : 'El-drift')
+    : 'Av';
+
+  setEngCard('dCardMechBB', mechOn, 'running',     mechKw, mechOn ? mechPct + '% last' : 'Av');
+  setEngCard('dCardMechSB', mechOn, 'running',     mechKw, mechOn ? mechPct + '% last' : 'Av');
+  setEngCard('dCardElecBB', elecOn, 'electric-on', elecKw, elecStatus);
+  setEngCard('dCardElecSB', elecOn, 'electric-on', elecKw, elecStatus);
+  setEngCard('dCardGen1', gsCount >= 1, 'genset-on', gsLoad, gsCount >= 1 ? Math.round(gsLoadPct) + '% last' : 'Standby');
+  setEngCard('dCardGen2', gsCount >= 2, 'genset-on', gsLoad, gsCount >= 2 ? Math.round(gsLoadPct) + '% last' : 'Standby');
+  setEngCard('dCardGen3', gsCount >= 3, 'genset-on', gsLoad, gsCount >= 3 ? Math.round(gsLoadPct) + '% last' : 'Standby');
+  setEngCard('dCardGen4', gsCount >= 4, 'genset-on', gsLoad, gsCount >= 4 ? Math.round(gsLoadPct) + '% last' : 'Standby');
+}
+
+function updateModeDescription(mode) {
+  const el = document.getElementById('dModeDesc');
+  if (el) el.textContent = mode.description || '';
+}
+
+function updateDashboard(modeKey, mode) {
+  updateSpeed(mode);
+  updateKPIs(modeKey, mode);
+  updatePowerBars(mode);
+  updateBattery(modeKey);
+  updateEngineCards(modeKey, mode);
+  updateModeDescription(mode);
+}
+
+// ── Component state update ────────────────────────────────────────────────────
+function updateComponents(modeKey, mode) {
+  const mechOn  = mode.mech_per_shaft_kw > 0;
+  const elecOn  = mode.elec_per_shaft_kw > 0;
+  const gsCount = mode.gensets_running || 0;
+  const thrOn   = mode.thrusters_active === true;
+  const propsOn = mode.speed_kn > 0;
+
+  setComp('enginePortMech', mechOn,      'mech');
+  setComp('engineStbdMech', mechOn,      'mech');
+  setComp('enginePortElec', elecOn,      'elec');
+  setComp('engineStbdElec', elecOn,      'elec');
+  setComp('genset1',        gsCount >= 1,'genset');
+  setComp('genset2',        gsCount >= 2,'genset');
+  setComp('genset3',        gsCount >= 3,'genset');
+  setComp('genset4',        gsCount >= 4,'genset');
+  setComp('batteryPack',    true,        'battery');
+  setComp('hotelLoad',      true,        'genset');
+  [1,2,3,4].forEach(n => setComp('thruster'+n, thrOn, 'thruster'));
+
+  setPropSpin(propsOn);
+
+  // Bus bar brightness
+  const busBar = document.getElementById('busBar');
+  if (busBar) busBar.style.opacity = (elecOn || gsCount > 0) ? '0.45' : '0.12';
+}
+
+// ── Prop wash (speed-proportional) ───────────────────────────────────────────
+function updatePropWash(mode) {
+  const spd = mode.speed_kn || 0;
+  const pw  = document.getElementById('propWash');
+  if (!pw) return;
+  if (spd === 0) { pw.style.opacity = '0'; return; }
+  // Scale opacity: 0.3 at low speed, 0.8 at full transit (14 kn)
+  pw.style.opacity = String(Math.min(0.8, 0.3 + (spd / 14) * 0.5));
+}
+
+// ── Flow display per mode ─────────────────────────────────────────────────────
+function showFlows(modeKey, mode) {
+  const d      = ANIMATION_DATA;
+  const mechOn  = mode.mech_per_shaft_kw > 0;
+  const elecOn  = mode.elec_per_shaft_kw > 0;
+  const gsCount = mode.gensets_running || 0;
+  const thrOn   = mode.thrusters_active === true;
+  const docked  = modeKey === 'dock';
+
+  // Genset → Bus (individual per genset, load per unit)
+  const gsLoad = mode.genset_load_per_unit_kw || 0;
+  setFlowLine('flow-gen1-bus', gsCount >= 1 ? gsLoad : 0, '#a78bfa');
+  setFlowLabel('flow-gen1-bus', gsCount >= 1 ? gsLoad : 0);
+  setFlowLine('flow-gen2-bus', gsCount >= 2 ? gsLoad : 0, '#a78bfa');
+  setFlowLabel('flow-gen2-bus', gsCount >= 2 ? gsLoad : 0);
+  setFlowLine('flow-gen3-bus', gsCount >= 3 ? gsLoad : 0, '#a78bfa');
+  setFlowLabel('flow-gen3-bus', gsCount >= 3 ? gsLoad : 0);
+  setFlowLine('flow-gen4-bus', gsCount >= 4 ? gsLoad : 0, '#a78bfa');
+  setFlowLabel('flow-gen4-bus', gsCount >= 4 ? gsLoad : 0);
+
+  // Bus → Danfoss (BB + SB, same elec_per_shaft_kw each)
+  const elKw = mode.elec_per_shaft_kw || 0;
+  setFlowLine('flow-bus-danfoss-bb', elecOn ? elKw : 0, '#38bdf8');
+  setFlowLabel('flow-bus-danfoss-bb', elecOn ? elKw : 0);
+  setFlowLine('flow-bus-danfoss-sb', elecOn ? elKw : 0, '#38bdf8');
+  setFlowLabel('flow-bus-danfoss-sb', elecOn ? elKw : 0);
+
+  // Bus → Hotel (active whenever bus is live and not docked)
+  const hotelKw  = mode.hotel_kw || 0;
+  const hotelBus = !docked && (gsCount > 0 || elecOn);
+  setFlowLine('flow-bus-hotel', hotelBus ? hotelKw : 0, '#a78bfa');
+  setFlowLabel('flow-bus-hotel', hotelBus ? hotelKw : 0);
+
+  // Shore → Hotel (dock mode only)
+  setFlowLine('flow-shore-hotel', docked ? hotelKw : 0, '#22c55e');
+  setFlowLabel('flow-shore-hotel', docked ? hotelKw : 0);
+
+  // Bus ↔ Battery — color and behavior depends on mode
+  if (docked) {
+    // Strong charge from shore (shown via battery glow; bus line hidden)
+    setFlowLine('flow-bus-battery', 0, '#22c55e');
+    setFlowLabel('flow-bus-battery', 0);
+  } else if (modeKey === 'dp') {
+    // Initial battery flow — dpSimInterval (Fas 5) drives live color changes
+    setFlowLine('flow-bus-battery', 80, '#22c55e');
+    setFlowLabel('flow-bus-battery', 0);
+  } else if (modeKey === 'survey') {
+    // Charging — gensets have surplus
+    setFlowLine('flow-bus-battery', 40, '#22c55e');
+    setFlowLabel('flow-bus-battery', 0);
+  } else {
+    // Transit: battery standby — very dim
+    setFlowLine('flow-bus-battery', 0, '#22c55e');
+    setFlowLabel('flow-bus-battery', 0);
+  }
+
+  // Mech shaft (DW6 → propeller)
+  const mechKw = mode.mech_per_shaft_kw || 0;
+  setFlowLine('flow-mech-bb', mechOn ? mechKw : 0, '#f59e0b');
+  setFlowLabel('flow-mech-bb', mechOn ? mechKw : 0);
+  setFlowLine('flow-mech-sb', mechOn ? mechKw : 0, '#f59e0b');
+  setFlowLabel('flow-mech-sb', mechOn ? mechKw : 0);
+
+  // Bus → Thrusters
+  const thrKwEach = thrOn ? (d.thrusters.power_kw_each || 75) : 0;
+  ['flow-bus-thruster1','flow-bus-thruster2','flow-bus-thruster3','flow-bus-thruster4'].forEach(id => {
+    setFlowLine(id, thrKwEach, '#06b6d4');
+    setFlowLabel(id, thrKwEach);
+  });
+
+  // Thruster jets (DP only)
+  if (thrOn) {
+    document.querySelectorAll('.thruster-jet').forEach(el => { el.style.opacity = '1'; });
+    randomizeJets(); // initial randomization
+    jetInterval = setInterval(randomizeJets, 2400);
+  }
+
+  // Prop wash
+  updatePropWash(mode);
+}
+
+// ── Mode UI (pill + buttons) — updated immediately on click ──────────────────
+function updateModeUI(modeKey, mode) {
+  const docked = modeKey === 'dock';
+  document.getElementById('modeLabelText').textContent =
+      mode.icon + ' ' + mode.label.toUpperCase();
+  document.getElementById('modeBadgeRect').style.fill =
+      docked ? '#334155' : (SCOPE_COLORS[currentScopeId] || '#e65100');
+  document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.mode === modeKey);
+  });
+}
+
+// ── Main mode switch (staggered transition) ───────────────────────────────────
+function setMode(modeKey) {
+  const mode = ANIMATION_DATA.modes[modeKey];
+  if (!mode) return;
+
+  currentMode = modeKey;   // Fas 5: track mode for heading drift
+  resetHeading();          // Fas 5: reset vessel rotation on mode change
+
+  // Immediately: fade all flows out + update UI pill/buttons + dashboard
+  hideAllFlows();          // also clears dpSimInterval via clearIntervals()
+  updateModeUI(modeKey, mode);
+  updateDashboard(modeKey, mode);  // Fas 4
+  updateFuelTicker(modeKey, mode); // Fas 7 (also syncs CO₂/cost via Fas 10)
+  updateSeaTrialMarker(mode);      // Fas 7
+
+  // Fas 10: speed slider visibility + defaults
+  const speedCtrl = document.getElementById('speedControl');
+  const speedSliderEl = document.getElementById('speedSlider');
+  if (speedCtrl) {
+    const showSlider = (modeKey === 'transit' || modeKey === 'survey');
+    speedCtrl.classList.toggle('hidden', !showSlider);
+    if (showSlider && speedSliderEl) {
+      const defaultSpeed = modeKey === 'transit' ? 14 : 7;
+      speedSliderEl.value = defaultSpeed;
+      const sliderSpeedEl = document.getElementById('sliderSpeed');
+      const sliderPowerEl = document.getElementById('sliderPower');
+      if (sliderSpeedEl) sliderSpeedEl.textContent = defaultSpeed.toFixed(1) + ' kn';
+      if (sliderPowerEl) sliderPowerEl.textContent = Math.round(interpolateSeaTrial(defaultSpeed)) + ' kW';
+    }
+  }
+
+  // 200ms: update component glow states
+  setTimeout(() => updateComponents(modeKey, mode), 200);
+
+  // 500ms: fade in new flows + labels
+  setTimeout(() => showFlows(modeKey, mode), 500);
+
+  // Fas 5: DP-specific post-transition effects
+  if (modeKey === 'dp') {
+    setTimeout(startDPSimulation, 600);   // start after flows visible
+    dpDriftTimeout = setTimeout(dpHeadingDrift, 1500);  // first drift (tracked to prevent double-spawn)
+  }
+
+  // Fas 8: Shore power, bow wave, wake
+  const shore   = document.getElementById('shorePowerGroup');
+  const bowWave = document.getElementById('bowWave');
+  const wake    = document.getElementById('wakeLines');
+  if (shore)   shore.style.opacity   = (modeKey === 'dock')                        ? '1'   : '0';
+  if (bowWave) bowWave.style.opacity = (modeKey === 'transit' || modeKey === 'survey') ? '1' : '0';
+  if (wake)    wake.style.opacity    = modeKey === 'transit' ? '1' : modeKey === 'survey' ? '0.45' : '0';
+
+  // Fas 8: spawn energy particles after flows are visible
+  setTimeout(() => spawnParticles(modeKey), 700);
+}
+
+// ── Fas 10: Sea trial interpolation ──────────────────────────────────────────
+
+function interpolateSeaTrial(speedKn) {
+  const st = ANIMATION_DATA.sea_trial;
+  if (!st || !st.length) return 0;
+  if (speedKn <= st[0].speed_kn) return st[0].axel_kw;
+  if (speedKn >= st[st.length - 1].speed_kn) return st[st.length - 1].axel_kw;
+  for (let i = 0; i < st.length - 1; i++) {
+    if (st[i].speed_kn <= speedKn && speedKn <= st[i + 1].speed_kn) {
+      const frac = (speedKn - st[i].speed_kn) / (st[i + 1].speed_kn - st[i].speed_kn);
+      return st[i].axel_kw + frac * (st[i + 1].axel_kw - st[i].axel_kw);
+    }
+  }
+  return st[st.length - 1].axel_kw;
+}
+
+// ── Fas 10: Speed slider ──────────────────────────────────────────────────────
+
+// ── Fas 12: Dynamic mode calc per scope type ─────────────────────────────────
+
+function calcHybridModeAtSpeed(speedKn, axelKw) {
+  const d = ANIMATION_DATA;
+  const mechMax   = d.propulsion.mechanical.power_kw || 440;
+  const elecMax   = d.propulsion.electric.power_kw   || 295;
+  const chainEff  = d.electrical_system.chain_efficiency || 0.9219;
+  const hotelKw   = d.vessel.hotel_at_sea_kw || 50;
+  const gsRated   = d.gensets.power_kw || 440;
+  const perShaftKw = axelKw / 2;
+
+  let mechPerShaft, elecPerShaft, gsRunning, gsLoadKw, gsLoadPct;
+  const DW6_MIN_LOAD_KW = 110;  // ~25% of 440 kW
+
+  if (perShaftKw <= DW6_MIN_LOAD_KW) {
+    // Pure electric drive (survey-like)
+    mechPerShaft = 0;
+    elecPerShaft = Math.min(perShaftKw, elecMax);
+    const elecDemand = (elecPerShaft * 2) / chainEff + hotelKw;
+    gsRunning = Math.max(1, Math.ceil(elecDemand / (gsRated * 0.85)));
+    gsLoadKw  = elecDemand;
+    gsLoadPct = (gsLoadKw / gsRunning / gsRated) * 100;
+  } else {
+    // DW6 mechanical + Danfoss el-boost
+    mechPerShaft = Math.min(perShaftKw, mechMax);
+    elecPerShaft = Math.max(0, Math.min(perShaftKw - mechPerShaft, elecMax));
+    const elecDemand = (elecPerShaft * 2) / chainEff + hotelKw;
+    gsRunning = elecPerShaft > 0 ? Math.max(1, Math.ceil(elecDemand / (gsRated * 0.85))) : 1;
+    gsLoadKw  = elecDemand;
+    gsLoadPct = gsRunning > 0 ? (gsLoadKw / gsRunning / gsRated) * 100 : 0;
+  }
+
+  return {
+    speed_kn: speedKn,
+    mech_per_shaft_kw: Math.round(mechPerShaft),
+    elec_per_shaft_kw: Math.round(elecPerShaft),
+    gensets_running: gsRunning,
+    genset_load_kw: Math.round(gsLoadKw),
+    genset_load_per_unit_kw: gsRunning > 0 ? Math.round(gsLoadKw / gsRunning) : 0,
+    genset_load_pct: Math.round(gsLoadPct * 10) / 10,
+    thrusters_active: false,
+    thrusters_kw: 0,
+    hotel_kw: hotelKw,
+    total_propulsion_kw: Math.round(axelKw),
+    battery_mode: 'standby',
+  };
+}
+
+function calcDEModeAtSpeed(speedKn, axelKw) {
+  const d = ANIMATION_DATA;
+  const elecMax  = d.propulsion.electric.power_kw || 750;
+  const chainEff = d.electrical_system.chain_efficiency || 0.9219;
+  const hotelKw  = d.vessel.hotel_at_sea_kw || 50;
+  const gsRated  = d.gensets.power_kw || 440;
+  const perShaftKw = axelKw / 2;
+
+  const elecPerShaft = Math.min(perShaftKw, elecMax);
+  const elecDemand   = (elecPerShaft * 2) / chainEff + hotelKw;
+  const gsRunning    = Math.max(1, Math.ceil(elecDemand / (gsRated * 0.85)));
+  const gsLoadPct    = (elecDemand / gsRunning / gsRated) * 100;
+
+  return {
+    speed_kn: speedKn,
+    mech_per_shaft_kw: 0,
+    elec_per_shaft_kw: Math.round(elecPerShaft),
+    gensets_running: gsRunning,
+    genset_load_kw: Math.round(elecDemand),
+    genset_load_per_unit_kw: Math.round(elecDemand / gsRunning),
+    genset_load_pct: Math.round(gsLoadPct * 10) / 10,
+    thrusters_active: false,
+    thrusters_kw: 0,
+    hotel_kw: hotelKw,
+    total_propulsion_kw: Math.round(axelKw),
+    battery_mode: 'standby',
+  };
+}
+
+function calcTraditionalModeAtSpeed(speedKn, axelKw) {
+  const d = ANIMATION_DATA;
+  const mechMax   = d.propulsion.mechanical.power_kw || 750;
+  const hotelKw   = d.vessel.hotel_at_sea_kw || 50;
+  const gsRated   = d.gensets.power_kw || 75;
+  const perShaftKw = axelKw / 2;
+
+  return {
+    speed_kn: speedKn,
+    mech_per_shaft_kw: Math.round(Math.min(perShaftKw, mechMax)),
+    elec_per_shaft_kw: 0,
+    gensets_running: 1,
+    genset_load_kw: hotelKw,
+    genset_load_per_unit_kw: hotelKw,
+    genset_load_pct: Math.round((hotelKw / gsRated) * 100 * 10) / 10,
+    thrusters_active: false,
+    thrusters_kw: 0,
+    hotel_kw: hotelKw,
+    total_propulsion_kw: Math.round(axelKw),
+    battery_mode: 'none',
+  };
+}
+
+function updateForSpeed(speedKn) {
+  const axelKw = interpolateSeaTrial(speedKn);
+  const d = ANIMATION_DATA;
+  const scopeType = d.scope.type;
+
+  // 1. Dynamic mode object based on speed + scope type
+  let dynamicMode;
+  if (scopeType === 'hybrid') {
+    dynamicMode = calcHybridModeAtSpeed(speedKn, axelKw);
+  } else if (scopeType === 'diesel_electric') {
+    dynamicMode = calcDEModeAtSpeed(speedKn, axelKw);
+  } else {
+    dynamicMode = calcTraditionalModeAtSpeed(speedKn, axelKw);
+  }
+
+  // 2. Fuel — interpolate from sea trial data
+  const st = d.sea_trial || [];
+  let totalFuelKgH = 0;
+  if (st.length > 0) {
+    let lo = st[0], hi = st[st.length - 1];
+    for (let i = 0; i < st.length - 1; i++) {
+      if (st[i].speed_kn <= speedKn && speedKn <= st[i + 1].speed_kn) {
+        lo = st[i]; hi = st[i + 1]; break;
+      }
+    }
+    const frac = (hi.speed_kn === lo.speed_kn) ? 0
+      : (speedKn - lo.speed_kn) / (hi.speed_kn - lo.speed_kn);
+    totalFuelKgH = lo.total_fuel_kg_h + frac * (hi.total_fuel_kg_h - lo.total_fuel_kg_h);
+  }
+
+  const fuelLH   = totalFuelKgH / (d.fuel_density_kg_per_liter || 0.832);
+  const co2KgH   = totalFuelKgH * (d.co2_factor_kg_per_kg_fuel || 3.206);
+  const costSekH = totalFuelKgH * (d.fuel_price_sek_per_kg || 12);
+
+  // 3. Speed display + slider info
+  const speedEl = document.getElementById('dSpeed');
+  if (speedEl) speedEl.textContent = speedKn.toFixed(1);
+  const sliderSpeedEl = document.getElementById('sliderSpeed');
+  const sliderPowerEl = document.getElementById('sliderPower');
+  if (sliderSpeedEl) sliderSpeedEl.textContent = speedKn.toFixed(1) + ' kn';
+  if (sliderPowerEl) sliderPowerEl.textContent = Math.round(axelKw) + ' kW';
+
+  // 4. Fuel, CO₂, cost animations
+  const prevKg   = parseFloat(document.getElementById('fuelKgH')?.textContent)   || 0;
+  const prevL    = parseFloat(document.getElementById('fuelLH')?.textContent)    || 0;
+  const prevCO2  = parseFloat(document.getElementById('co2KgH')?.textContent)    || 0;
+  const prevCost = parseFloat(document.getElementById('costSekH')?.textContent)  || 0;
+  animateValue('fuelKgH',  prevKg,   totalFuelKgH, 250);
+  animateValue('fuelLH',   prevL,    fuelLH,        250);
+  animateValue('co2KgH',   prevCO2,  co2KgH,        250);
+  animateValue('costSekH', prevCost, costSekH,       250);
+
+  // 5. Sea trial marker
+  updateSeaTrialMarker({ speed_kn: speedKn, total_propulsion_kw: axelKw });
+
+  // 6. KPIs (Fas 12)
+  updateKPIs(currentMode, dynamicMode);
+
+  // 7. Power bars (Fas 12)
+  updatePowerBars(dynamicMode);
+
+  // 8. Engine cards (Fas 12)
+  updateEngineCards(currentMode, dynamicMode);
+
+  // 9. Flow line widths (Fas 12)
+  updateFlowLineWidths(dynamicMode);
+}
+
+function setupSpeedSlider() {
+  const slider = document.getElementById('speedSlider');
+  if (!slider) return;
+  slider.addEventListener('input', (e) => {
+    updateForSpeed(parseFloat(e.target.value));
+  });
+}
+
+// ── Fas 12: Flow line width sync ─────────────────────────────────────────────
+
+function setFlowWidth(flowId, width) {
+  const el = document.getElementById(flowId);
+  if (!el) return;
+  if (width <= 0) {
+    el.style.opacity = '0';
+  } else {
+    // Only set width on already-visible flows — don't override opacity=0 from setMode()
+    if (parseFloat(el.style.opacity || '0') > 0) {
+      el.setAttribute('stroke-width', width.toFixed(1));
+    }
+  }
+}
+
+function updateFlowLineWidths(mode) {
+  const mechKw = mode.mech_per_shaft_kw || 0;
+  const mechWidth = mechKw > 0 ? Math.max(1.5, (mechKw / 440) * 4) : 0;
+  setFlowWidth('flow-mech-bb', mechWidth);
+  setFlowWidth('flow-mech-sb', mechWidth);
+
+  const elecKw = mode.elec_per_shaft_kw || 0;
+  const elecMax = ANIMATION_DATA.propulsion.electric.power_kw || 295;
+  const elecWidth = elecKw > 0 ? Math.max(1, (elecKw / elecMax) * 3) : 0;
+  setFlowWidth('flow-bus-danfoss-bb', elecWidth);
+  setFlowWidth('flow-bus-danfoss-sb', elecWidth);
+
+  const gsKw    = mode.genset_load_per_unit_kw || 0;
+  const gsRated = ANIMATION_DATA.gensets.power_kw || 440;
+  const gsWidth = gsKw > 0 ? Math.max(1, (gsKw / gsRated) * 3) : 0;
+  const gsCount = mode.gensets_running || 0;
+  setFlowWidth('flow-gen1-bus', gsCount >= 1 ? gsWidth : 0);
+  setFlowWidth('flow-gen2-bus', gsCount >= 2 ? gsWidth : 0);
+  setFlowWidth('flow-gen3-bus', gsCount >= 3 ? gsWidth : 0);
+  setFlowWidth('flow-gen4-bus', gsCount >= 4 ? gsWidth : 0);
+}
+
+// ── Fas 10: CO₂ + kostnad sync ────────────────────────────────────────────────
+
+function syncCO2AndCost(fuelKgH, duration) {
+  const d = ANIMATION_DATA;
+  const co2   = fuelKgH * (d.co2_factor_kg_per_kg_fuel || 3.206);
+  const cost  = fuelKgH * (d.fuel_price_sek_per_kg || 12);
+  const prevCO2  = parseFloat(document.getElementById('co2KgH')?.textContent)  || 0;
+  const prevCost = parseFloat(document.getElementById('costSekH')?.textContent) || 0;
+  animateValue('co2KgH',  prevCO2,  co2,  duration || 500);
+  animateValue('costSekH', prevCost, cost, duration || 500);
+}
+
+// ── Fas 10: Workday summary ───────────────────────────────────────────────────
+
+function calcWorkdaySummary() {
+  const d = ANIMATION_DATA;
+  const profile = (d.workday && d.workday.profile) || [];
+  let totalFuelKg = 0, totalCO2Kg = 0, totalCostSEK = 0;
+  for (const seg of profile) {
+    const m = d.modes[seg.mode];
+    if (!m) continue;
+    totalFuelKg  += (m.fuel_kg_h || 0) * seg.hours;
+    totalCO2Kg   += (m.co2_kg_h  || 0) * seg.hours;
+    totalCostSEK += (m.cost_sek_h || 0) * seg.hours;
+  }
+  const fmt = (n) => Math.round(n).toLocaleString('sv-SE');
+  const wdFuel = document.getElementById('wdFuel');
+  const wdCO2  = document.getElementById('wdCO2');
+  const wdCost = document.getElementById('wdCost');
+  if (wdFuel) wdFuel.textContent = fmt(totalFuelKg) + ' kg';
+  if (wdCO2)  wdCO2.textContent  = fmt(totalCO2Kg)  + ' kg';
+  if (wdCost) wdCost.textContent  = fmt(totalCostSEK) + ' SEK';
+}
+
+function updateWorkdayComparison() {
+  const el = document.getElementById('wdComparison');
+  if (!el) return;
+  const profile = [
+    { mode: "dock",    hours: 0.5 },
+    { mode: "transit", hours: 2.0 },
+    { mode: "survey",  hours: 4.0 },
+    { mode: "dp",      hours: 2.0 },
+    { mode: "survey",  hours: 1.0 },
+    { mode: "transit", hours: 1.0 },
+    { mode: "dock",    hours: 0.5 },
+  ];
+  const results = [];
+  for (const [id, scopeData] of Object.entries(ALL_SCOPES)) {
+    let totalCostSEK = 0;
+    for (const seg of profile) {
+      const m = scopeData.modes[seg.mode];
+      if (m) totalCostSEK += (m.cost_sek_h || 0) * seg.hours;
+    }
+    if (totalCostSEK > 0) results.push({ id, name: scopeData.scope.name, cost: Math.round(totalCostSEK) });
+  }
+  if (!results.length) { el.textContent = ''; return; }
+  const vals = results.map(r => r.cost);
+  const minVal = Math.min(...vals);
+  const maxVal = Math.max(...vals);
+
+  while (el.firstChild) el.removeChild(el.firstChild);
+  results.forEach((r, idx) => {
+    if (idx > 0) {
+      const sep = document.createTextNode('\u00a0|\u00a0');
+      el.appendChild(sep);
+    }
+    const span = document.createElement('span');
+    if (r.cost === minVal) span.className = 'cheapest';
+    else if (r.cost === maxVal) span.className = 'priciest';
+    const label = r.name + ': ' + r.cost.toLocaleString('sv-SE') + ' SEK';
+    if (r.id === currentScopeId) {
+      const b = document.createElement('strong');
+      b.textContent = label;
+      span.appendChild(b);
+    } else {
+      span.textContent = label;
+    }
+    el.appendChild(span);
+  });
+}
+
+// ── Fas 6: Scope constants ────────────────────────────────────────────────────
+
+const SCOPE_COLORS = {
+  "scope1-scania-hybrid": "#e65100",
+  "scope2-mets-de":       "#00796b",
+  "scope3-zem-de":        "#283593",
+  "scope4-traditional":   "#546e7a",
+};
+
+// ── Fas 6: Scope switching ────────────────────────────────────────────────────
+
+function switchScope(scopeId) {
+  if (!ALL_SCOPES[scopeId]) return;
+
+  // Fas 8: fade-through on scope switch
+  const svgEl = document.querySelector('.vessel-svg');
+  if (svgEl) { svgEl.style.transition = 'opacity 0.25s'; svgEl.style.opacity = '0.25'; }
+
+  setTimeout(() => {
+  ANIMATION_DATA = ALL_SCOPES[scopeId];
+  currentScopeId = scopeId;
+
+  // Update CSS active color
+  const color = SCOPE_COLORS[scopeId] || '#e65100';
+  document.documentElement.style.setProperty('--scope-active', color);
+
+  // Scope pill states
+  document.querySelectorAll('.scope-pill').forEach(p => {
+    const active = p.dataset.scope === scopeId;
+    p.classList.toggle('active', active);
+    p.style.background     = active ? color : 'transparent';
+    p.style.borderColor    = active ? color : 'transparent';
+  });
+
+  // Badge text
+  const badge = document.getElementById('scopeBadge');
+  if (badge) badge.textContent = ANIMATION_DATA.scope.name.toUpperCase();
+
+  // Rebuild mode buttons (scope 4 has no DP)
+  rebuildModeButtons();
+
+  // Show/hide SVG components
+  updateComponentVisibility();
+
+  // Update labels
+  updateVesselLabels();
+
+  // Battery section visible only if scope has battery
+  const battSec = document.getElementById('battSection');
+  if (battSec) battSec.style.display = ANIMATION_DATA.battery.capacity_kwh > 0 ? '' : 'none';
+
+  // Fas 7: reinit sea trial chart for new scope data
+  initSeaTrialChart();
+
+  // Fas 8: fade back in
+  if (svgEl) setTimeout(() => { svgEl.style.opacity = '1'; }, 50);
+  updateFavicon(SCOPE_COLORS[scopeId] || '#e65100');
+
+  // Fas 10: workday summary for new scope
+  calcWorkdaySummary();
+  updateWorkdayComparison();
+
+  // Switch to first available mode
+  const firstMode = Object.keys(ANIMATION_DATA.modes)[0] || 'transit';
+  setMode(firstMode);
+  }, 280);  // end setTimeout for scope fade
+}
+
+function buildScopeSwitcher() {
+  const container = document.getElementById('scopeSwitcher');
+  if (!container) return;
+  for (const [scopeId, scopeData] of Object.entries(ALL_SCOPES)) {
+    const pill = document.createElement('button');
+    pill.className    = 'scope-pill';
+    pill.textContent  = scopeData.scope.name;
+    pill.dataset.scope = scopeId;
+    const color = SCOPE_COLORS[scopeId] || '#64748b';
+    pill.style.borderColor = color;
+    pill.addEventListener('click', () => switchScope(scopeId));
+    container.appendChild(pill);
+  }
+  // Mark current scope active
+  const firstPill = container.querySelector('[data-scope="' + currentScopeId + '"]');
+  if (firstPill) {
+    const c = SCOPE_COLORS[currentScopeId] || '#e65100';
+    firstPill.classList.add('active');
+    firstPill.style.background  = c;
+    firstPill.style.borderColor = c;
+  }
+}
+
+function rebuildModeButtons() {
+  const switcher = document.getElementById('modeSwitcher');
+  if (!switcher) return;
+  while (switcher.firstChild) switcher.removeChild(switcher.firstChild);
+  for (const [key, mode] of Object.entries(ANIMATION_DATA.modes)) {
+    const btn = document.createElement('button');
+    btn.className    = 'mode-btn';
+    btn.textContent  = mode.icon + ' ' + mode.label;
+    btn.dataset.mode = key;
+    btn.addEventListener('click', () => setMode(key));
+    switcher.appendChild(btn);
+  }
+}
+
+function setCompVisible(id, visible) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = visible ? '' : 'none';
+}
+
+function updateComponentVisibility() {
+  const d      = ANIMATION_DATA;
+  const hasMech = d.propulsion.mechanical.count > 0;
+  const hasElec = d.propulsion.electric.count > 0;
+  const hasThr  = d.thrusters.count > 0;
+  const gsCount = d.gensets.count;
+
+  setCompVisible('enginePortMech', hasMech);
+  setCompVisible('engineStbdMech', hasMech);
+  setCompVisible('enginePortElec', hasElec);
+  setCompVisible('engineStbdElec', hasElec);
+  [1,2,3,4].forEach(n => setCompVisible('thruster' + n, hasThr));
+  setCompVisible('genset3', gsCount >= 3);
+  setCompVisible('genset4', gsCount >= 4);
+
+  // Dashboard engine cards
+  setCompVisible('dCardMechBB', hasMech);
+  setCompVisible('dCardMechSB', hasMech);
+  setCompVisible('dCardElecBB', hasElec);
+  setCompVisible('dCardElecSB', hasElec);
+  setCompVisible('dCardGen3',   gsCount >= 3);
+  setCompVisible('dCardGen4',   gsCount >= 4);
+}
+
+function updateVesselLabels() {
+  const d = ANIMATION_DATA;
+  const mechName  = (d.propulsion.mechanical.engine_name || '').replace('Scania ', '');
+  const mechPower = d.propulsion.mechanical.power_kw;
+  const elecName  = d.propulsion.electric.engine_name || 'Danfoss';
+  const elecPower = d.propulsion.electric.power_kw;
+  const gsBase    = (d.gensets.engine_name || '').replace('Scania ', '').replace(' Genset', '');
+  const gsPower   = d.gensets.power_kw;
+  const thrKw     = d.thrusters.power_kw_each;
+
+  // SVG labels
+  const s = (id, txt) => { const e = document.getElementById(id); if (e) e.textContent = txt; };
+  s('mechNameBB', mechName);  s('mechNameSB', mechName);
+  s('mechPowerBB', mechPower + ' kW'); s('mechPowerSB', mechPower + ' kW');
+  s('elecNameBB', elecName);  s('elecNameSB', elecName);
+  s('elecPowerBB', elecPower + ' kW'); s('elecPowerSB', elecPower + ' kW');
+  s('genset1Label', gsBase + ' ' + gsPower); s('genset2Label', gsBase + ' ' + gsPower);
+  s('genset3Label', gsBase + ' ' + gsPower); s('genset4Label', gsBase + ' ' + gsPower);
+  s('battCapLabel', d.battery.capacity_kwh + ' kWh');
+  s('hotelLabel', '🏠 ' + d.vessel.hotel_at_sea_kw + ' kW');
+  [1,2,3,4].forEach(n => s('thrLabel' + n, 'T' + n + ' ' + thrKw + 'kW'));
+
+  // Dashboard engine card names
+  ['BB','SB'].forEach(side => {
+    const mc = document.getElementById('dCardMech' + side);
+    if (mc) mc.querySelector('.eng-name').textContent = (mechName || 'Mek') + ' ' + side;
+    const ec = document.getElementById('dCardElec' + side);
+    if (ec) ec.querySelector('.eng-name').textContent = elecName + ' ' + side;
+  });
+  s('dCardGen1' && null, ''); // handled by setEngCard
+}
+
+// ── Fas 8: Energy particle system ────────────────────────────────────────────
+
+let particleAnimFrame = null;
+const particles = [];
+const MAX_PARTICLES = 16;
+
+const PARTICLE_CONFIG = {
+  transit: [
+    { flow: 'flow-mech-bb',        color: '#f59e0b', count: 2 },
+    { flow: 'flow-mech-sb',        color: '#f59e0b', count: 2 },
+    { flow: 'flow-gen1-bus',       color: '#a78bfa', count: 2 },
+    { flow: 'flow-bus-danfoss-bb', color: '#38bdf8', count: 1 },
+    { flow: 'flow-bus-danfoss-sb', color: '#38bdf8', count: 1 },
+  ],
+  survey: [
+    { flow: 'flow-gen1-bus',       color: '#a78bfa', count: 2 },
+    { flow: 'flow-gen2-bus',       color: '#a78bfa', count: 2 },
+    { flow: 'flow-bus-danfoss-bb', color: '#38bdf8', count: 2 },
+    { flow: 'flow-bus-danfoss-sb', color: '#38bdf8', count: 2 },
+  ],
+  dp: [
+    { flow: 'flow-gen1-bus',       color: '#a78bfa', count: 2 },
+    { flow: 'flow-gen2-bus',       color: '#a78bfa', count: 2 },
+    { flow: 'flow-bus-thruster1',  color: '#06b6d4', count: 1 },
+    { flow: 'flow-bus-thruster2',  color: '#06b6d4', count: 1 },
+    { flow: 'flow-bus-thruster3',  color: '#06b6d4', count: 1 },
+    { flow: 'flow-bus-thruster4',  color: '#06b6d4', count: 1 },
+    { flow: 'flow-bus-battery',    color: '#22c55e', count: 2 },
+  ],
+  dock: [
+    { flow: 'flow-shore-hotel',    color: '#22c55e', count: 3 },
+  ],
+};
+
+function createParticle(flowId, color) {
+  const pathEl = document.getElementById(flowId);
+  if (!pathEl) return null;
+  const totalLength = pathEl.getTotalLength();
+  if (!totalLength) return null;
+
+  const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  circle.setAttribute('r', '3');
+  circle.setAttribute('fill', color);
+  circle.setAttribute('opacity', '0.9');
+  circle.setAttribute('filter', 'url(#particleGlow)');
+  circle.classList.add('energy-particle');
+  pathEl.parentElement.appendChild(circle);
+
+  return { el: circle, path: pathEl, totalLength, progress: Math.random(), speed: 0.004 + Math.random() * 0.003 };
+}
+
+function updateParticles() {
+  for (const p of particles) {
+    p.progress += p.speed;
+    if (p.progress > 1) p.progress -= 1;
+    const pt = p.path.getPointAtLength(p.progress * p.totalLength);
+    p.el.setAttribute('cx', pt.x.toFixed(1));
+    p.el.setAttribute('cy', pt.y.toFixed(1));
+    const pulse = 0.55 + 0.45 * Math.sin(p.progress * Math.PI * 4);
+    p.el.setAttribute('opacity', pulse.toFixed(2));
+  }
+  particleAnimFrame = requestAnimationFrame(updateParticles);
+}
+
+function clearParticles() {
+  if (particleAnimFrame) { cancelAnimationFrame(particleAnimFrame); particleAnimFrame = null; }
+  for (const p of particles) {
+    if (p.el && p.el.parentNode) p.el.parentNode.removeChild(p.el);
+  }
+  particles.length = 0;
+}
+
+function spawnParticles(modeKey) {
+  clearParticles();
+  const config = PARTICLE_CONFIG[modeKey] || [];
+  for (const entry of config) {
+    const line = document.getElementById(entry.flow);
+    if (line && parseFloat(line.style.opacity || '0') > 0.1) {
+      for (let i = 0; i < entry.count && particles.length < MAX_PARTICLES; i++) {
+        const p = createParticle(entry.flow, entry.color);
+        if (p) particles.push(p);
+      }
+    }
+  }
+  if (particles.length > 0) updateParticles();
+}
+
+// ── Fas 7: BSFC interpolation (JS mirror of Python function) ─────────────────
+
+function interpolateBSFC(curve, loadPct) {
+  if (!curve || !curve.length || loadPct <= 0) return 0;
+  if (loadPct <= curve[0].load_pct)           return curve[0].bsfc_gkwh;
+  if (loadPct >= curve[curve.length-1].load_pct) return curve[curve.length-1].bsfc_gkwh;
+  for (let i = 0; i < curve.length - 1; i++) {
+    if (curve[i].load_pct <= loadPct && loadPct <= curve[i+1].load_pct) {
+      const frac = (loadPct - curve[i].load_pct) / (curve[i+1].load_pct - curve[i].load_pct);
+      return curve[i].bsfc_gkwh + frac * (curve[i+1].bsfc_gkwh - curve[i].bsfc_gkwh);
+    }
+  }
+  return curve[curve.length-1].bsfc_gkwh;
+}
+
+// ── Fas 7: Count-up animation ─────────────────────────────────────────────────
+
+function animateValue(elementId, start, end, duration) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+  const range     = end - start;
+  const startTime = performance.now();
+  function step(now) {
+    const elapsed  = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased    = 1 - Math.pow(1 - progress, 3);  // easeOutCubic
+    el.textContent = (start + range * eased).toFixed(1);
+    if (progress < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+// ── Fas 7: Fuel ticker ────────────────────────────────────────────────────────
+
+function updateFuelTicker(modeKey, mode) {
+  const kgH = mode.fuel_kg_h || 0;
+  const lH  = mode.fuel_l_h  || 0;
+
+  const prevKg = parseFloat(document.getElementById('fuelKgH').textContent) || 0;
+  const prevL  = parseFloat(document.getElementById('fuelLH').textContent)  || 0;
+  animateValue('fuelKgH', prevKg, kgH, 500);
+  animateValue('fuelLH',  prevL,  lH,  500);
+  syncCO2AndCost(kgH, 500); // Fas 10
+
+  const ticker = document.getElementById('fuelTicker');
+  const detail = document.getElementById('fuelDetail');
+  if (kgH === 0) {
+    if (ticker) ticker.classList.add('zero');
+    if (detail) detail.textContent = 'Landström — noll bränsle';
+  } else {
+    if (ticker) ticker.classList.remove('zero');
+    if (detail) detail.textContent = mode.fuel_breakdown || '';
+  }
+
+  // DP compare box
+  const cmp = document.getElementById('dpFuelCompare');
+  if (modeKey === 'dp' && mode.fuel_kg_h_no_battery != null) {
+    if (cmp) cmp.style.display = '';
+    const wb  = document.getElementById('dpFuelWithBat');
+    const nb  = document.getElementById('dpFuelNoBat');
+    const sav = document.getElementById('dpFuelSaving');
+    if (wb)  wb.textContent  = kgH.toFixed(1) + ' kg/h';
+    if (nb)  nb.textContent  = (mode.fuel_kg_h_no_battery || 0).toFixed(1) + ' kg/h';
+    if (sav) sav.textContent = (mode.fuel_savings_pct || 0).toFixed(1) + '%';
+  } else {
+    if (cmp) cmp.style.display = 'none';
+  }
+}
+
+// ── Fas 7: Sea trial chart ────────────────────────────────────────────────────
+
+let seaTrialChart = null;
+
+function initSeaTrialChart() {
+  const canvas = document.getElementById('seaTrialChart');
+  if (!canvas) return;
+
+  // Destroy old chart if switching scope
+  if (seaTrialChart) { seaTrialChart.destroy(); seaTrialChart = null; }
+
+  const stData   = ANIMATION_DATA.sea_trial || [];
+  const scopeClr = SCOPE_COLORS[currentScopeId] || '#e65100';
+
+  seaTrialChart = new Chart(canvas.getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: stData.map(p => p.speed_kn.toFixed(1)),
+      datasets: [
+        {
+          label: 'Axeleffekt (kW)',
+          data: stData.map(p => p.axel_kw),
+          borderColor: '#38bdf8',
+          backgroundColor: 'rgba(56,189,248,0.08)',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 3,
+          pointBackgroundColor: '#38bdf8',
+          borderWidth: 2,
+        },
+        {
+          label: 'Driftpunkt',
+          data: [],
+          borderColor: scopeClr,
+          backgroundColor: scopeClr,
+          pointRadius: 9,
+          pointStyle: 'crossRot',
+          pointBorderWidth: 3,
+          showLine: false,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              if (ctx.datasetIndex === 0) {
+                const pt = stData[ctx.dataIndex];
+                return pt
+                  ? ctx.formattedValue + ' kW  (' + pt.fuel_lph + ' L/h per motor)'
+                  : ctx.formattedValue + ' kW';
+              }
+              return ctx.formattedValue + ' kW  (driftpunkt)';
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          title: { display: true, text: 'Fart (knop)', color: '#6b7280', font: { size: 9 } },
+          ticks: { color: '#6b7280', font: { size: 9 } },
+          grid:  { color: 'rgba(148,163,184,0.08)' },
+        },
+        y: {
+          title: { display: true, text: 'Axeleffekt (kW)', color: '#6b7280', font: { size: 9 } },
+          ticks: { color: '#6b7280', font: { size: 9 } },
+          grid:  { color: 'rgba(148,163,184,0.08)' },
+        }
+      }
+    }
+  });
+}
+
+function updateSeaTrialMarker(mode) {
+  if (!seaTrialChart) return;
+  const stData   = ANIMATION_DATA.sea_trial || [];
+  const speedKn  = mode.speed_kn || 0;
+  const scopeClr = SCOPE_COLORS[currentScopeId] || '#e65100';
+
+  if (speedKn === 0 || stData.length === 0) {
+    seaTrialChart.data.datasets[1].data = [];
+    seaTrialChart.update('none');
+    return;
+  }
+
+  // Find nearest point by speed
+  let bestIdx = 0, bestDist = Infinity;
+  stData.forEach((pt, i) => {
+    const d = Math.abs(pt.speed_kn - speedKn);
+    if (d < bestDist) { bestDist = d; bestIdx = i; }
+  });
+
+  const markerData = new Array(stData.length).fill(null);
+  markerData[bestIdx] = mode.total_propulsion_kw || stData[bestIdx].axel_kw;
+  seaTrialChart.data.datasets[1].data                = markerData;
+  seaTrialChart.data.datasets[1].borderColor         = scopeClr;
+  seaTrialChart.data.datasets[1].backgroundColor     = scopeClr;
+  seaTrialChart.data.datasets[1].pointBackgroundColor = scopeClr;
+  seaTrialChart.update('none');
+}
+
+// ── Fas 5: State ─────────────────────────────────────────────────────────────
+let currentMode    = 'transit';
+let autoPlayTimer  = null;
+let autoPlayStep   = 0;
+let autoPlayActive = false;
+let dpDriftTimeout = null;  // prevents double-spawn of dpHeadingDrift
+
+// ── Fas 5: DP Peak Shaving Simulation ────────────────────────────────────────
+
+function startDPSimulation() {
+  if (dpSimInterval) clearInterval(dpSimInterval);
+  const d = ANIMATION_DATA;
+  let soc = 65;
+
+  dpSimInterval = setInterval(() => {
+    const base     = 180;  // 60% avg thruster load
+    const noise    = (Math.random() - 0.3) * 150;
+    const thrLoad  = Math.max(80, Math.min(300, base + noise));
+
+    const dpMotors    = (d.modes.dp.elec_per_shaft_kw || 100) * 2;
+    const hotel       = d.modes.dp.hotel_kw || 50;
+    const totalEl     = thrLoad + dpMotors + hotel;
+    const chainEff    = d.electrical_system.chain_efficiency;
+    const gsNeeded    = totalEl / chainEff;
+    const gsCap       = d.gensets.count * d.gensets.power_kw;
+    const peakThr     = gsCap * ((d.battery.peak_shave_trigger_pct || 85) / 100);
+
+    let battPwr = 0;
+    if (gsNeeded > peakThr * 0.5) {
+      battPwr = -(gsNeeded - peakThr * 0.45);
+      battPwr = Math.max(-(d.battery.max_discharge_kw || 150), battPwr);
+    } else {
+      battPwr = Math.min(30, (peakThr * 0.3 - gsNeeded) * 0.5);
+    }
+
+    const socDelta  = (battPwr * (1.5 / 3600)) / (d.battery.capacity_kwh || 150) * 100;
+    soc = Math.max(
+      (d.battery.soc_min || 20) + 5,
+      Math.min((d.battery.soc_max || 90) - 5, soc + socDelta)
+    );
+    const gsActual  = Math.max(0, gsNeeded + battPwr);
+    const gsPerUnit = gsActual / d.gensets.count;
+    const gsPct     = (gsPerUnit / d.gensets.power_kw) * 100;
+
+    // === update UI ===
+    const MAX = 1200;
+    const tFill = document.getElementById('dBarThrFill');
+    const tVal  = document.getElementById('dBarThrVal');
+    if (tFill) tFill.style.width = Math.min(100, (thrLoad / MAX) * 100).toFixed(1) + '%';
+    if (tVal)  tVal.textContent  = Math.round(thrLoad) + ' kW';
+
+    const delivering = battPwr < 0;
+    const bFill = document.getElementById('dBattFill');
+    const bPct  = document.getElementById('dBattPct');
+    if (bFill) { bFill.style.width = Math.round(soc) + '%'; bFill.className = 'batt-bar-fill' + (delivering ? ' delivering' : ''); }
+    if (bPct)  bPct.textContent = Math.round(soc) + '%';
+
+    const bStat = document.getElementById('dBattStatus');
+    const bPwr  = document.getElementById('dBattPwr');
+    if (bStat) { bStat.textContent = delivering ? 'Levererar' : 'Laddar'; bStat.className = 'batt-status ' + (delivering ? 'delivering' : 'charging'); }
+    if (bPwr)  { bPwr.textContent = (delivering ? '' : '+') + Math.round(battPwr) + ' kW'; bPwr.className = 'batt-power ' + (delivering ? 'delivering' : 'charging'); }
+
+    setEngCard('dCardGen1', true, 'genset-on', Math.round(gsPerUnit), gsPct.toFixed(1) + '% last');
+    setEngCard('dCardGen2', true, 'genset-on', Math.round(gsPerUnit), gsPct.toFixed(1) + '% last');
+
+    const bFlow = document.getElementById('flow-bus-battery');
+    if (bFlow) { bFlow.style.opacity = '0.85'; bFlow.setAttribute('stroke', delivering ? '#ef4444' : '#22c55e'); }
+
+    // Fas 7: live fuel ticker during DP (oscillates with peak shaving)
+    const gsEngineId = d.gensets.engine_id;
+    const gsCurve    = (d.bsfc && d.bsfc[gsEngineId]) ? d.bsfc[gsEngineId].bsfc_curve : [];
+    const bsfcNow    = interpolateBSFC(gsCurve, gsPct);
+    const fuelKgHNow = (bsfcNow * gsPerUnit * d.gensets.count) / 1000;
+    const fuelLHNow  = fuelKgHNow / (d.fuel_density_kg_per_liter || 0.832);
+    animateValue('fuelKgH', parseFloat(document.getElementById('fuelKgH').textContent) || 0, fuelKgHNow, 800);
+    animateValue('fuelLH',  parseFloat(document.getElementById('fuelLH').textContent)  || 0, fuelLHNow,  800);
+    syncCO2AndCost(fuelKgHNow, 800); // Fas 10
+  }, 1500);
+}
+
+// ── Fas 5: Auto-Play Timeline ─────────────────────────────────────────────────
+
+const TIMELINE = [
+  { mode: 'dock',    label: '06:00 — Kaj, förbereder avgång',   dur: 4000  },
+  { mode: 'transit', label: '06:30 — Transit till site, 14 kn', dur: 6000  },
+  { mode: 'survey',  label: '07:15 — Sjömätning, 7 kn',        dur: 8000  },
+  { mode: 'dp',      label: '10:15 — DP/ROV operation',         dur: 12000 },
+  { mode: 'survey',  label: '14:15 — Sjömätning, 7 kn',        dur: 6000  },
+  { mode: 'transit', label: '15:45 — Transit hem, 14 kn',       dur: 6000  },
+  { mode: 'dock',    label: '16:30 — Kaj, landström',           dur: 4000  },
+];
+const TL_COLORS = { dock: '#22c55e', transit: '#f59e0b', survey: '#38bdf8', dp: '#06b6d4' };
+
+function buildTimeline() {
+  const track = document.getElementById('tlTrack');
+  if (!track) return;
+  const total = TIMELINE.reduce((s, t) => s + t.dur, 0);
+  TIMELINE.forEach((step, i) => {
+    const seg = document.createElement('div');
+    seg.id        = 'tl-seg-' + i;
+    seg.className = 'tl-seg';
+    seg.style.width      = ((step.dur / total) * 100).toFixed(1) + '%';
+    seg.style.background = TL_COLORS[step.mode] || '#64748b';
+    seg.title = step.label;
+    track.appendChild(seg);
+  });
+}
+
+function toggleAutoPlay() {
+  if (autoPlayActive) {
+    autoPlayActive = false;
+    if (autoPlayTimer) { clearTimeout(autoPlayTimer); autoPlayTimer = null; }
+    const btn = document.getElementById('autoPlayBtn');
+    if (btn) { btn.textContent = '\u25B6 Spela arbetsdag'; btn.classList.remove('playing'); }
+    document.querySelectorAll('.mode-btn').forEach(b => { b.disabled = false; });
+  } else {
+    autoPlayActive = true;
+    autoPlayStep   = 0;
+    const btn = document.getElementById('autoPlayBtn');
+    if (btn) { btn.textContent = '\u23F8 Pausa'; btn.classList.add('playing'); }
+    document.querySelectorAll('.mode-btn').forEach(b => { b.disabled = true; });
+    const bar = document.getElementById('timelineBar');
+    if (bar) bar.style.display = 'flex';
+    advanceTimeline();
+  }
+}
+
+function advanceTimeline() {
+  if (!autoPlayActive) return;
+  const step = TIMELINE[autoPlayStep];
+  setMode(step.mode);
+
+  const lbl = document.getElementById('tlLabel');
+  if (lbl) lbl.textContent = step.label;
+  document.querySelectorAll('.tl-seg').forEach((seg, i) => {
+    seg.classList.toggle('active', i === autoPlayStep);
+  });
+
+  autoPlayTimer = setTimeout(() => {
+    autoPlayStep = (autoPlayStep + 1) % TIMELINE.length;
+    advanceTimeline();
+  }, step.dur);
+}
+
+// ── Fas 5: Tooltip ────────────────────────────────────────────────────────────
+
+const TOOLTIP_TEXT = {
+  enginePortMech: 'Scania DW6 440 kW — Mekanisk framdrivning via ZF 3055A.',
+  engineStbdMech: 'Scania DW6 440 kW — Mekanisk framdrivning via ZF 3055A.',
+  enginePortElec: 'Danfoss 295 kW — Elektrisk motor, hybrid & DP station-keeping.',
+  engineStbdElec: 'Danfoss 295 kW — Elektrisk motor, hybrid & DP station-keeping.',
+  batteryPack:    'Scania RES3 150 kWh LFP. Peak shaving <100 ms respons.',
+  thruster1:      'DP tunnel thruster 75 kW. 4 st totalt = 300 kW.',
+  thruster2:      'DP tunnel thruster 75 kW. 4 st totalt = 300 kW.',
+  thruster3:      'DP tunnel thruster 75 kW. 4 st totalt = 300 kW.',
+  thruster4:      'DP tunnel thruster 75 kW. 4 st totalt = 300 kW.',
+  genset1:        'Scania DW6 Genset 440 kW — Elproduktion för hybrid-buss.',
+  genset2:        'Scania DW6 Genset 440 kW — Elproduktion för hybrid-buss.',
+};
+
+function setupTooltip() {
+  const svg  = document.querySelector('.vessel-svg');
+  const tip  = document.getElementById('svgTooltip');
+  const view = document.querySelector('.vessel-view');
+  if (!svg || !tip || !view) return;
+
+  svg.addEventListener('mouseover', (e) => {
+    let el = e.target;
+    while (el && el !== svg) {
+      if (el.id && TOOLTIP_TEXT[el.id]) {
+        tip.textContent = TOOLTIP_TEXT[el.id];
+        tip.style.opacity = '1';
+        return;
+      }
+      el = el.parentElement;
+    }
+    tip.style.opacity = '0';
+  });
+  svg.addEventListener('mousemove', (e) => {
+    const r = view.getBoundingClientRect();
+    tip.style.left = (e.clientX - r.left + 14) + 'px';
+    tip.style.top  = (e.clientY - r.top  - 10) + 'px';
+  });
+  svg.addEventListener('mouseout', () => { tip.style.opacity = '0'; });
+}
+
+// ── Fas 5: DP Heading Drift ───────────────────────────────────────────────────
+
+function dpHeadingDrift() {
+  dpDriftTimeout = null;
+  if (currentMode !== 'dp') return;
+  const deg = ((Math.random() - 0.5) * 10).toFixed(1);
+  const el  = document.getElementById('vesselRotate');
+  if (el) el.style.transform = 'rotate(' + deg + 'deg)';
+  dpDriftTimeout = setTimeout(dpHeadingDrift, 2000 + Math.random() * 2000);
+}
+
+function resetHeading() {
+  if (dpDriftTimeout) { clearTimeout(dpDriftTimeout); dpDriftTimeout = null; }
+  const el = document.getElementById('vesselRotate');
+  if (el) el.style.transform = 'rotate(0deg)';
+}
+
+// ── Fas 5: Keyboard shortcuts ─────────────────────────────────────────────────
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === ' ') { e.preventDefault(); toggleAutoPlay(); return; }
+  if (autoPlayActive) return;
+  const keys = Object.keys(ANIMATION_DATA.modes);
+  if (e.key === '1' && keys[0]) setMode(keys[0]);
+  if (e.key === '2' && keys[1]) setMode(keys[1]);
+  if (e.key === '3' && keys[2]) setMode(keys[2]);
+  if (e.key === '4' && keys[3]) setMode(keys[3]);
+});
+
+// ── Fas 8: Dynamic favicon ────────────────────────────────────────────────────
+
+function updateFavicon(scopeColor) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 32; canvas.height = 32;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = scopeColor;
+  ctx.beginPath(); ctx.arc(16, 16, 14, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 17px sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('⚡', 16, 17);
+  let link = document.querySelector("link[rel~='icon']");
+  if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
+  link.href = canvas.toDataURL();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+function initVessel() {
+  // Fas 6: build scope switcher
+  buildScopeSwitcher();
+
+  // Build mode buttons + labels via extracted functions
+  rebuildModeButtons();
+  updateComponentVisibility();
+  updateVesselLabels();
+
+  // Battery section visibility
+  const battSec = document.getElementById('battSection');
+  if (battSec) battSec.style.display = ANIMATION_DATA.battery.capacity_kwh > 0 ? '' : 'none';
+
+  // Scope badge
+  const badge = document.getElementById('scopeBadge');
+  if (badge) badge.textContent = ANIMATION_DATA.scope.name.toUpperCase();
+
+  // Fas 5: build timeline segments + tooltip
+  buildTimeline();
+  setupTooltip();
+
+  // Fas 7: init sea trial chart
+  initSeaTrialChart();
+
+  // Fas 8: favicon
+  updateFavicon(SCOPE_COLORS[currentScopeId] || '#e65100');
+
+  // Fas 10: setup slider + workday
+  setupSpeedSlider();
+  calcWorkdaySummary();
+  updateWorkdayComparison();
+
+  // Start in first mode
+  const firstMode = Object.keys(ANIMATION_DATA.modes)[0] || 'transit';
+  setMode(firstMode);
+
+  // Fas 8: remove loading splash
+  setTimeout(() => {
+    const splash = document.getElementById('loadingSplash');
+    if (splash) { splash.style.opacity = '0'; setTimeout(() => splash.remove(), 500); }
+  }, 900);
+}
+
+document.addEventListener('DOMContentLoaded', initVessel);
+</script>
+
+<script>
+function njordCheckPass() {
+  var p = document.getElementById('njord-gate-pwd').value;
+  if (p === 'njord2026') {
+    document.getElementById('njord-password-gate').classList.add('unlocked');
+    sessionStorage.setItem('njord-unlocked', '1');
+    return false;
+  }
+  var inp = document.getElementById('njord-gate-pwd');
+  inp.classList.add('error');
+  document.getElementById('njord-gate-err').classList.add('visible');
+  setTimeout(function(){ inp.classList.remove('error'); }, 500);
+  return false;
+}
+if (sessionStorage.getItem('njord-unlocked') === '1') {
+  document.addEventListener('DOMContentLoaded', function() {
+    var g = document.getElementById('njord-password-gate');
+    if (g) g.classList.add('unlocked');
+  });
+}
+</script>
+
+</body>
+</html>
