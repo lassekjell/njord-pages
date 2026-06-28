@@ -165,7 +165,7 @@ body { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; background
 }
 </style>
 <style>
-/* ─── PASSWORD GATE ─── */
+/* --- PASSWORD GATE --- */
 #njord-password-gate {
   position: fixed; inset: 0; z-index: 99999;
   background: #0a1e2a;
@@ -222,7 +222,7 @@ body { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; background
 <div id="njord-password-gate">
   <div class="njord-gate-box">
     <div class="ns-logo">NS</div>
-    <h2>Njord Survey — Internal</h2>
+    <h2>Njord Survey &mdash; Internal</h2>
     <form onsubmit="return njordCheckPass()">
       <input type="password" id="njord-gate-pwd" class="njord-gate-input"
              placeholder="Enter password" autocomplete="off">
@@ -2369,60 +2369,7 @@ function exportReport() {
     '.assumptions .label{color:#6b7280;min-width:160px}',
     '.footer{margin-top:40px;padding-top:12px;border-top:1px solid #e2e5ea;font-size:10px;color:#9ca3af}',
     '@media print{body{padding:20px}img{page-break-inside:avoid}}',
-    '</style><style>
-/* ─── PASSWORD GATE ─── */
-#njord-password-gate {
-  position: fixed; inset: 0; z-index: 99999;
-  background: #0a1e2a;
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  transition: opacity 0.5s ease, visibility 0.5s ease;
-}
-#njord-password-gate.unlocked {
-  opacity: 0; visibility: hidden; pointer-events: none;
-}
-.njord-gate-box { text-align: center; max-width: 380px; width: 90%; }
-.njord-gate-box h2 {
-  color: white; font-size: 1.1rem; font-weight: 500;
-  margin-bottom: 1.5rem; opacity: 0.8;
-}
-.njord-gate-box .ns-logo {
-  width: 60px; height: 60px; background: #da2129; border-radius: 12px;
-  display: inline-flex; align-items: center; justify-content: center;
-  font-weight: 800; font-size: 1.4rem; color: white; margin-bottom: 1.5rem;
-}
-.njord-gate-input {
-  width: 100%; padding: 0.85rem 1.2rem;
-  border: 2px solid rgba(255,255,255,0.15); border-radius: 10px;
-  background: rgba(255,255,255,0.07); color: white;
-  font-family: inherit; font-size: 1rem; outline: none;
-  transition: border-color 0.2s; margin-bottom: 0.75rem;
-}
-.njord-gate-input::placeholder { color: rgba(255,255,255,0.35); }
-.njord-gate-input:focus { border-color: #21bdbe; }
-.njord-gate-input.error {
-  border-color: #da2129;
-  animation: njord-shake 0.4s ease;
-}
-.njord-gate-btn {
-  width: 100%; padding: 0.85rem; border: none; border-radius: 10px;
-  background: #da2129; color: white; font-family: inherit;
-  font-size: 0.95rem; font-weight: 600; cursor: pointer;
-  transition: background 0.2s;
-}
-.njord-gate-btn:hover { background: #84160e; }
-.njord-gate-err {
-  color: #da2129; font-size: 0.8rem; margin-top: 0.75rem;
-  opacity: 0; transition: opacity 0.3s;
-}
-.njord-gate-err.visible { opacity: 1; }
-@keyframes njord-shake {
-  0%,100% { transform: translateX(0); }
-  25% { transform: translateX(-6px); }
-  75% { transform: translateX(6px); }
-}
-</style>
-</head><body>',
+    '</style></head><body>',
 
     '<h1>Northern Gale \u2014 Propulsionsanalys</h1>',
     '<div class="subtitle">Njord Survey | ' + now + ' | Period: ' + activePeriod + ' \u00e5r | Baseline: ' + exportBaselineName + '</div>',
@@ -2506,8 +2453,7 @@ function exportReport() {
     '</div>',
 
     '<div class="footer">Genererad av Northern Gale Cockpit \u2014 Beslutst\u00f6d | ' + now + '<br>Njord Survey \u2014 Technical Superintendent</div>',
-    '
-<script>
+    '<script>
 function njordCheckPass() {
   var p = document.getElementById('njord-gate-pwd').value;
   if (p === 'njord2026') {
@@ -2528,7 +2474,6 @@ if (sessionStorage.getItem('njord-unlocked') === '1') {
   });
 }
 </script>
-
 </body></html>'
   ];
 
@@ -4392,29 +4337,6 @@ try {
 } catch(e) {
   console.error('Cockpit init FAILED:', e.message, e.stack);
   document.body.innerHTML = '<div style="padding:40px;color:red;font-family:monospace;"><h2>Init Error</h2><pre>' + e.message + '\n\n' + e.stack + '</pre></div>';
-}
-</script>
-
-
-<script>
-function njordCheckPass() {
-  var p = document.getElementById('njord-gate-pwd').value;
-  if (p === 'njord2026') {
-    document.getElementById('njord-password-gate').classList.add('unlocked');
-    sessionStorage.setItem('njord-unlocked', '1');
-    return false;
-  }
-  var inp = document.getElementById('njord-gate-pwd');
-  inp.classList.add('error');
-  document.getElementById('njord-gate-err').classList.add('visible');
-  setTimeout(function(){ inp.classList.remove('error'); }, 500);
-  return false;
-}
-if (sessionStorage.getItem('njord-unlocked') === '1') {
-  document.addEventListener('DOMContentLoaded', function() {
-    var g = document.getElementById('njord-password-gate');
-    if (g) g.classList.add('unlocked');
-  });
 }
 </script>
 

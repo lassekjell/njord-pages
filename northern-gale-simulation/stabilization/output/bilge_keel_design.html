@@ -665,12 +665,65 @@
   }
 
 </style>
+<style>
+/* --- PASSWORD GATE --- */
+#njord-password-gate {
+  position: fixed; inset: 0; z-index: 99999;
+  background: #0a1e2a;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+#njord-password-gate.unlocked {
+  opacity: 0; visibility: hidden; pointer-events: none;
+}
+.njord-gate-box { text-align: center; max-width: 380px; width: 90%; }
+.njord-gate-box h2 {
+  color: white; font-size: 1.1rem; font-weight: 500;
+  margin-bottom: 1.5rem; opacity: 0.8;
+}
+.njord-gate-box .ns-logo {
+  width: 60px; height: 60px; background: #da2129; border-radius: 12px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 1.4rem; color: white; margin-bottom: 1.5rem;
+}
+.njord-gate-input {
+  width: 100%; padding: 0.85rem 1.2rem;
+  border: 2px solid rgba(255,255,255,0.15); border-radius: 10px;
+  background: rgba(255,255,255,0.07); color: white;
+  font-family: inherit; font-size: 1rem; outline: none;
+  transition: border-color 0.2s; margin-bottom: 0.75rem;
+}
+.njord-gate-input::placeholder { color: rgba(255,255,255,0.35); }
+.njord-gate-input:focus { border-color: #21bdbe; }
+.njord-gate-input.error {
+  border-color: #da2129;
+  animation: njord-shake 0.4s ease;
+}
+.njord-gate-btn {
+  width: 100%; padding: 0.85rem; border: none; border-radius: 10px;
+  background: #da2129; color: white; font-family: inherit;
+  font-size: 0.95rem; font-weight: 600; cursor: pointer;
+  transition: background 0.2s;
+}
+.njord-gate-btn:hover { background: #84160e; }
+.njord-gate-err {
+  color: #da2129; font-size: 0.8rem; margin-top: 0.75rem;
+  opacity: 0; transition: opacity 0.3s;
+}
+.njord-gate-err.visible { opacity: 1; }
+@keyframes njord-shake {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+</style>
 </head>
 <body>
 <div id="njord-password-gate">
   <div class="njord-gate-box">
     <div class="ns-logo">NS</div>
-    <h2>Njord Survey — Internal</h2>
+    <h2>Njord Survey &mdash; Internal</h2>
     <form onsubmit="return njordCheckPass()">
       <input type="password" id="njord-gate-pwd" class="njord-gate-input"
              placeholder="Enter password" autocomplete="off">
@@ -679,6 +732,7 @@
     <div id="njord-gate-err" class="njord-gate-err">Incorrect password</div>
   </div>
 </div>
+
 
 <div class="header">
   <h1>Northern <span>Gale</span> — Bilge Keel Design</h1>
@@ -741,6 +795,10 @@
       <div class="stat-row">
         <span class="stat-label">AFS compliance</span>
         <span class="stat-value good">✓ Under limit</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">NORDFORSK IW (0.05g)</span>
+        <span class="stat-value good">✓ 0.029g &lt; 0.05g</span>
       </div>
       <div class="stat-row">
         <span class="stat-label">Speed penalty @10kn</span>
@@ -1364,6 +1422,10 @@
           <text x="296" y="85" class="label-small" text-anchor="middle">0.082g</text>
           <text x="360" y="85" class="label-small" text-anchor="end">0.112g</text>
 
+          <!-- NORDFORSK Intellectual Work line (0.05g ≈ x=192) -->
+          <line x1="192" y1="35" x2="192" y2="75" stroke="#60a5fa" stroke-width="2" stroke-dasharray="4,2"/>
+          <text x="192" y="25" class="label-small" fill="#60a5fa" text-anchor="middle">NORDFORSK IW</text>
+
           <!-- AFS insatsvärde line -->
           <line x1="200" y1="35" x2="200" y2="75" stroke="#f59e0b" stroke-width="2"/>
           <text x="200" y="30" class="label-small" fill="#f59e0b" text-anchor="middle">AFS Insatsvärde</text>
@@ -1942,9 +2004,10 @@ a<sub>lat</sub> = g × sin(φ) + φ̈ × h ≈ g × φ + ω² × φ × h  <span 
 a<sub>lat,new</sub> = 0.060 × (1 - 0.51) = 0.060 × 0.49 = <span class="result">0.029g</span>
 
 <span class="comment">AFS Insatsvärde: 0.051g → 0.029g < 0.051g → <span class="result">COMPLIANT ✓</span></span>
+<span class="comment">NORDFORSK IW:    0.050g → 0.029g < 0.050g → <span class="result">COMPLIANT ✓</span></span>
 
 <span class="comment">Range with uncertainty (47%–55%):</span>
-Low:  0.060 × 0.53 = 0.032g  <span class="comment">(still below 0.051g ✓)</span>
+Low:  0.060 × 0.53 = 0.032g  <span class="comment">(below AFS 0.051g ✓ and NORDFORSK IW 0.05g ✓)</span>
 Mid:  0.060 × 0.49 = 0.029g  <span class="comment">(well below ✓)</span>
 High: 0.060 × 0.45 = 0.027g  <span class="comment">(well below ✓)</span></div>
       </div>
@@ -2070,7 +2133,7 @@ High: 0.060 × 0.45 = 0.027g  <span class="comment">(well below ✓)</span></div
     </div>
     <div class="assumption">
       <span class="tag" style="background:rgba(239,68,68,0.2);color:var(--red);">Limitation</span>
-      <span><strong>No frequency weighting applied.</strong> AFS compliance assessment uses unweighted RMS acceleration. ISO 2631-1 requires frequency-weighted acceleration (W<sub>d</sub> for lateral). The assessment is therefore indicative, not formally compliant.</span>
+      <span><strong>No frequency weighting applied.</strong> AFS compliance assessment uses unweighted RMS acceleration. AFS 2005:15 applies to 0.5–80 Hz; Northern Gale's roll (0.238 Hz) falls outside this band — the comparison is analogical, not formal. ISO 2631-1 requires frequency-weighted acceleration (W<sub>d</sub> for lateral). NORDFORSK 1987 "Intellectual Work" limit (0.05g lateral RMS) is included as an operability benchmark via Garme et al. (2024). Note: no formal seakeeping criteria exist for workboats/survey vessels.</span>
     </div>
     <div class="assumption">
       <span class="tag" style="background:rgba(239,68,68,0.2);color:var(--red);">Limitation</span>
@@ -2145,6 +2208,11 @@ High: 0.060 × 0.45 = 0.027g  <span class="comment">(well below ✓)</span></div
         <td>[11]</td>
         <td>Smart Gyro SG150 Datasheet Rev 1.1</td>
         <td>Technical specifications for gyro stabilizer comparison. Angular momentum 37,000 Nms, max torque 90,100 Nm, weight 1,960 kg.</td>
+      </tr>
+      <tr>
+        <td>[12]</td>
+        <td>Garme, K., Hua, J. & Kuttenkeuler, J. (2024)</td>
+        <td>Seakeeping criteria revisited. Ocean Engineering 297, 116785. Reproduces NORDFORSK 1987 Table 5 operability criteria (RMS). Concludes no well-established seakeeping criteria exist for workboats. Source for NORDFORSK "Intellectual Work" lateral limit (0.05g).</td>
       </tr>
       <tr>
         <td>[12]</td>
@@ -2259,6 +2327,27 @@ buildBarChart('accel-chart', [
   { label: 'Rough (WH)', before: 0.060, after: 0.029, unit: 'g', decimals: 3 },
   { label: 'Rough (WD)', before: 0.032, after: 0.016, unit: 'g', decimals: 3 },
 ]);
+</script>
+<script>
+function njordCheckPass() {
+  var p = document.getElementById('njord-gate-pwd').value;
+  if (p === 'njord2026') {
+    document.getElementById('njord-password-gate').classList.add('unlocked');
+    sessionStorage.setItem('njord-unlocked', '1');
+    return false;
+  }
+  var inp = document.getElementById('njord-gate-pwd');
+  inp.classList.add('error');
+  document.getElementById('njord-gate-err').classList.add('visible');
+  setTimeout(function(){ inp.classList.remove('error'); }, 500);
+  return false;
+}
+if (sessionStorage.getItem('njord-unlocked') === '1') {
+  document.addEventListener('DOMContentLoaded', function() {
+    var g = document.getElementById('njord-password-gate');
+    if (g) g.classList.add('unlocked');
+  });
+}
 </script>
 </body>
 </html>

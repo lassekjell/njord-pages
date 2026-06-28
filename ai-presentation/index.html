@@ -772,13 +772,13 @@
 <div id="password-gate">
   <div class="gate-box">
     <img src="logo-white.svg" alt="Njord Survey">
-    <h2>AI & Claude — Intern presentation</h2>
+    <h2>AI & Claude: Intern presentation</h2>
     <form id="gate-form" onsubmit="return checkPass()">
       <div class="gate-input-wrap" id="gate-wrap">
         <input type="password" id="gate-pwd" placeholder="Ange lösenord..." autocomplete="off" autofocus>
       </div>
       <button type="submit" class="gate-btn">Öppna presentation →</button>
-      <div class="gate-error-msg" id="gate-err">Fel lösenord — försök igen</div>
+      <div class="gate-error-msg" id="gate-err">Fel lösenord, försök igen</div>
     </form>
   </div>
 </div>
@@ -810,10 +810,10 @@ if (sessionStorage.getItem('njord-unlocked') === '1') {
 <nav class="nav" id="mainNav">
   <img src="logo.svg" alt="Njord Survey" class="nav-logo">
   <div class="nav-right">
-    <div class="nav-links">
-      <a href="#intro" data-lang="sv">Intro</a>
-      <a href="#intro" data-lang="en">Intro</a>
+        <div class="nav-links">
+      <a href="#intro">Intro</a>
       <a href="#why-ai">AI</a>
+      <a href="#what-is-claude">Claude</a>
       <a href="#architecture" data-lang="sv">Arkitektur</a>
       <a href="#architecture" data-lang="en">Architecture</a>
       <a href="#methodology" data-lang="sv">Metodik</a>
@@ -822,7 +822,16 @@ if (sessionStorage.getItem('njord-unlocked') === '1') {
       <a href="#examples" data-lang="sv">Exempel</a>
       <a href="#examples" data-lang="en">Examples</a>
       <a href="#workflow">Workflow</a>
-      <a href="#inspiration">Inspiration</a>
+      <a href="#nti">NTI</a>
+      <a href="#decisions" data-lang="sv">Beslut</a>
+      <a href="#decisions" data-lang="en">Decisions</a>
+      <a href="#security" data-lang="sv">Säkerhet</a>
+      <a href="#security" data-lang="en">Security</a>
+      <a href="#limitations" data-lang="sv">Gränser</a>
+      <a href="#limitations" data-lang="en">Limits</a>
+      <a href="#getting-started" data-lang="sv">Kom igång</a>
+      <a href="#getting-started" data-lang="en">Get started</a>
+      <a href="#faq">FAQ</a>
       <a href="#next">Start</a>
     </div>
     <div class="lang-switch">
@@ -847,7 +856,7 @@ if (sessionStorage.getItem('njord-unlocked') === '1') {
     <p data-lang="sv">Hur vi använder Claude för att arbeta smartare, dokumentera bättre och bygga struktur som skalar.</p>
     <p data-lang="en">How we use Claude to work smarter, document better and build scalable structure.</p>
 
-    <div class="hero-meta">Lasse Kjellerup &middot; Technical Superintendent &middot; April 2026</div>
+    <div class="hero-meta">Lasse Kjellerup &middot; Technical Superintendent &middot; April 2026 &middot; <span data-lang="sv">uppdaterad juni 2026</span><span data-lang="en">updated June 2026</span></div>
   </div>
   <div class="wave-divider">
     <svg viewBox="0 0 1440 80" preserveAspectRatio="none">
@@ -1040,8 +1049,9 @@ if (sessionStorage.getItem('njord-unlocked') === '1') {
           &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">&#x1f4c4; Routines &amp; Procedures</span><br>
           &nbsp;&nbsp;<span class="folder">&#x1f4c1; regelverk/</span><br>
           &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">&#x1f4dc; SOLAS, MCA, Workboat Code</span><br>
-          &nbsp;&nbsp;<span class="folder">&#x1f4c1; ai-presentation/</span><br>
-          &nbsp;&nbsp;&nbsp;&nbsp;<span class="highlight-file">&#x1f310; index.html</span> <span class="comment" data-lang="sv">&larr; Den här presentationen!</span><span class="comment" data-lang="en">&larr; This presentation!</span>
+          &nbsp;&nbsp;<span class="folder">&#x1f4c1; docs/</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="folder">&#x1f4c1; ai-presentation/</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="highlight-file">&#x1f310; index.html</span> <span class="comment" data-lang="sv">&larr; Den här presentationen!</span><span class="comment" data-lang="en">&larr; This presentation!</span>
         </div>
       </div>
     </div>
@@ -1103,7 +1113,7 @@ a fleet of <span class="code-value">5 marine survey vessels</span>.
 </section>
 
 <!-- ════════════════════════════════════════════
-     SECTION 5b: MIN METODIK — TRE LAGER
+     SECTION 5b: MIN METODIK, TRE LAGER
      ════════════════════════════════════════════ -->
 <section class="bg-navy" id="methodology">
   <div class="container">
@@ -1233,12 +1243,12 @@ a fleet of <span class="code-value">5 marine survey vessels</span>.
   <div class="container">
     <div class="fade-up" style="text-align:center; margin-bottom: 3rem;">
       <div data-lang="sv">
-        <span class="section-label"><span class="section-number">5</span> Arbetsspråket</span>
+        <span class="section-label"><span class="section-number">6</span> Arbetsspråket</span>
         <h2>Markdown &mdash; <span>enkelt &amp; kraftfullt</span></h2>
         <p class="lead" style="margin: 0 auto;">Markdown är en enkel textsyntax som gör att du kan fokusera på <em>innehållet</em> istället för formatering. Det är Claudes naturliga språk &mdash; och det borde vara ditt också.</p>
       </div>
       <div data-lang="en">
-        <span class="section-label"><span class="section-number">5</span> The Language</span>
+        <span class="section-label"><span class="section-number">6</span> The Language</span>
         <h2>Markdown &mdash; <span>simple &amp; powerful</span></h2>
         <p class="lead" style="margin: 0 auto;">Markdown is a simple text syntax that lets you focus on <em>content</em> instead of formatting. It's Claude's native language &mdash; and it should be yours too.</p>
       </div>
@@ -1305,12 +1315,12 @@ Regular text with <span class="code-string">**bold**</span> and <span class="cod
   <div class="container">
     <div class="fade-up" style="text-align:center; margin-bottom: 3rem;">
       <div data-lang="sv">
-        <span class="section-label"><span class="section-number">6</span> Från data till verktyg</span>
+        <span class="section-label"><span class="section-number">7</span> Från data till verktyg</span>
         <h2>Data in &rarr; <span>Beslutsstöd</span> ut</h2>
         <p class="lead" style="margin:0 auto;">Vi matade Claude med riktig fartygsdata &mdash; sea trial-mätningar, Seapath-loggar, motorspecifikationer och bränsleförbrukning. Resultatet? Interaktiva verktyg som stödjer riktiga beslut.</p>
       </div>
       <div data-lang="en">
-        <span class="section-label"><span class="section-number">6</span> From data to tools</span>
+        <span class="section-label"><span class="section-number">7</span> From data to tools</span>
         <h2>Data in &rarr; <span>Decision support</span> out</h2>
         <p class="lead" style="margin:0 auto;">We fed Claude real vessel data &mdash; sea trial measurements, Seapath logs, engine specifications and fuel consumption. The result? Interactive tools that support real decisions.</p>
       </div>
@@ -1357,15 +1367,15 @@ Regular text with <span class="code-string">**bold**</span> and <span class="cod
     <div class="fade-up" style="text-align:center; margin-bottom: 3rem;">
       <div data-lang="sv">
         <h2>Verktyg vi <span>byggt</span></h2>
-        <p class="lead" style="margin:0 auto;">Fyra interaktiva verktyg &mdash; alla skapade med Claude i konversation. Klicka för att förstora.</p>
+        <p class="lead" style="margin:0 auto;">Fyra flaggskepp nedan, plus ett växande galleri av verktyg. Alla skapade med Claude i konversation. Klicka för att förstora.</p>
       </div>
       <div data-lang="en">
         <h2>Tools we've <span>built</span></h2>
-        <p class="lead" style="margin:0 auto;">Four interactive tools &mdash; all created with Claude in conversation. Click to enlarge.</p>
+        <p class="lead" style="margin:0 auto;">Four flagship tools below, plus a growing gallery. All created with Claude in conversation. Click to enlarge.</p>
       </div>
     </div>
 
-    <!-- Mockup grid — 2x2 -->
+    <!-- Mockup grid, 2x2 -->
     <div class="fade-up" style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
 
       <!-- MOCKUP 1: Cockpit Beslutsstöd -->
@@ -1582,7 +1592,7 @@ Regular text with <span class="code-string">**bold**</span> and <span class="cod
         </div>
       </a>
 
-      <!-- MOCKUP 4: Scope Analysis Excel (no link — not browser-viewable) -->
+      <!-- MOCKUP 4: Scope Analysis Excel (no link, not browser-viewable) -->
       <div class="mockup-card" style="cursor:default;">
         <div class="mockup-topbar" style="background:#1e6e3e;">
           <div class="mockup-dots"><span></span><span></span><span></span></div>
@@ -1676,8 +1686,85 @@ Regular text with <span class="code-string">**bold**</span> and <span class="cod
       </div>
     </div>
 
-    <!-- Additional examples row -->
-    <div class="fade-up" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:1rem; margin-top:2rem;">
+    <!-- Fuller gallery -->
+    <div class="fade-up" style="text-align:center; margin-top:3.5rem; margin-bottom:1.5rem;">
+      <div style="font-size:0.7rem; font-weight:700; color:var(--njord-red); text-transform:uppercase; letter-spacing:0.12em;" data-lang="sv">Fler verktyg vi byggt</div>
+      <div style="font-size:0.7rem; font-weight:700; color:var(--njord-red); text-transform:uppercase; letter-spacing:0.12em;" data-lang="en">More tools we've built</div>
+    </div>
+    <div class="fade-up" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:1rem;">
+
+      <div style="background:white; border-radius:10px; padding:1.5rem; border:1px solid rgba(0,0,0,0.06);">
+        <div style="font-size:1.3rem; margin-bottom:0.5rem;">&#x1f5a5;&#xfe0f;</div>
+        <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.25rem;" data-lang="sv">Daily Ops Cockpit</h4>
+        <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.25rem;" data-lang="en">Daily Ops Cockpit</h4>
+        <p style="font-size:0.8rem; color:var(--njord-gray);" data-lang="sv">Akuta poster, öppna beslut, aktiva projekt och git-status på en sida</p>
+        <p style="font-size:0.8rem; color:var(--njord-gray);" data-lang="en">Critical items, open decisions, active projects and git state on one page</p>
+      </div>
+
+      <div style="background:white; border-radius:10px; padding:1.5rem; border:1px solid rgba(0,0,0,0.06);">
+        <div style="font-size:1.3rem; margin-bottom:0.5rem;">&#x1f4c8;</div>
+        <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.25rem;" data-lang="sv">Marine Datalogger</h4>
+        <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.25rem;" data-lang="en">Marine Datalogger</h4>
+        <p style="font-size:0.8rem; color:var(--njord-gray);" data-lang="sv">Pi 5-box: CAN J1939/NMEA 2000 + Modbus till InfluxDB och Grafana</p>
+        <p style="font-size:0.8rem; color:var(--njord-gray);" data-lang="en">Pi 5 box: CAN J1939/NMEA 2000 + Modbus to InfluxDB and Grafana</p>
+      </div>
+
+      <div style="background:white; border-radius:10px; padding:1.5rem; border:1px solid rgba(0,0,0,0.06);">
+        <div style="font-size:1.3rem; margin-bottom:0.5rem;">&#x1f30a;</div>
+        <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.25rem;" data-lang="sv">Stabiliseringssvit</h4>
+        <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.25rem;" data-lang="en">Stabilization suite</h4>
+        <p style="font-size:0.8rem; color:var(--njord-gray);" data-lang="sv">Motion report, bilge keel-design och Seapath-analys</p>
+        <p style="font-size:0.8rem; color:var(--njord-gray);" data-lang="en">Motion report, bilge keel design and Seapath analysis</p>
+      </div>
+
+      <div style="background:white; border-radius:10px; padding:1.5rem; border:1px solid rgba(0,0,0,0.06);">
+        <div style="font-size:1.3rem; margin-bottom:0.5rem;">&#x1f50b;</div>
+        <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.25rem;" data-lang="sv">Hybrid-budgetanalyser</h4>
+        <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.25rem;" data-lang="en">Hybrid budget analyses</h4>
+        <p style="font-size:0.8rem; color:var(--njord-gray);" data-lang="sv">PMS-logik, no-battery deep dive, batteri-scenarier</p>
+        <p style="font-size:0.8rem; color:var(--njord-gray);" data-lang="en">PMS logic, no-battery deep dive, battery scenarios</p>
+      </div>
+
+      <div style="background:white; border-radius:10px; padding:1.5rem; border:1px solid rgba(0,0,0,0.06);">
+        <div style="font-size:1.3rem; margin-bottom:0.5rem;">&#x2699;&#xfe0f;</div>
+        <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.25rem;" data-lang="sv">Engine Layout Top View</h4>
+        <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.25rem;" data-lang="en">Engine Layout Top View</h4>
+        <p style="font-size:0.8rem; color:var(--njord-gray);" data-lang="sv">Visuellt motorarrangemang för maskinrummet</p>
+        <p style="font-size:0.8rem; color:var(--njord-gray);" data-lang="en">Visual engine arrangement for the engine room</p>
+      </div>
+
+      <div style="background:white; border-radius:10px; padding:1.5rem; border:1px solid rgba(0,0,0,0.06);">
+        <div style="font-size:1.3rem; margin-bottom:0.5rem;">&#x1f5c2;&#xfe0f;</div>
+        <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.25rem;" data-lang="sv">NTI-gränssnitt</h4>
+        <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.25rem;" data-lang="en">NTI interface</h4>
+        <p style="font-size:0.8rem; color:var(--njord-gray);" data-lang="sv">Cockpit, ask, review, datasheet upload och decisions</p>
+        <p style="font-size:0.8rem; color:var(--njord-gray);" data-lang="en">Cockpit, ask, review, datasheet upload and decisions</p>
+      </div>
+
+      <div style="background:white; border-radius:10px; padding:1.5rem; border:1px solid rgba(0,0,0,0.06);">
+        <div style="font-size:1.3rem; margin-bottom:0.5rem;">&#x1f5fa;&#xfe0f;</div>
+        <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.25rem;" data-lang="sv">Organisationsanalys</h4>
+        <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.25rem;" data-lang="en">Organizational analysis</h4>
+        <p style="font-size:0.8rem; color:var(--njord-gray);" data-lang="sv">Visuell rollkarta och GAP-analys, v3.1</p>
+        <p style="font-size:0.8rem; color:var(--njord-gray);" data-lang="en">Visual role map and GAP analysis, v3.1</p>
+      </div>
+
+      <div style="background:white; border-radius:10px; padding:1.5rem; border:1px solid rgba(0,0,0,0.06);">
+        <div style="font-size:1.3rem; margin-bottom:0.5rem;">&#x1f527;</div>
+        <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.25rem;" data-lang="sv">Maintenance Reality Tool</h4>
+        <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.25rem;" data-lang="en">Maintenance Reality Tool</h4>
+        <p style="font-size:0.8rem; color:var(--njord-gray);" data-lang="sv">Interaktivt verktyg om underhållsgapet i flottan</p>
+        <p style="font-size:0.8rem; color:var(--njord-gray);" data-lang="en">Interactive tool on the fleet's maintenance gap</p>
+      </div>
+
+      <div style="background:white; border-radius:10px; padding:1.5rem; border:1px solid rgba(0,0,0,0.06);">
+        <div style="font-size:1.3rem; margin-bottom:0.5rem;">&#x2753;</div>
+        <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.25rem;" data-lang="sv">Offshore Quiz</h4>
+        <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.25rem;" data-lang="en">Offshore Quiz</h4>
+        <p style="font-size:0.8rem; color:var(--njord-gray);" data-lang="sv">Interaktivt utbildningsquiz för besättning</p>
+        <p style="font-size:0.8rem; color:var(--njord-gray);" data-lang="en">Interactive training quiz for crew</p>
+      </div>
+
       <div style="background:white; border-radius:10px; padding:1.5rem; border:1px solid rgba(0,0,0,0.06);">
         <div style="font-size:1.3rem; margin-bottom:0.5rem;">&#x1f4da;</div>
         <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.25rem;" data-lang="sv">CCOM Utbildning</h4>
@@ -1685,13 +1772,15 @@ Regular text with <span class="code-string">**bold**</span> and <span class="cod
         <p style="font-size:0.8rem; color:var(--njord-gray);" data-lang="sv">13 moduler, 47 lektioner, Canva-ready</p>
         <p style="font-size:0.8rem; color:var(--njord-gray);" data-lang="en">13 modules, 47 lessons, Canva-ready</p>
       </div>
+
       <div style="background:white; border-radius:10px; padding:1.5rem; border:1px solid rgba(0,0,0,0.06);">
         <div style="font-size:1.3rem; margin-bottom:0.5rem;">&#x1f4e7;</div>
         <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.25rem;" data-lang="sv">Leverantörsmail</h4>
         <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.25rem;" data-lang="en">Supplier Emails</h4>
-        <p style="font-size:0.8rem; color:var(--njord-gray);" data-lang="sv">Scania, Lyngå, COMAP, ZF</p>
-        <p style="font-size:0.8rem; color:var(--njord-gray);" data-lang="en">Scania, Lyngå, COMAP, ZF</p>
+        <p style="font-size:0.8rem; color:var(--njord-gray);" data-lang="sv">Scania, Lyngå, COMAP, ZF, ZEM, METS</p>
+        <p style="font-size:0.8rem; color:var(--njord-gray);" data-lang="en">Scania, Lyngå, COMAP, ZF, ZEM, METS</p>
       </div>
+
       <div style="background:white; border-radius:10px; padding:1.5rem; border:1px solid rgba(0,0,0,0.06);">
         <div style="font-size:1.3rem; margin-bottom:0.5rem;">&#x26a0;&#xfe0f;</div>
         <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.25rem;" data-lang="sv">Riskmatriser</h4>
@@ -1699,6 +1788,7 @@ Regular text with <span class="code-string">**bold**</span> and <span class="cod
         <p style="font-size:0.8rem; color:var(--njord-gray);" data-lang="sv">5&times;5 bedömningar, färgkodade</p>
         <p style="font-size:0.8rem; color:var(--njord-gray);" data-lang="en">5&times;5 assessments, color-coded</p>
       </div>
+
     </div>
   </div>
 </section>
@@ -1711,12 +1801,12 @@ Regular text with <span class="code-string">**bold**</span> and <span class="cod
     <div class="split">
       <div class="fade-up">
         <div data-lang="sv">
-          <span class="section-label"><span class="section-number">7</span> Arbetsflöde</span>
+          <span class="section-label"><span class="section-number">8</span> Arbetsflöde</span>
           <h2 style="color:white;">Hur ser en <span style="color:var(--njord-teal);">session</span> ut?</h2>
           <p class="lead">Från idé till leverans &mdash; typiskt arbetsflöde när jag jobbar med Claude.</p>
         </div>
         <div data-lang="en">
-          <span class="section-label"><span class="section-number">7</span> Workflow</span>
+          <span class="section-label"><span class="section-number">8</span> Workflow</span>
           <h2 style="color:white;">What does a <span style="color:var(--njord-teal);">session</span> look like?</h2>
           <p class="lead">From idea to delivery &mdash; typical workflow when I work with Claude.</p>
         </div>
@@ -1790,18 +1880,592 @@ Regular text with <span class="code-string">**bold**</span> and <span class="cod
 </section>
 
 <!-- ════════════════════════════════════════════
-     SECTION 9: INSPIRATION / MÖJLIGHETER
+     SECTION 8b: SEDAN APRIL, EVOLUTIONEN
+     ════════════════════════════════════════════ -->
+<section class="bg-light" id="since-april">
+  <div class="container">
+    <div class="fade-up" style="text-align:center; margin-bottom:3rem;">
+      <div data-lang="sv">
+        <span class="section-label"><span class="section-number">9</span> Resan</span>
+        <h2>Sedan april: från dokument till <span>system</span></h2>
+        <p class="lead" style="margin:0 auto;">När den här presentationen skrevs i april visade den enskilda dokument och verktyg. Sedan dess har arbetet mognat: återanvändbara mallar, en handbok som kodifierar hur vi opererar, och en plattform som omvandlar leverantörsdatablad till spårbara beslut.</p>
+      </div>
+      <div data-lang="en">
+        <span class="section-label"><span class="section-number">9</span> The journey</span>
+        <h2>Since April: from documents to <span>systems</span></h2>
+        <p class="lead" style="margin:0 auto;">When this presentation was written in April it showed individual documents and tools. Since then the work has matured: reusable templates, a handbook that codifies how we operate, and a platform that turns supplier datasheets into traceable decisions.</p>
+      </div>
+    </div>
+
+    <!-- Three evolution stages -->
+    <div class="fade-up" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem;">
+
+      <!-- Stage 1 -->
+      <div style="background:white; border:1px solid rgba(0,0,0,0.06); border-radius:12px; padding:2rem; position:relative; overflow:hidden;">
+        <div style="position:absolute; top:0; left:0; right:0; height:3px; background:var(--njord-gray);"></div>
+        <div style="font-size:0.7rem; font-weight:700; color:var(--njord-gray); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.5rem;">April</div>
+        <h3 style="font-size:1.15rem;" data-lang="sv">Enskilda dokument</h3>
+        <h3 style="font-size:1.15rem;" data-lang="en">Individual documents</h3>
+        <p style="font-size:0.9rem; color:var(--njord-gray); line-height:1.65;" data-lang="sv">Riskmatriser, leverantörsmail, scope-Excel. Ett resultat i taget. Claude som dokumentmotor.</p>
+        <p style="font-size:0.9rem; color:var(--njord-gray); line-height:1.65;" data-lang="en">Risk matrices, supplier emails, the scope Excel. One result at a time. Claude as a document engine.</p>
+      </div>
+
+      <!-- Stage 2 -->
+      <div style="background:white; border:1px solid rgba(33,189,190,0.25); border-radius:12px; padding:2rem; position:relative; overflow:hidden;">
+        <div style="position:absolute; top:0; left:0; right:0; height:3px; background:var(--njord-teal);"></div>
+        <div style="font-size:0.7rem; font-weight:700; color:var(--njord-teal); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.5rem;">Maj</div>
+        <h3 style="font-size:1.15rem;" data-lang="sv">Återanvändbara system</h3>
+        <h3 style="font-size:1.15rem;" data-lang="en">Reusable systems</h3>
+        <p style="font-size:0.9rem; color:var(--njord-gray); line-height:1.65;" data-lang="sv">Evaluation Template Pack: en datakälla, fyra format. Operations Handbook 1.0 kodifierar driften. Mönster istället för engångsjobb.</p>
+        <p style="font-size:0.9rem; color:var(--njord-gray); line-height:1.65;" data-lang="en">Evaluation Template Pack: one data source, four formats. Operations Handbook 1.0 codifies operations. Patterns instead of one-offs.</p>
+      </div>
+
+      <!-- Stage 3 -->
+      <div style="background:white; border:1px solid rgba(218,33,41,0.25); border-radius:12px; padding:2rem; position:relative; overflow:hidden;">
+        <div style="position:absolute; top:0; left:0; right:0; height:3px; background:var(--njord-red);"></div>
+        <div style="font-size:0.7rem; font-weight:700; color:var(--njord-red); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.5rem;">Juni</div>
+        <h3 style="font-size:1.15rem;" data-lang="sv">En plattform</h3>
+        <h3 style="font-size:1.15rem;" data-lang="en">A platform</h3>
+        <p style="font-size:0.9rem; color:var(--njord-gray); line-height:1.65;" data-lang="sv">NTI walking skeleton: dra in ett datablad, Claude extraherar och bedömer, loggar beslut med spårbarhet, exporterar rapporter.</p>
+        <p style="font-size:0.9rem; color:var(--njord-gray); line-height:1.65;" data-lang="en">NTI walking skeleton: drop in a datasheet, Claude extracts and evaluates, logs decisions with traceability, exports reports.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     SECTION 9: NTI, PLATTFORMEN
+     ════════════════════════════════════════════ -->
+<section class="bg-navy" id="nti">
+  <div class="container">
+    <div class="split">
+      <div class="fade-up">
+        <div data-lang="sv">
+          <span class="section-label" style="color:var(--njord-teal);"><span class="section-number" style="background:var(--njord-teal);">10</span> Plattformen</span>
+          <h2 style="color:white;">NTI: Njord <span style="color:var(--njord-teal);">Technical Intelligence</span></h2>
+          <p class="lead">Steget från "Claude skriver ett dokument" till "Claude byggde oss ett system". En central plattform för tekniskt beslutsstöd med AI-driven evaluering, domän-agnostisk över propulsion, hybrid, stabilisering och DP.</p>
+        </div>
+        <div data-lang="en">
+          <span class="section-label" style="color:var(--njord-teal);"><span class="section-number" style="background:var(--njord-teal);">10</span> The platform</span>
+          <h2 style="color:white;">NTI: Njord <span style="color:var(--njord-teal);">Technical Intelligence</span></h2>
+          <p class="lead">The leap from "Claude writes a document" to "Claude built us a system". A central platform for technical decision support with AI-driven evaluation, domain-agnostic across propulsion, hybrid, stabilization and DP.</p>
+        </div>
+
+        <!-- What it does SV -->
+        <div data-lang="sv">
+          <div style="padding:1.1rem 0; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; gap:1.25rem; align-items:flex-start;">
+            <span style="font-size:1.4rem; font-weight:800; color:var(--njord-teal); flex-shrink:0; width:40px;">01</span>
+            <div><strong style="color:white; display:block; margin-bottom:0.2rem;">Extrahera</strong><span style="font-size:0.9rem; color:rgba(255,255,255,0.5);">Dra in ett leverantörsdatablad, Claude tolkar det till strukturerad data.</span></div>
+          </div>
+          <div style="padding:1.1rem 0; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; gap:1.25rem; align-items:flex-start;">
+            <span style="font-size:1.4rem; font-weight:800; color:var(--njord-teal); flex-shrink:0; width:40px;">02</span>
+            <div><strong style="color:white; display:block; margin-bottom:0.2rem;">Evaluera och jämför</strong><span style="font-size:0.9rem; color:rgba(255,255,255,0.5);">Bedöm mot befintliga alternativ med viktade kriterier och källhänvisning.</span></div>
+          </div>
+          <div style="padding:1.1rem 0; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; gap:1.25rem; align-items:flex-start;">
+            <span style="font-size:1.4rem; font-weight:800; color:var(--njord-teal); flex-shrink:0; width:40px;">03</span>
+            <div><strong style="color:white; display:block; margin-bottom:0.2rem;">Logga med spårbarhet</strong><span style="font-size:0.9rem; color:rgba(255,255,255,0.5);">Beslut sparas med historik och delbart tillstånd, inte i en chatt som försvinner.</span></div>
+          </div>
+          <div style="padding:1.1rem 0; display:flex; gap:1.25rem; align-items:flex-start;">
+            <span style="font-size:1.4rem; font-weight:800; color:var(--njord-teal); flex-shrink:0; width:40px;">04</span>
+            <div><strong style="color:white; display:block; margin-bottom:0.2rem;">Exportera</strong><span style="font-size:0.9rem; color:rgba(255,255,255,0.5);">Beslutsunderlag och rapporter ut, redo för Sven på Ö-varvet och Fleet Director.</span></div>
+          </div>
+        </div>
+
+        <!-- What it does EN -->
+        <div data-lang="en">
+          <div style="padding:1.1rem 0; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; gap:1.25rem; align-items:flex-start;">
+            <span style="font-size:1.4rem; font-weight:800; color:var(--njord-teal); flex-shrink:0; width:40px;">01</span>
+            <div><strong style="color:white; display:block; margin-bottom:0.2rem;">Extract</strong><span style="font-size:0.9rem; color:rgba(255,255,255,0.5);">Drop in a supplier datasheet, Claude parses it into structured data.</span></div>
+          </div>
+          <div style="padding:1.1rem 0; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; gap:1.25rem; align-items:flex-start;">
+            <span style="font-size:1.4rem; font-weight:800; color:var(--njord-teal); flex-shrink:0; width:40px;">02</span>
+            <div><strong style="color:white; display:block; margin-bottom:0.2rem;">Evaluate and compare</strong><span style="font-size:0.9rem; color:rgba(255,255,255,0.5);">Score against existing alternatives with weighted criteria and source references.</span></div>
+          </div>
+          <div style="padding:1.1rem 0; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; gap:1.25rem; align-items:flex-start;">
+            <span style="font-size:1.4rem; font-weight:800; color:var(--njord-teal); flex-shrink:0; width:40px;">03</span>
+            <div><strong style="color:white; display:block; margin-bottom:0.2rem;">Log with traceability</strong><span style="font-size:0.9rem; color:rgba(255,255,255,0.5);">Decisions stored with history and shareable state, not in a chat that vanishes.</span></div>
+          </div>
+          <div style="padding:1.1rem 0; display:flex; gap:1.25rem; align-items:flex-start;">
+            <span style="font-size:1.4rem; font-weight:800; color:var(--njord-teal); flex-shrink:0; width:40px;">04</span>
+            <div><strong style="color:white; display:block; margin-bottom:0.2rem;">Export</strong><span style="font-size:0.9rem; color:rgba(255,255,255,0.5);">Decision support and reports out, ready for Sven at the shipyard and the Fleet Director.</span></div>
+          </div>
+        </div>
+
+        <div class="tag-list">
+          <span class="tag">Python 3.11</span>
+          <span class="tag">FastAPI</span>
+          <span class="tag">SQLite</span>
+          <span class="tag">Anthropic SDK</span>
+          <span class="tag">pytest</span>
+        </div>
+      </div>
+
+      <div class="fade-up" style="transition-delay:0.15s;">
+        <div class="folder-tree" style="margin-bottom:1.5rem;">
+          <span class="folder">&#x1f4c1; NTI/</span><br>
+          &nbsp;&nbsp;<span class="folder">&#x1f4c1; core/</span> <span class="comment" data-lang="sv">&larr; ai.py, db, schema</span><span class="comment" data-lang="en">&larr; ai.py, db, schema</span><br>
+          &nbsp;&nbsp;<span class="folder">&#x1f4c1; domains/</span> <span class="comment" data-lang="sv">&larr; propulsion, hybrid, DP</span><span class="comment" data-lang="en">&larr; propulsion, hybrid, DP</span><br>
+          &nbsp;&nbsp;<span class="folder">&#x1f4c1; routes/</span> <span class="comment">&larr; /ask, /upload, /api</span><br>
+          &nbsp;&nbsp;<span class="folder">&#x1f4c1; input/</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="highlight-file">&#x1f4c4; scania-dw6-440.pdf</span><br>
+          &nbsp;&nbsp;<span class="folder">&#x1f4c1; output/</span> <span class="comment" data-lang="sv">&larr; strukturerad JSON</span><span class="comment" data-lang="en">&larr; structured JSON</span><br>
+          &nbsp;&nbsp;<span class="folder">&#x1f4c1; tests/</span> <span class="comment" data-lang="sv">&larr; riktiga E2E-test</span><span class="comment" data-lang="en">&larr; real E2E tests</span><br>
+          &nbsp;&nbsp;<span class="file">&#x1f4dd; nti-plattform.md</span> <span class="comment" data-lang="sv">&larr; enda källan</span><span class="comment" data-lang="en">&larr; single source</span>
+        </div>
+
+        <div class="highlight-box" style="background:linear-gradient(135deg, rgba(33,189,190,0.15), rgba(36,75,103,0.35)); border:1px solid rgba(33,189,190,0.25);">
+          <h3 data-lang="sv" style="color:white;">Två roller, en metod</h3>
+          <h3 data-lang="en" style="color:white;">Two roles, one method</h3>
+          <p data-lang="sv">Claude Cowork <strong style="color:var(--njord-teal);">planerar och skriver prompter</strong>. Claude Code <strong style="color:var(--njord-teal);">exekverar</strong>. Planera först, bygg sedan. Aldrig kod innan strukturen är satt.</p>
+          <p data-lang="en">Claude Cowork <strong style="color:var(--njord-teal);">plans and writes prompts</strong>. Claude Code <strong style="color:var(--njord-teal);">executes</strong>. Plan first, build second. Never code before the structure is set.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     SECTION 10: MARINE DATALOGGER (HÅRDVARA)
+     ════════════════════════════════════════════ -->
+<section class="bg-light" id="datalogger">
+  <div class="container">
+    <div class="split">
+      <div class="fade-up">
+        <div data-lang="sv">
+          <span class="section-label"><span class="section-number">11</span> Hårdvara</span>
+          <h2>Vi byggde till och med <span>hårdvaran</span></h2>
+          <p class="lead">Marine Datalogger: en headless data-acquisition box på Raspberry Pi 5. Läser CAN (J1939 och NMEA 2000) och Modbus (RTU och TCP), lagrar allt i en time-series-databas och serverar dashboards. Som Home Assistant, fast för proffs.</p>
+        </div>
+        <div data-lang="en">
+          <span class="section-label"><span class="section-number">11</span> Hardware</span>
+          <h2>We even built the <span>hardware</span></h2>
+          <p class="lead">Marine Datalogger: a headless data-acquisition box on a Raspberry Pi 5. Reads CAN (J1939 and NMEA 2000) and Modbus (RTU and TCP), stores everything in a time-series database and serves dashboards. Home Assistant, but for professionals.</p>
+        </div>
+
+        <div class="tag-list">
+          <span class="tag">Raspberry Pi 5</span>
+          <span class="tag">SocketCAN</span>
+          <span class="tag">Signal K</span>
+          <span class="tag">Telegraf</span>
+          <span class="tag">MQTT</span>
+          <span class="tag">InfluxDB 2</span>
+          <span class="tag">Grafana</span>
+          <span class="tag">Docker</span>
+        </div>
+
+        <div class="highlight-box" style="margin-top:1.5rem; background:linear-gradient(135deg, rgba(33,189,190,0.12), rgba(36,75,103,0.18)); border:1px solid rgba(33,189,190,0.25);">
+          <h3 data-lang="sv" style="color:var(--njord-dark);">Milestone 1</h3>
+          <h3 data-lang="en" style="color:var(--njord-dark);">Milestone 1</h3>
+          <p data-lang="sv" style="color:var(--njord-dark); opacity:0.85;">Simulera motordata (RPM, kylvätsketemp, oljetryck, bränsleflöde) och visualisera trender i Grafana. Sedan ett 30-dagars soak-test som avgör om prototypen bär hela vägen till produkt.</p>
+          <p data-lang="en" style="color:var(--njord-dark); opacity:0.85;">Simulate engine data (RPM, coolant temp, oil pressure, fuel rate) and visualize trends in Grafana. Then a 30-day soak test that decides whether the prototype carries through to a product.</p>
+        </div>
+      </div>
+
+      <div class="fade-up" style="transition-delay:0.15s;">
+        <div class="folder-tree">
+          <span class="comment" data-lang="sv"># Datakedja på Raspberry Pi 5</span><span class="comment" data-lang="en"># Data pipeline on Raspberry Pi 5</span><br><br>
+          <span class="highlight-file">J1939 CAN</span> <span class="comment">&rarr; python-can + DBC</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">&darr; MQTT</span><br>
+          <span class="highlight-file">NMEA 2000</span> <span class="comment">&rarr; Signal K</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">&darr;</span><br>
+          <span class="highlight-file">Modbus RTU/TCP</span> <span class="comment">&rarr; Telegraf</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">&darr;</span><br>
+          <span class="folder">&#x1f5c4;&#xfe0f; InfluxDB 2</span> <span class="comment" data-lang="sv">(time-series)</span><span class="comment" data-lang="en">(time-series)</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">&darr;</span><br>
+          <span class="folder">&#x1f4ca; Grafana</span> <span class="comment" data-lang="sv">(dashboards, alerting)</span><span class="comment" data-lang="en">(dashboards, alerting)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     SECTION 11: SYSTEM SOM SKALAR
+     ════════════════════════════════════════════ -->
+<section class="bg-light" id="systems">
+  <div class="container">
+    <div class="fade-up" style="text-align:center; margin-bottom:3rem;">
+      <div data-lang="sv">
+        <span class="section-label"><span class="section-number">12</span> Återanvändbart</span>
+        <h2>En källa, <span>många format</span></h2>
+        <p class="lead" style="margin:0 auto;">Två mallar som gör att vi inte uppfinner strukturen på nytt varje gång: en utvärderingspack och en digital tvilling för Northern Gale.</p>
+      </div>
+      <div data-lang="en">
+        <span class="section-label"><span class="section-number">12</span> Reusable</span>
+        <h2>One source, <span>many formats</span></h2>
+        <p class="lead" style="margin:0 auto;">Two templates so we don't reinvent the structure every time: an evaluation pack and a digital twin for Northern Gale.</p>
+      </div>
+    </div>
+
+    <!-- Evaluation pack flow -->
+    <div class="fade-up" style="background:white; border:1px solid rgba(0,0,0,0.06); border-radius:16px; padding:2.5rem; margin-bottom:2rem;">
+      <div data-lang="sv">
+        <h3 style="margin-bottom:0.5rem;">Evaluation Template Pack</h3>
+        <p style="font-size:0.95rem; color:var(--njord-gray); line-height:1.7; margin-bottom:1.5rem; max-width:760px;">Strukturerad mall för att utvärdera tekniska produkter (propeller, motor, batteri, DP). Datan ligger i YAML, ett byggskript producerar fyra format ur exakt samma siffror. Varje värde måste ha en källa, annars stoppar bygget. Vikter summerar till 100. Känslighetsanalys är default.</p>
+      </div>
+      <div data-lang="en">
+        <h3 style="margin-bottom:0.5rem;">Evaluation Template Pack</h3>
+        <p style="font-size:0.95rem; color:var(--njord-gray); line-height:1.7; margin-bottom:1.5rem; max-width:760px;">A structured template for evaluating technical products (propeller, engine, battery, DP). Data lives in YAML, one build script produces four formats from the exact same numbers. Every value must have a source or the build fails. Weights sum to 100. Sensitivity analysis is default.</p>
+      </div>
+
+      <!-- Flow diagram -->
+      <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+        <div style="background:rgba(33,189,190,0.1); border:1px solid rgba(33,189,190,0.3); border-radius:10px; padding:14px 20px; text-align:center;">
+          <div style="font-size:1.4rem;">&#x1f4dd;</div>
+          <div style="font-size:0.8rem; font-weight:700; color:var(--njord-blue);">scoring.yaml</div>
+          <div style="font-size:0.65rem; color:var(--njord-gray);" data-lang="sv">+ källa per värde</div>
+          <div style="font-size:0.65rem; color:var(--njord-gray);" data-lang="en">+ source per value</div>
+        </div>
+        <div style="color:var(--njord-red); font-size:1.4rem;">&#x2192;</div>
+        <div style="background:var(--njord-navy); color:white; border-radius:10px; padding:14px 20px; text-align:center;">
+          <div style="font-size:1.4rem;">&#x2699;&#xfe0f;</div>
+          <div style="font-size:0.8rem; font-weight:700; color:var(--njord-teal);">build.py</div>
+          <div style="font-size:0.65rem; color:rgba(255,255,255,0.5);" data-lang="sv">validerar + bygger</div>
+          <div style="font-size:0.65rem; color:rgba(255,255,255,0.5);" data-lang="en">validates + builds</div>
+        </div>
+        <div style="color:var(--njord-red); font-size:1.4rem;">&#x2192;</div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span class="tag" style="background:rgba(218,33,41,0.06);">HTML</span>
+          <span class="tag" style="background:rgba(218,33,41,0.06);">PDF</span>
+          <span class="tag" style="background:rgba(218,33,41,0.06);">Excel</span>
+          <span class="tag" style="background:rgba(218,33,41,0.06);">PPTX</span>
+        </div>
+      </div>
+      <p style="font-size:0.82rem; color:var(--njord-gray); margin-top:1.25rem; font-style:italic;" data-lang="sv">HTML för att tänka, PDF för att signera, Excel för att utmana siffrorna, PPTX för den 20 minuter långa genomgången.</p>
+      <p style="font-size:0.82rem; color:var(--njord-gray); margin-top:1.25rem; font-style:italic;" data-lang="en">HTML for thinking, PDF for signing, Excel for challenging the numbers, PPTX for the 20-minute readout.</p>
+    </div>
+
+    <!-- NGDT card -->
+    <div class="fade-up" style="background:var(--njord-navy); color:white; border-radius:16px; padding:2.5rem;">
+      <div data-lang="sv">
+        <span class="section-label" style="color:var(--njord-teal);">Digital tvilling</span>
+        <h3 style="color:white; margin-bottom:0.5rem;">NGDT: Northern Gale Digital Twin, Fas 0</h3>
+        <p style="font-size:0.95rem; color:rgba(255,255,255,0.65); line-height:1.7; margin-bottom:1.5rem; max-width:760px;">En enad simulator och beslutsstödsplattform för hybridkonverteringen. Ett delat tillstånd som både backend och frontend läser. Byggd för demo mot Ö-varvet och Fleet Director.</p>
+      </div>
+      <div data-lang="en">
+        <span class="section-label" style="color:var(--njord-teal);">Digital twin</span>
+        <h3 style="color:white; margin-bottom:0.5rem;">NGDT: Northern Gale Digital Twin, Phase 0</h3>
+        <p style="font-size:0.95rem; color:rgba(255,255,255,0.65); line-height:1.7; margin-bottom:1.5rem; max-width:760px;">A unified simulator and decision support platform for the hybrid conversion. One shared state that both backend and frontend read. Built for a demo to the shipyard and the Fleet Director.</p>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.25rem;">
+        <div style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:1.5rem;">
+          <div style="font-size:1.3rem; margin-bottom:0.5rem;">&#x26a1;</div>
+          <strong style="color:white; display:block; margin-bottom:0.25rem;" data-lang="sv">Energy Flow</strong>
+          <strong style="color:white; display:block; margin-bottom:0.25rem;" data-lang="en">Energy Flow</strong>
+          <span style="font-size:0.85rem; color:rgba(255,255,255,0.55);" data-lang="sv">Hybridtopologi, batteri-SOC, gensetlaster, propulsion och hotellast i realtid.</span>
+          <span style="font-size:0.85rem; color:rgba(255,255,255,0.55);" data-lang="en">Hybrid topology, battery SOC, genset loads, propulsion and hotel load in real time.</span>
+        </div>
+        <div style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:1.5rem;">
+          <div style="font-size:1.3rem; margin-bottom:0.5rem;">&#x1f4ca;</div>
+          <strong style="color:white; display:block; margin-bottom:0.25rem;" data-lang="sv">Scope Comparison</strong>
+          <strong style="color:white; display:block; margin-bottom:0.25rem;" data-lang="en">Scope Comparison</strong>
+          <span style="font-size:0.85rem; color:rgba(255,255,255,0.55);" data-lang="sv">S1, S2A, S2B, S2C och S3 med CAPEX, OPEX, CO&#x2082;, NPV och payback mot baseline.</span>
+          <span style="font-size:0.85rem; color:rgba(255,255,255,0.55);" data-lang="en">S1, S2A, S2B, S2C and S3 with CAPEX, OPEX, CO&#x2082;, NPV and payback against baseline.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     SECTION 11: RIKTIGA BESLUT
+     ════════════════════════════════════════════ -->
+<section class="bg-navy" id="decisions">
+  <div class="container">
+    <div class="fade-up" style="text-align:center; margin-bottom:3rem;">
+      <div data-lang="sv">
+        <span class="section-label" style="color:var(--njord-teal);"><span class="section-number" style="background:var(--njord-teal);">13</span> Beslutsstöd</span>
+        <h2 style="color:white;">Riktiga beslut, <span style="color:var(--njord-teal);">riktiga pengar</span></h2>
+        <p class="lead" style="margin:0 auto;">Det här är inte teori. Under våren körde vi skarp upphandling för Northern Gale-konverteringen med AI-byggt beslutsunderlag. Varje siffra spårbar till offert eller datablad.</p>
+      </div>
+      <div data-lang="en">
+        <span class="section-label" style="color:var(--njord-teal);"><span class="section-number" style="background:var(--njord-teal);">13</span> Decision support</span>
+        <h2 style="color:white;">Real decisions, <span style="color:var(--njord-teal);">real money</span></h2>
+        <p class="lead" style="margin:0 auto;">This is not theory. Through spring we ran live procurement for the Northern Gale conversion with AI-built decision support. Every number traceable to a quote or datasheet.</p>
+      </div>
+    </div>
+
+    <!-- Battery comparison table -->
+    <div class="fade-up" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:2rem; margin-bottom:2rem; overflow-x:auto;">
+      <div style="font-size:0.7rem; font-weight:700; color:var(--njord-teal); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:1rem;" data-lang="sv">Batteri och kraft: METS vs ZEM</div>
+      <div style="font-size:0.7rem; font-weight:700; color:var(--njord-teal); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:1rem;" data-lang="en">Battery and power: METS vs ZEM</div>
+      <table style="width:100%; border-collapse:collapse; font-size:0.85rem; color:rgba(255,255,255,0.8);">
+        <thead>
+          <tr style="border-bottom:2px solid rgba(255,255,255,0.15);">
+            <th style="text-align:left; padding:8px 10px; font-weight:600; color:rgba(255,255,255,0.5);"></th>
+            <th style="text-align:right; padding:8px 10px; font-weight:700; color:white;">METS Q25-0081</th>
+            <th style="text-align:right; padding:8px 10px; font-weight:700; color:white;">ZEM 511.01</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+            <td style="padding:8px 10px; font-weight:600;" data-lang="sv">Pris (offererat)</td>
+            <td style="padding:8px 10px; font-weight:600;" data-lang="en">Price (as quoted)</td>
+            <td style="text-align:right; padding:8px 10px;">13 552 200 SEK</td>
+            <td style="text-align:right; padding:8px 10px; color:#22c55e; font-weight:700;">8 709 100 SEK</td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+            <td style="padding:8px 10px; font-weight:600;" data-lang="sv">Batteri ingår?</td>
+            <td style="padding:8px 10px; font-weight:600;" data-lang="en">Battery included?</td>
+            <td style="text-align:right; padding:8px 10px;" data-lang="sv">Nej (battery ready)</td>
+            <td style="text-align:right; padding:8px 10px;" data-lang="en">No (battery ready)</td>
+            <td style="text-align:right; padding:8px 10px; color:#22c55e; font-weight:700;">180 kWh</td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+            <td style="padding:8px 10px; font-weight:600;" data-lang="sv">Funktionellt systemansvar</td>
+            <td style="padding:8px 10px; font-weight:600;" data-lang="en">Functional system responsibility</td>
+            <td style="text-align:right; padding:8px 10px;" data-lang="sv">Friskriver sig</td>
+            <td style="text-align:right; padding:8px 10px;" data-lang="en">Disclaims</td>
+            <td style="text-align:right; padding:8px 10px;" data-lang="sv">Ja, för DC</td>
+            <td style="text-align:right; padding:8px 10px;" data-lang="en">Yes, for DC</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 10px; font-weight:600;" data-lang="sv">Garanti</td>
+            <td style="padding:8px 10px; font-weight:600;" data-lang="en">Warranty</td>
+            <td style="text-align:right; padding:8px 10px;">12 mån</td>
+            <td style="text-align:right; padding:8px 10px;">24 mån</td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="font-size:0.8rem; color:rgba(255,255,255,0.5); margin-top:1rem; font-style:italic;" data-lang="sv">Beslutsdokumentet kartlägger pris, scope, systemansvar, klass och garanti sida vid sida, så valet vilar på fakta och inte på vem som svarade snabbast.</p>
+      <p style="font-size:0.8rem; color:rgba(255,255,255,0.5); margin-top:1rem; font-style:italic;" data-lang="en">The decision document maps price, scope, system responsibility, class and warranty side by side, so the choice rests on facts and not on who replied fastest.</p>
+    </div>
+
+    <!-- Other decisions -->
+    <div class="fade-up" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.25rem;">
+      <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:1.5rem;">
+        <div style="font-size:1.3rem; margin-bottom:0.5rem;">&#x1f300;</div>
+        <strong style="color:white; display:block; margin-bottom:0.25rem;" data-lang="sv">Propellerdesign</strong>
+        <strong style="color:white; display:block; margin-bottom:0.25rem;" data-lang="en">Propeller design</strong>
+        <span style="font-size:0.85rem; color:rgba(255,255,255,0.55);" data-lang="sv">Steelprop CAT26 analyserad för eldrift vid 611 kW, mot sjöprovsdata.</span>
+        <span style="font-size:0.85rem; color:rgba(255,255,255,0.55);" data-lang="en">Steelprop CAT26 analyzed for electric drive at 611 kW, against sea trial data.</span>
+      </div>
+      <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:1.5rem;">
+        <div style="font-size:1.3rem; margin-bottom:0.5rem;">&#x1f6e5;&#xfe0f;</div>
+        <strong style="color:white; display:block; margin-bottom:0.25rem;" data-lang="sv">Bogthruster</strong>
+        <strong style="color:white; display:block; margin-bottom:0.25rem;" data-lang="en">Bow thruster</strong>
+        <span style="font-size:0.85rem; color:rgba(255,255,255,0.55);" data-lang="sv">Utvärdering av alternativ med frågeunderlag till Sven på Ö-varvet.</span>
+        <span style="font-size:0.85rem; color:rgba(255,255,255,0.55);" data-lang="en">Evaluation of alternatives with a question set for Sven at the shipyard.</span>
+      </div>
+      <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:1.5rem;">
+        <div style="font-size:1.3rem; margin-bottom:0.5rem;">&#x1f3af;</div>
+        <strong style="color:white; display:block; margin-bottom:0.25rem;" data-lang="sv">DP-kravspec</strong>
+        <strong style="color:white; display:block; margin-bottom:0.25rem;" data-lang="en">DP requirements</strong>
+        <span style="font-size:0.85rem; color:rgba(255,255,255,0.55);" data-lang="sv">Kravspecifikation för DP-utveckling till Lyngå Marine, Kasper.</span>
+        <span style="font-size:0.85rem; color:rgba(255,255,255,0.55);" data-lang="en">A requirements spec for DP development to Lyngå Marine, Kasper.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     SECTION 12: BORTOM TEKNIKEN
+     ════════════════════════════════════════════ -->
+<section id="beyond">
+  <div class="container">
+    <div class="fade-up" style="text-align:center; margin-bottom:3rem;">
+      <div data-lang="sv">
+        <span class="section-label"><span class="section-number">14</span> Bredare</span>
+        <h2>Bortom <span>tekniken</span></h2>
+        <p class="lead" style="margin:0 auto;">AI är inte bara propeller och bränslekurvor. Samma metod fungerar för hur företaget styrs, organiseras och regleras.</p>
+      </div>
+      <div data-lang="en">
+        <span class="section-label"><span class="section-number">14</span> Broader</span>
+        <h2>Beyond the <span>technical</span></h2>
+        <p class="lead" style="margin:0 auto;">AI is not only propellers and fuel curves. The same method works for how the company is run, organized and governed.</p>
+      </div>
+    </div>
+
+    <div class="card-grid fade-up">
+      <div class="card">
+        <div class="card-icon">&#x1f4d8;</div>
+        <h3 data-lang="sv">The Njord Way</h3>
+        <h3 data-lang="en">The Njord Way</h3>
+        <p data-lang="sv">Operations Handbook Edition 1.0, signerad av Fleet Director. Closed-loop-kommunikation, projektcykel och ordlista, extraherad och strukturerad som master reference.</p>
+        <p data-lang="en">Operations Handbook Edition 1.0, signed by the Fleet Director. Closed-loop communication, project cycle and glossary, extracted and structured as the master reference.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#x1f5fa;&#xfe0f;</div>
+        <h3 data-lang="sv">Organisationsanalys</h3>
+        <h3 data-lang="en">Organizational analysis</h3>
+        <p data-lang="sv">Rollkartor och GAP-analys mot 15 befattningsbeskrivningar. Dual-hat-mönster och svaga beslutskedjor synliggjorda. AI som ärlig bollplank, inte ursäktsmaskin.</p>
+        <p data-lang="en">Role maps and GAP analysis across 15 job descriptions. Dual-hat patterns and weak decision chains made visible. AI as an honest sounding board, not an excuse machine.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#x2696;&#xfe0f;</div>
+        <h3 data-lang="sv">Juridik och avtal</h3>
+        <h3 data-lang="en">Legal and contracts</h3>
+        <p data-lang="sv">Avtalsgranskning och analys av vilket avtal som gäller. AI läser juridisk text och flaggar, men beslutet är alltid mänskligt.</p>
+        <p data-lang="en">Contract review and analysis of which agreement applies. AI reads legal text and flags, but the decision is always human.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     SECTION 13: METODMOGNAD
+     ════════════════════════════════════════════ -->
+<section class="bg-navy" id="maturity">
+  <div class="container">
+    <div class="fade-up" style="text-align:center; margin-bottom:3rem;">
+      <div data-lang="sv">
+        <span class="section-label" style="color:var(--njord-teal);"><span class="section-number" style="background:var(--njord-teal);">15</span> Lärdomar</span>
+        <h2 style="color:white;">Metoden har <span style="color:var(--njord-teal);">mognat</span></h2>
+        <p class="lead" style="margin:0 auto;">Det som skiljer april från idag är inte fler prompter, utan en disciplin som gör att samma misstag inte upprepas.</p>
+      </div>
+      <div data-lang="en">
+        <span class="section-label" style="color:var(--njord-teal);"><span class="section-number" style="background:var(--njord-teal);">15</span> Lessons</span>
+        <h2 style="color:white;">The method has <span style="color:var(--njord-teal);">matured</span></h2>
+        <p class="lead" style="margin:0 auto;">What separates April from today is not more prompts, but a discipline that keeps the same mistakes from repeating.</p>
+      </div>
+    </div>
+
+    <div class="card-grid fade-up">
+      <div class="card">
+        <div class="card-icon" style="background:rgba(33,189,190,0.15);">&#x1f3d7;&#xfe0f;</div>
+        <h3 data-lang="sv" style="color:white;">Två roller</h3>
+        <h3 data-lang="en" style="color:white;">Two roles</h3>
+        <p data-lang="sv">Cowork planerar och skriver prompter, Code exekverar. Planeringsfas före produktion, alltid.</p>
+        <p data-lang="en">Cowork plans and writes prompts, Code executes. Planning phase before production, always.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="background:rgba(33,189,190,0.15);">&#x1f504;</div>
+        <h3 data-lang="sv" style="color:white;">Självuppdaterande CLAUDE.md</h3>
+        <h3 data-lang="en" style="color:white;">Self-updating CLAUDE.md</h3>
+        <p data-lang="sv">När Claude gör fel skrivs lärdomen in i CLAUDE.md. Feedback-reglerna R1 till R8 håller disciplinen när projekten växer.</p>
+        <p data-lang="en">When Claude makes a mistake, the lesson goes into CLAUDE.md. Feedback rules R1 to R8 hold the discipline as projects grow.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="background:rgba(33,189,190,0.15);">&#x1f9e0;</div>
+        <h3 data-lang="sv" style="color:white;">Minne mellan sessioner</h3>
+        <h3 data-lang="en" style="color:white;">Memory across sessions</h3>
+        <p data-lang="sv">Beslut, leverantörskontakter och fartygsfakta sparas och återanvänds. Kontexten dör inte när fliken stängs.</p>
+        <p data-lang="en">Decisions, supplier contacts and fleet facts are saved and reused. Context does not die when the tab closes.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="background:rgba(33,189,190,0.15);">&#x1f4cd;</div>
+        <h3 data-lang="sv" style="color:white;">Verifierad data in</h3>
+        <h3 data-lang="en" style="color:white;">Verified data in</h3>
+        <p data-lang="sv">Vi låter aldrig Claude gissa. Verifierad dokumentation matas in, Markdown är sanningen, filerna är bara output.</p>
+        <p data-lang="en">We never let Claude guess. Verified documentation goes in, Markdown is the truth, the files are only output.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     SECTION 16: SÄKERHET & INTEGRITET
+     ════════════════════════════════════════════ -->
+<section class="bg-light" id="security">
+  <div class="container">
+    <div class="fade-up" style="text-align:center; margin-bottom: 3rem;">
+      <div data-lang="sv">
+        <span class="section-label"><span class="section-number">16</span> Säkerhet</span>
+        <h2>Säkerhet &amp; <span>integritet</span></h2>
+        <p class="lead" style="margin:0 auto;">Den vanligaste frågan internt är inte vad AI kan, utan vad som händer med datan. Här är våra ramar, rakt på.</p>
+      </div>
+      <div data-lang="en">
+        <span class="section-label"><span class="section-number">16</span> Security</span>
+        <h2>Security &amp; <span>integrity</span></h2>
+        <p class="lead" style="margin:0 auto;">The most common question internally is not what AI can do, but what happens to the data. Here are our boundaries, straight up.</p>
+      </div>
+    </div>
+    <div class="card-grid fade-up" style="transition-delay:0.15s;">
+      <div class="card">
+        <div class="card-icon">&#x1f513;</div>
+        <h3 data-lang="sv">Vad vi delar</h3>
+        <h3 data-lang="en">What we share</h3>
+        <p data-lang="sv">Tekniska datablad, sjöprovsdata, publika specifikationer och våra egna dokument. Material vi redan äger eller som är öppet.</p>
+        <p data-lang="en">Technical datasheets, sea trial data, public specifications and our own documents. Material we already own or that is public.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#x1f6ab;</div>
+        <h3 data-lang="sv">Vad vi håller utanför</h3>
+        <h3 data-lang="en">What we keep out</h3>
+        <p data-lang="sv">Personuppgifter om besättning, löner, hälsodata och sekretessbelagda avtal. Det stannar utanför AI tills vi har en granskad lösning.</p>
+        <p data-lang="en">Crew personal data, salaries, health data and confidential agreements. That stays outside AI until we have a reviewed solution.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#x1f5c2;&#xfe0f;</div>
+        <h3 data-lang="sv">Var datan tar vägen</h3>
+        <h3 data-lang="en">Where the data goes</h3>
+        <p data-lang="sv">Vi arbetar i avgränsade projektmappar och källdata stannar lokalt. Det som publiceras, som den här sidan, ligger bakom en lösenordsgrind.</p>
+        <p data-lang="en">We work in scoped project folders and source data stays local. What gets published, like this page, sits behind a password gate.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#x1f464;</div>
+        <h3 data-lang="sv">Människan äger beslutet</h3>
+        <h3 data-lang="en">The human owns the decision</h3>
+        <p data-lang="sv">AI föreslår, sammanställer och räknar. En människa läser, ifrågasätter och signerar. Inget beslut delegeras till en modell.</p>
+        <p data-lang="en">AI suggests, compiles and calculates. A human reads, questions and signs. No decision is delegated to a model.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     SECTION 17: VAD AI INTE GÖR BRA
+     ════════════════════════════════════════════ -->
+<section class="bg-navy" id="limitations">
+  <div class="container">
+    <div class="fade-up" style="text-align:center; margin-bottom:3rem;">
+      <div data-lang="sv">
+        <span class="section-label" style="color:var(--njord-teal);"><span class="section-number" style="background:var(--njord-teal);">17</span> Ärligheten</span>
+        <h2 style="color:white;">Vad AI <span style="color:var(--njord-teal);">inte</span> gör bra</h2>
+        <p class="lead" style="margin:0 auto;">Förtroende byggs på ärlighet. Här är vad Claude är dålig på, och spärren vi sätter mot varje sak.</p>
+      </div>
+      <div data-lang="en">
+        <span class="section-label" style="color:var(--njord-teal);"><span class="section-number" style="background:var(--njord-teal);">17</span> The honesty</span>
+        <h2 style="color:white;">Where AI <span style="color:var(--njord-teal);">falls</span> short</h2>
+        <p class="lead" style="margin:0 auto;">Trust is built on honesty. Here is what Claude is bad at, and the guard we put against each one.</p>
+      </div>
+    </div>
+    <div class="card-grid fade-up" style="transition-delay:0.15s;">
+      <div class="card">
+        <div class="card-icon" style="background:rgba(33,189,190,0.15);">&#x26a0;&#xfe0f;</div>
+        <h3 data-lang="sv" style="color:white;">Hittar på</h3>
+        <h3 data-lang="en" style="color:white;">Makes things up</h3>
+        <p data-lang="sv">En modell kan ange en siffra eller en paragraf med full säkerhet och ändå ha fel. Spärr: vi matar in verifierad dokumentation och varje värde ska ha en källa.</p>
+        <p data-lang="en">A model can state a number or a clause with full confidence and still be wrong. Guard: we feed verified documentation and every value must cite a source.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="background:rgba(33,189,190,0.15);">&#x1f4c5;</div>
+        <h3 data-lang="sv" style="color:white;">Saknar färsk verklighet</h3>
+        <h3 data-lang="en" style="color:white;">No fresh reality</h3>
+        <p data-lang="sv">Claude vet inte vad som hände i morse, vilken offert som kom in sist eller vad som står i ett system den inte fått se. Spärr: vi ger den färska filer och ber den aldrig gissa.</p>
+        <p data-lang="en">Claude does not know what happened this morning, which quote arrived last or what sits in a system it has not seen. Guard: we give it fresh files and never ask it to guess.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="background:rgba(33,189,190,0.15);">&#x1f9ee;</div>
+        <h3 data-lang="sv" style="color:white;">Snubblar på tung matematik</h3>
+        <h3 data-lang="en" style="color:white;">Stumbles on heavy math</h3>
+        <p data-lang="sv">Långa beräkningskedjor kan bli fel om de görs i huvudet. Spärr: beräkningar läggs i kod eller kalkylark som går att granska, inte i löpande text.</p>
+        <p data-lang="en">Long calculation chains can go wrong when done in the head. Guard: calculations live in code or spreadsheets that can be reviewed, not in running text.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="background:rgba(33,189,190,0.15);">&#x2696;&#xfe0f;</div>
+        <h3 data-lang="sv" style="color:white;">Bär inget ansvar</h3>
+        <h3 data-lang="en" style="color:white;">Carries no responsibility</h3>
+        <p data-lang="sv">En modell kan inte hållas ansvarig för ett klassningsbeslut eller en säkerhetsbedömning. Spärr: människan signerar, alltid.</p>
+        <p data-lang="en">A model cannot be held accountable for a classification decision or a safety assessment. Guard: the human signs, always.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     SECTION 18: INSPIRATION / MÖJLIGHETER
      ════════════════════════════════════════════ -->
 <section id="inspiration">
   <div class="container">
     <div class="fade-up" style="text-align:center; margin-bottom: 3rem;">
       <div data-lang="sv">
-        <span class="section-label"><span class="section-number">8</span> Inspiration</span>
+        <span class="section-label"><span class="section-number">18</span> Inspiration</span>
         <h2>Vad kan <span>du</span> göra?</h2>
         <p class="lead" style="margin:0 auto;">Oavsett roll finns det kraft att hämta. Här är exempel på vad olika roller kan använda Claude till.</p>
       </div>
       <div data-lang="en">
-        <span class="section-label"><span class="section-number">8</span> Inspiration</span>
+        <span class="section-label"><span class="section-number">18</span> Inspiration</span>
         <h2>What can <span>you</span> do?</h2>
         <p class="lead" style="margin:0 auto;">Regardless of role, there's power to unlock. Here are examples of what different roles can use Claude for.</p>
       </div>
@@ -1863,7 +2527,139 @@ Regular text with <span class="code-string">**bold**</span> and <span class="cod
 </section>
 
 <!-- ════════════════════════════════════════════
-     SECTION 10: NÄSTA STEG
+     SECTION 19: KOM IGÅNG PER ROLL
+     ════════════════════════════════════════════ -->
+<section class="bg-navy" id="getting-started">
+  <div class="container">
+    <div class="fade-up" style="text-align:center; margin-bottom:3rem;">
+      <div data-lang="sv">
+        <span class="section-label" style="color:var(--njord-teal);"><span class="section-number" style="background:var(--njord-teal);">19</span> Kom igång</span>
+        <h2 style="color:white;">Din <span style="color:var(--njord-teal);">första vecka</span> med Claude</h2>
+        <p class="lead" style="margin:0 auto;">Du behöver ingen teknisk bakgrund. Så här ser de första stegen ut, oavsett roll.</p>
+      </div>
+      <div data-lang="en">
+        <span class="section-label" style="color:var(--njord-teal);"><span class="section-number" style="background:var(--njord-teal);">19</span> Get started</span>
+        <h2 style="color:white;">Your <span style="color:var(--njord-teal);">first week</span> with Claude</h2>
+        <p class="lead" style="margin:0 auto;">You need no technical background. Here is what the first steps look like, whatever your role.</p>
+      </div>
+    </div>
+
+    <div class="fade-up" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:3rem;">
+      <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:2rem; position:relative; overflow:hidden;">
+        <div style="position:absolute; top:0; left:0; right:0; height:3px; background:var(--njord-teal);"></div>
+        <div style="font-size:2.5rem; font-weight:800; color:rgba(255,255,255,0.06); position:absolute; top:8px; right:16px;">01</div>
+        <div style="font-size:0.65rem; font-weight:700; color:var(--njord-teal); text-transform:uppercase; letter-spacing:0.12em; margin-bottom:0.75rem;" data-lang="sv">Be om något litet</div>
+        <div style="font-size:0.65rem; font-weight:700; color:var(--njord-teal); text-transform:uppercase; letter-spacing:0.12em; margin-bottom:0.75rem;" data-lang="en">Ask for something small</div>
+        <p style="font-size:0.9rem; color:rgba(255,255,255,0.75); line-height:1.65;" data-lang="sv">Ta en uppgift du redan behärskar: ett mail, en checklista, en sammanfattning. Be Claude göra utkastet.</p>
+        <p style="font-size:0.9rem; color:rgba(255,255,255,0.75); line-height:1.65;" data-lang="en">Take a task you already master: an email, a checklist, a summary. Ask Claude to make the draft.</p>
+      </div>
+      <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:2rem; position:relative; overflow:hidden;">
+        <div style="position:absolute; top:0; left:0; right:0; height:3px; background:var(--njord-teal);"></div>
+        <div style="font-size:2.5rem; font-weight:800; color:rgba(255,255,255,0.06); position:absolute; top:8px; right:16px;">02</div>
+        <div style="font-size:0.65rem; font-weight:700; color:var(--njord-teal); text-transform:uppercase; letter-spacing:0.12em; margin-bottom:0.75rem;" data-lang="sv">Ge den sammanhang</div>
+        <div style="font-size:0.65rem; font-weight:700; color:var(--njord-teal); text-transform:uppercase; letter-spacing:0.12em; margin-bottom:0.75rem;" data-lang="en">Give it context</div>
+        <p style="font-size:0.9rem; color:rgba(255,255,255,0.75); line-height:1.65;" data-lang="sv">Klistra in underlaget: ett datablad, ett gammalt mail, rutinen. Ju mer kontext, desto bättre svar.</p>
+        <p style="font-size:0.9rem; color:rgba(255,255,255,0.75); line-height:1.65;" data-lang="en">Paste in the material: a datasheet, an old email, the routine. The more context, the better the answer.</p>
+      </div>
+      <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:2rem; position:relative; overflow:hidden;">
+        <div style="position:absolute; top:0; left:0; right:0; height:3px; background:var(--njord-teal);"></div>
+        <div style="font-size:2.5rem; font-weight:800; color:rgba(255,255,255,0.06); position:absolute; top:8px; right:16px;">03</div>
+        <div style="font-size:0.65rem; font-weight:700; color:var(--njord-teal); text-transform:uppercase; letter-spacing:0.12em; margin-bottom:0.75rem;" data-lang="sv">Rätta och spara</div>
+        <div style="font-size:0.65rem; font-weight:700; color:var(--njord-teal); text-transform:uppercase; letter-spacing:0.12em; margin-bottom:0.75rem;" data-lang="en">Correct and save</div>
+        <p style="font-size:0.9rem; color:rgba(255,255,255,0.75); line-height:1.65;" data-lang="sv">Säg vad som blev fel. När det sitter, spara filen i projektmappen. Nästa gång går det snabbare.</p>
+        <p style="font-size:0.9rem; color:rgba(255,255,255,0.75); line-height:1.65;" data-lang="en">Say what went wrong. When it fits, save the file in the project folder. Next time it goes faster.</p>
+      </div>
+    </div>
+
+    <div class="fade-up" style="text-align:center; margin-bottom:1.5rem;">
+      <div style="font-size:0.7rem; font-weight:700; color:var(--njord-teal); text-transform:uppercase; letter-spacing:0.12em;" data-lang="sv">Din första prompt</div>
+      <div style="font-size:0.7rem; font-weight:700; color:var(--njord-teal); text-transform:uppercase; letter-spacing:0.12em;" data-lang="en">Your first prompt</div>
+    </div>
+    <div class="fade-up" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:1rem;">
+      <div style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:1.5rem;">
+        <strong style="color:white; display:block; margin-bottom:0.5rem;">Chief Engineer</strong>
+        <p style="font-size:0.85rem; color:rgba(255,255,255,0.6); font-style:italic; line-height:1.6;" data-lang="sv">"Gör en felsökningschecklista för lågt oljetryck på DW6, steg för steg."</p>
+        <p style="font-size:0.85rem; color:rgba(255,255,255,0.6); font-style:italic; line-height:1.6;" data-lang="en">"Make a troubleshooting checklist for low oil pressure on the DW6, step by step."</p>
+      </div>
+      <div style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:1.5rem;">
+        <strong style="color:white; display:block; margin-bottom:0.5rem;">Master / Captain</strong>
+        <p style="font-size:0.85rem; color:rgba(255,255,255,0.6); font-style:italic; line-height:1.6;" data-lang="sv">"Skriv en säkerhetsbriefing inför en survey i Beaufort 5, en sida."</p>
+        <p style="font-size:0.85rem; color:rgba(255,255,255,0.6); font-style:italic; line-height:1.6;" data-lang="en">"Write a safety briefing ahead of a survey in Beaufort 5, one page."</p>
+      </div>
+      <div style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:1.5rem;">
+        <strong style="color:white; display:block; margin-bottom:0.5rem;">Project Manager</strong>
+        <p style="font-size:0.85rem; color:rgba(255,255,255,0.6); font-style:italic; line-height:1.6;" data-lang="sv">"Sammanfatta de här tre offerterna i en jämförelsetabell med pris och scope."</p>
+        <p style="font-size:0.85rem; color:rgba(255,255,255,0.6); font-style:italic; line-height:1.6;" data-lang="en">"Summarize these three quotes in a comparison table with price and scope."</p>
+      </div>
+      <div style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:1.5rem;">
+        <strong style="color:white; display:block; margin-bottom:0.5rem;">Fleet Director</strong>
+        <p style="font-size:0.85rem; color:rgba(255,255,255,0.6); font-style:italic; line-height:1.6;" data-lang="sv">"Gör ett utkast till beslutsunderlag för hybridvalet, en sida för styrgruppen."</p>
+        <p style="font-size:0.85rem; color:rgba(255,255,255,0.6); font-style:italic; line-height:1.6;" data-lang="en">"Draft a one-page decision brief for the hybrid choice, for the steering group."</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     SECTION 20: FAQ / INVÄNDNINGAR
+     ════════════════════════════════════════════ -->
+<section class="bg-light" id="faq">
+  <div class="container">
+    <div class="fade-up" style="text-align:center; margin-bottom:3rem;">
+      <div data-lang="sv">
+        <span class="section-label"><span class="section-number">20</span> Frågor</span>
+        <h2>Vanliga <span>frågor</span></h2>
+        <p class="lead" style="margin:0 auto;">De invändningar som faktiskt kommer upp, med raka svar.</p>
+      </div>
+      <div data-lang="en">
+        <span class="section-label"><span class="section-number">20</span> Questions</span>
+        <h2>Frequently <span>asked</span></h2>
+        <p class="lead" style="margin:0 auto;">The objections that actually come up, with straight answers.</p>
+      </div>
+    </div>
+    <div class="fade-up" style="max-width:820px; margin:0 auto; display:flex; flex-direction:column; gap:1rem;">
+      <div class="card">
+        <h3 style="color:var(--njord-red); font-size:1.05rem;" data-lang="sv">Tar AI mitt jobb?</h3>
+        <h3 style="color:var(--njord-red); font-size:1.05rem;" data-lang="en">Will AI take my job?</h3>
+        <p data-lang="sv">Nej. Den tar bort skrivandet, formaterandet och letandet, inte omdömet. Du fattar fler beslut på samma tid, med bättre underlag.</p>
+        <p data-lang="en">No. It removes the writing, formatting and searching, not the judgment. You make more decisions in the same time, with better support.</p>
+      </div>
+      <div class="card">
+        <h3 style="color:var(--njord-red); font-size:1.05rem;" data-lang="sv">Är det tillåtet att använda?</h3>
+        <h3 style="color:var(--njord-red); font-size:1.05rem;" data-lang="en">Are we allowed to use it?</h3>
+        <p data-lang="sv">Ja, inom våra ramar. Publika och egna data: ja. Persondata och sekretessbelagt: nej. Vid tveksamhet, fråga först.</p>
+        <p data-lang="en">Yes, within our boundaries. Public and own data: yes. Personal data and confidential material: no. When in doubt, ask first.</p>
+      </div>
+      <div class="card">
+        <h3 style="color:var(--njord-red); font-size:1.05rem;" data-lang="sv">Vad händer om den har fel?</h3>
+        <h3 style="color:var(--njord-red); font-size:1.05rem;" data-lang="en">What if it gets something wrong?</h3>
+        <p data-lang="sv">Därför signerar en människa. Vi matar in verifierad data, vi ber aldrig modellen gissa, och vi granskar allt som går vidare.</p>
+        <p data-lang="en">That is why a human signs. We feed verified data, we never ask the model to guess, and we review everything that goes out.</p>
+      </div>
+      <div class="card">
+        <h3 style="color:var(--njord-red); font-size:1.05rem;" data-lang="sv">Måste jag kunna koda?</h3>
+        <h3 style="color:var(--njord-red); font-size:1.05rem;" data-lang="en">Do I need to know how to code?</h3>
+        <p data-lang="sv">Nej. Allt börjar i vanlig text. Att skriva ett tydligt mail räcker för att komma igång.</p>
+        <p data-lang="en">No. It all starts in plain text. Writing a clear email is enough to get going.</p>
+      </div>
+      <div class="card">
+        <h3 style="color:var(--njord-red); font-size:1.05rem;" data-lang="sv">Var sparas det jag matar in?</h3>
+        <h3 style="color:var(--njord-red); font-size:1.05rem;" data-lang="en">Where is what I enter stored?</h3>
+        <p data-lang="sv">I avgränsade projektmappar. Källdata stannar lokalt, och det som publiceras ligger bakom lösenord.</p>
+        <p data-lang="en">In scoped project folders. Source data stays local, and what gets published sits behind a password.</p>
+      </div>
+      <div class="card">
+        <h3 style="color:var(--njord-red); font-size:1.05rem;" data-lang="sv">Lär den sig av våra hemligheter?</h3>
+        <h3 style="color:var(--njord-red); font-size:1.05rem;" data-lang="en">Does it learn from our secrets?</h3>
+        <p data-lang="sv">Vi behandlar allt som matas in som halvpublikt och håller känsligt material utanför. Bygger vi något känsligt gör vi det i en granskad lösning först.</p>
+        <p data-lang="en">We treat everything entered as semi-public and keep sensitive material out. If we build something sensitive, we do it in a reviewed solution first.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     SECTION 21: NÄSTA STEG
      ════════════════════════════════════════════ -->
 <section class="cta-section" id="next">
   <div class="container fade-up">

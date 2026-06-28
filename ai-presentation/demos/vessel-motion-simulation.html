@@ -87,7 +87,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .finding.ok::before{background:var(--ok)}.finding.warn::before{background:var(--warn)}.finding.info::before{background:var(--accent)}
 </style>
 <style>
-/* ─── PASSWORD GATE ─── */
+/* --- PASSWORD GATE --- */
 #njord-password-gate {
   position: fixed; inset: 0; z-index: 99999;
   background: #0a1e2a;
@@ -144,7 +144,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 <div id="njord-password-gate">
   <div class="njord-gate-box">
     <div class="ns-logo">NS</div>
-    <h2>Njord Survey — Internal</h2>
+    <h2>Njord Survey &mdash; Internal</h2>
     <form onsubmit="return njordCheckPass()">
       <input type="password" id="njord-gate-pwd" class="njord-gate-input"
              placeholder="Enter password" autocomplete="off">
@@ -763,7 +763,6 @@ window.addEventListener('resize', () => {
   renderer.setSize(w, h);
 });
 </script>
-
 <script>
 function njordCheckPass() {
   var p = document.getElementById('njord-gate-pwd').value;
@@ -785,6 +784,5 @@ if (sessionStorage.getItem('njord-unlocked') === '1') {
   });
 }
 </script>
-
 </body>
 </html>

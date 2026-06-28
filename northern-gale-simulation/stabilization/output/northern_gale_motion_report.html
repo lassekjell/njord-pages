@@ -64,12 +64,65 @@ table.stats td.param{font-weight:600}
 .finding.ok::before{background:var(--ok)}.finding.warn::before{background:var(--warn)}.finding.bad::before{background:var(--danger)}.finding.info::before{background:var(--accent)}
 .footer{text-align:center;padding:20px 0;color:var(--muted);font-size:11px;border-top:1px solid var(--border);margin-top:32px}
 </style>
+<style>
+/* --- PASSWORD GATE --- */
+#njord-password-gate {
+  position: fixed; inset: 0; z-index: 99999;
+  background: #0a1e2a;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+#njord-password-gate.unlocked {
+  opacity: 0; visibility: hidden; pointer-events: none;
+}
+.njord-gate-box { text-align: center; max-width: 380px; width: 90%; }
+.njord-gate-box h2 {
+  color: white; font-size: 1.1rem; font-weight: 500;
+  margin-bottom: 1.5rem; opacity: 0.8;
+}
+.njord-gate-box .ns-logo {
+  width: 60px; height: 60px; background: #da2129; border-radius: 12px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 1.4rem; color: white; margin-bottom: 1.5rem;
+}
+.njord-gate-input {
+  width: 100%; padding: 0.85rem 1.2rem;
+  border: 2px solid rgba(255,255,255,0.15); border-radius: 10px;
+  background: rgba(255,255,255,0.07); color: white;
+  font-family: inherit; font-size: 1rem; outline: none;
+  transition: border-color 0.2s; margin-bottom: 0.75rem;
+}
+.njord-gate-input::placeholder { color: rgba(255,255,255,0.35); }
+.njord-gate-input:focus { border-color: #21bdbe; }
+.njord-gate-input.error {
+  border-color: #da2129;
+  animation: njord-shake 0.4s ease;
+}
+.njord-gate-btn {
+  width: 100%; padding: 0.85rem; border: none; border-radius: 10px;
+  background: #da2129; color: white; font-family: inherit;
+  font-size: 0.95rem; font-weight: 600; cursor: pointer;
+  transition: background 0.2s;
+}
+.njord-gate-btn:hover { background: #84160e; }
+.njord-gate-err {
+  color: #da2129; font-size: 0.8rem; margin-top: 0.75rem;
+  opacity: 0; transition: opacity 0.3s;
+}
+.njord-gate-err.visible { opacity: 1; }
+@keyframes njord-shake {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+</style>
 </head>
 <body>
 <div id="njord-password-gate">
   <div class="njord-gate-box">
     <div class="ns-logo">NS</div>
-    <h2>Njord Survey — Internal</h2>
+    <h2>Njord Survey &mdash; Internal</h2>
     <form onsubmit="return njordCheckPass()">
       <input type="password" id="njord-gate-pwd" class="njord-gate-input"
              placeholder="Enter password" autocomplete="off">
@@ -78,6 +131,7 @@ table.stats td.param{font-weight:600}
     <div id="njord-gate-err" class="njord-gate-err">Incorrect password</div>
   </div>
 </div>
+
 <div class="container">
 
 <div class="header">
@@ -193,6 +247,7 @@ table.stats td.param{font-weight:600}
   </table>
   <p style="margin-top:12px"><strong>ISO 2631-1 Annex C comfort ranges (unweighted RMS, approximate):</strong> &lt;0.315 m/s² (&lt;0.032g) = not uncomfortable, 0.315–0.63 m/s² (0.032–0.064g) = a little uncomfortable, 0.5–1.0 m/s² (0.051–0.102g) = fairly uncomfortable, &gt;0.8 m/s² (&gt;0.082g) = uncomfortable. <em>Note: ISO 2631 requires frequency-weighted acceleration (W<sub>d</sub> for lateral). Values above are unweighted — classification is indicative.</em></p>
   <p style="margin-top:6px"><strong>Swedish Vibration Directive (AFS):</strong> Action value = 0.5 m/s² (0.051g), Limit value = 1.1 m/s² (0.112g) for 8-hour daily exposure. Northern Gale's lateral RMS of 0.049–0.060g approaches or exceeds the Swedish action value at exposed positions.</p>
+  <p style="margin-top:12px"><strong>NORDFORSK 1987 Operability Criteria (Table 5, RMS):</strong> For intellectual work (bridge/survey): vertical ≤0.10g, lateral ≤0.05g, roll ≤2.5°. For heavy manual work (deck): vertical ≤0.15g, lateral ≤0.07g, roll ≤3.0°. <em>Source: Garme et al. (2024) "Seakeeping criteria revisited", Ocean Engineering 297. Note: no formal seakeeping criteria exist for workboats/survey vessels (Garme 2024, conclusion iii) — NORDFORSK categories applied by analogy.</em></p>
 </div>
 
 <div class="section">
@@ -214,7 +269,7 @@ table.stats td.param{font-weight:600}
   <h2>8. Observations and Findings</h2>
   <div class="finding bad"><strong>Roll is the dominant motion in both sea states.</strong> Peak roll is consistently the largest angular displacement. The catamaran hull form is inherently stiff in pitch but lively in roll — this is a structural characteristic of the vessel type.</div>
   <div class="finding bad"><strong>At Bft 3–4 (mild), the vessel already reaches +/-6.5 deg roll.</strong> This is the lower bound of typical North Sea operational conditions. Roll of +/-12.9 deg in rougher conditions indicates serious motion challenges during winter operations.</div>
-  <div class="finding warn"><strong>Lateral accelerations enter ISO 2631-1 "a little uncomfortable" range at main deck and wheelhouse.</strong> With RMS values of 0.049–0.060g (unweighted), the wheelhouse exceeds the Swedish AFS action value (0.051g). Peak accelerations reach 0.30g at the wheelhouse. Mid-height positions (3–5 m) benefit from proximity to the roll centre.</div>
+  <div class="finding warn"><strong>Lateral accelerations exceed NORDFORSK "Intellectual Work" limit (0.05g) at wheelhouse (0.060g, +20%) and approach it at main deck (0.049g).</strong> They also enter ISO 2631-1 "a little uncomfortable" range. With RMS values of 0.049–0.060g (unweighted), the wheelhouse exceeds the Swedish AFS action value (0.051g). Peak accelerations reach 0.30g at the wheelhouse. Mid-height positions (3–5 m) benefit from proximity to the roll centre.</div>
   <div class="finding warn"><strong>Pitch range increases ~4.7x between sea states.</strong> The heading data shows the vessel traversed all headings (0–360 deg) during the log, exposing the vessel to head and following seas. Pitch rate peaks of +/-13 deg/s indicate slamming risk on the catamaran cross-structure.</div>
   <div class="finding warn"><strong>Roll period is fast (approx 4 s in mild conditions).</strong> Short roll periods produce rapid, snappy motions that are physiologically more nauseogenic than equivalent amplitudes at longer periods. This is driven by the catamaran's high metacentric height (GM).</div>
   <div class="finding info"><strong>Heave triples from +/-0.45m to +/-1.36m.</strong> For survey operations using multibeam or other depth-sensitive equipment, this level of heave motion requires robust heave compensation performance from the Seapath 320.</div>
@@ -225,7 +280,7 @@ table.stats td.param{font-weight:600}
   <h2>9. Conclusions</h2>
   <p>Northern Gale exhibits motion characteristics typical of a catamaran survey vessel: good pitch stability in moderate conditions, but rapid, high-amplitude roll that degrades significantly with increasing sea state. The measured data shows:</p>
   <div class="finding bad"><strong>Roll is the primary operational limitation.</strong> At +/-12.9 deg in rough conditions, this affects crew comfort, equipment accuracy, and the vessel's operational weather window.</div>
-  <div class="finding warn"><strong>Crew comfort is compromised in rough conditions.</strong> ISO 2631-1 assessment (unweighted) shows "a little uncomfortable" conditions at main deck (1 m) and wheelhouse (8 m) positions. The wheelhouse lateral RMS of 0.060g (0.59 m/s²) exceeds the Swedish AFS action value. Prolonged exposure at these levels drives fatigue.</div>
+  <div class="finding warn"><strong>Crew comfort is compromised in rough conditions.</strong> Wheelhouse lateral RMS (0.060g) exceeds NORDFORSK "Intellectual Work" operability limit (0.05g) by 20%. Roll RMS (3.45°, Log 2) exceeds the 2.5° threshold by 38%. ISO 2631-1 assessment (unweighted) confirms "a little uncomfortable" conditions at main deck (1 m) and wheelhouse (8 m) positions. The wheelhouse lateral RMS (0.59 m/s²) also exceeds the Swedish AFS action value. Prolonged exposure at these levels drives fatigue.</div>
   <div class="finding warn"><strong>The vessel's weather window is limited.</strong> If +/-6.5 deg roll at Bft 3–4 is near the limit for precision survey work, the number of available operational days in North Sea conditions is significantly constrained.</div>
   <p style="margin-top:12px">This report establishes the measured motion baseline for Northern Gale. It is recommended as input for evaluating motion mitigation measures and defining operational limits for survey work.</p>
 </div>
@@ -249,5 +304,26 @@ new Chart(document.getElementById('chartHeave'),{type:'line',data:{labels:D.labe
 new Chart(document.getElementById('chartHdg'),{type:'line',data:{labels:D.labels,datasets:[{label:'Heading (deg)',data:D.heading,borderColor:'#48cae4',borderWidth:1,pointRadius:0,fill:false}]},options:{...opts,scales:{...opts.scales,y:{...opts.scales.y,min:0,max:360}}}});
 new Chart(document.getElementById('chartRR'),{type:'line',data:{labels:D.labels,datasets:[{label:'Roll Rate (deg/s)',data:D.roll_rate,borderColor:'#ef233c',borderWidth:1,pointRadius:0,fill:false}]},options:opts});
 new Chart(document.getElementById('chartWS'),{type:'line',data:{labels:D.ws_labels,datasets:[{label:'Roll (deg)',data:D.ws_roll,borderColor:'#00b4d8',borderWidth:1.5,pointRadius:0,fill:false},{label:'Pitch (deg)',data:D.ws_pitch,borderColor:'#06d6a0',borderWidth:1,pointRadius:0,fill:false},{label:'Heave (m)',data:D.ws_heave,borderColor:'#f77f00',borderWidth:1,pointRadius:0,fill:false}]},options:opts});
+</script>
+<script>
+function njordCheckPass() {
+  var p = document.getElementById('njord-gate-pwd').value;
+  if (p === 'njord2026') {
+    document.getElementById('njord-password-gate').classList.add('unlocked');
+    sessionStorage.setItem('njord-unlocked', '1');
+    return false;
+  }
+  var inp = document.getElementById('njord-gate-pwd');
+  inp.classList.add('error');
+  document.getElementById('njord-gate-err').classList.add('visible');
+  setTimeout(function(){ inp.classList.remove('error'); }, 500);
+  return false;
+}
+if (sessionStorage.getItem('njord-unlocked') === '1') {
+  document.addEventListener('DOMContentLoaded', function() {
+    var g = document.getElementById('njord-password-gate');
+    if (g) g.classList.add('unlocked');
+  });
+}
 </script>
 </body></html>

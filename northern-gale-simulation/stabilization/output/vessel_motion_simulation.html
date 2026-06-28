@@ -86,12 +86,65 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .finding::before{content:'';position:absolute;left:0;top:10px;width:6px;height:6px;border-radius:50%}
 .finding.ok::before{background:var(--ok)}.finding.warn::before{background:var(--warn)}.finding.info::before{background:var(--accent)}
 </style>
+<style>
+/* --- PASSWORD GATE --- */
+#njord-password-gate {
+  position: fixed; inset: 0; z-index: 99999;
+  background: #0a1e2a;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+#njord-password-gate.unlocked {
+  opacity: 0; visibility: hidden; pointer-events: none;
+}
+.njord-gate-box { text-align: center; max-width: 380px; width: 90%; }
+.njord-gate-box h2 {
+  color: white; font-size: 1.1rem; font-weight: 500;
+  margin-bottom: 1.5rem; opacity: 0.8;
+}
+.njord-gate-box .ns-logo {
+  width: 60px; height: 60px; background: #da2129; border-radius: 12px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 1.4rem; color: white; margin-bottom: 1.5rem;
+}
+.njord-gate-input {
+  width: 100%; padding: 0.85rem 1.2rem;
+  border: 2px solid rgba(255,255,255,0.15); border-radius: 10px;
+  background: rgba(255,255,255,0.07); color: white;
+  font-family: inherit; font-size: 1rem; outline: none;
+  transition: border-color 0.2s; margin-bottom: 0.75rem;
+}
+.njord-gate-input::placeholder { color: rgba(255,255,255,0.35); }
+.njord-gate-input:focus { border-color: #21bdbe; }
+.njord-gate-input.error {
+  border-color: #da2129;
+  animation: njord-shake 0.4s ease;
+}
+.njord-gate-btn {
+  width: 100%; padding: 0.85rem; border: none; border-radius: 10px;
+  background: #da2129; color: white; font-family: inherit;
+  font-size: 0.95rem; font-weight: 600; cursor: pointer;
+  transition: background 0.2s;
+}
+.njord-gate-btn:hover { background: #84160e; }
+.njord-gate-err {
+  color: #da2129; font-size: 0.8rem; margin-top: 0.75rem;
+  opacity: 0; transition: opacity 0.3s;
+}
+.njord-gate-err.visible { opacity: 1; }
+@keyframes njord-shake {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+</style>
 </head>
 <body>
 <div id="njord-password-gate">
   <div class="njord-gate-box">
     <div class="ns-logo">NS</div>
-    <h2>Njord Survey — Internal</h2>
+    <h2>Njord Survey &mdash; Internal</h2>
     <form onsubmit="return njordCheckPass()">
       <input type="password" id="njord-gate-pwd" class="njord-gate-input"
              placeholder="Enter password" autocomplete="off">
@@ -100,6 +153,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     <div id="njord-gate-err" class="njord-gate-err">Incorrect password</div>
   </div>
 </div>
+
 <div class="top-bar">
   <h1>Northern Gale — Motion Replay & Gyro Simulation</h1>
   <div class="meta">Seapath 320 log 15 Apr 2026 07:42–08:15 UTC &nbsp;|&nbsp; Beaufort 3–4, 0.5 m waves &nbsp;|&nbsp; 53°40'N 003°07'W</div>
@@ -223,7 +277,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     </div>
     <div class="panel-section">
       <h3>Lateral Acceleration by Height</h3>
-      <p style="font-size:11px;color:var(--muted);margin-bottom:8px">RMS lateral acceleration at different heights above roll axis. ISO 2631-1 Annex C (unweighted approx): &lt;0.032g not uncomfortable, 0.032–0.064g a little uncomfortable, &gt;0.064g fairly uncomfortable.</p>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:8px">RMS lateral acceleration at different heights above roll axis. ISO 2631-1 Annex C (unweighted approx): &lt;0.032g not uncomfortable, 0.032–0.064g a little uncomfortable, &gt;0.064g fairly uncomfortable. <strong style="color:#60a5fa">NORDFORSK IW limit: 0.05g</strong> (dashed line). Source: Garme et al. (2024).</p>
       <div id="comfortBars"></div>
     </div>
     <div class="panel-section" id="comfortGuySection">
@@ -275,7 +329,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
       <h3>Vessel Behaviour Assessment</h3>
       <div class="finding ok">Roll is the dominant motion — 4× larger than pitch. Classic catamaran response: stiff in pitch, lively in roll.</div>
       <div class="finding warn">Roll period ~3.8s is fast. Short period = quick snappy motion that is more uncomfortable than slow rolling. Crew fatigue risk on long survey ops.</div>
-      <div class="finding info">Peak roll rates reach ±10°/s. At the wheelhouse (8m above roll axis), lateral acceleration peaks at 0.14g — above comfort threshold.</div>
+      <div class="finding info">Peak roll rates reach ±10°/s. At the wheelhouse (8m above roll axis), lateral RMS 0.060g exceeds NORDFORSK Intellectual Work limit (0.05g, +20%). Peak acceleration reaches 0.30g.</div>
       <div class="finding ok">Heave is modest (±0.45m) — catamaran hull provides good vertical stability in these conditions.</div>
       <div class="finding warn">At Bft 3–4 (mild conditions), roll already hits ±6.5°. At Bft 5–6 during winter survey ops, expect 2–3× amplification.</div>
       <div class="finding ok">Heading is stable within ±10° — good directional stability, likely DP or autopilot maintaining heading.</div>
@@ -511,7 +565,7 @@ document.getElementById('seaSel').addEventListener('change', (e) => {
     const pct = Math.min(rms / 0.15 * 100, 100);
     if (bars[i]) {
       bars[i].style.width = pct + '%';
-      bars[i].style.background = rms < 0.032 ? '#00e09c' : rms < 0.064 ? '#ffaa30' : '#ff4060';
+      bars[i].style.background = rms < 0.032 ? '#00e09c' : rms < 0.05 ? '#ffaa30' : '#ff4060';
     }
     if (vals[i]) vals[i].textContent = rms.toFixed(4) + 'g (peak ' + COMFORT.peak_g[i].toFixed(3) + 'g)';
   });
@@ -615,7 +669,7 @@ function updateVessel() {
     armR.setAttribute('x2', '64'); armR.setAttribute('y2', '58');
     label.textContent = 'Not uncomfortable';
     label.style.color = '#00e09c';
-    desc.textContent = 'ISO 2631-1: Not uncomfortable. No effect on work performance.';
+    desc.textContent = 'ISO 2631-1: Not uncomfortable. Below NORDFORSK IW limit (0.05g).';
     accelDisp.style.color = '#00e09c';
     document.getElementById('sweat1').setAttribute('opacity', '0');
     document.getElementById('sweat2').setAttribute('opacity', '0');
@@ -631,7 +685,7 @@ function updateVessel() {
     armR.setAttribute('x2', '66'); armR.setAttribute('y2', '52');
     label.textContent = 'A little uncomfortable';
     label.style.color = '#ffaa30';
-    desc.textContent = 'ISO 2631-1: A little uncomfortable. Fatigue risk on long shifts.';
+    desc.textContent = aLatG >= 0.05 ? 'Exceeds NORDFORSK IW limit (0.05g). ISO 2631-1: A little uncomfortable.' : 'ISO 2631-1: A little uncomfortable. Approaching NORDFORSK IW limit (0.05g).';
     accelDisp.style.color = '#ffaa30';
     document.getElementById('sweat1').setAttribute('opacity', '0.6');
     document.getElementById('sweat2').setAttribute('opacity', '0.4');
@@ -647,7 +701,7 @@ function updateVessel() {
     armR.setAttribute('x2', '68'); armR.setAttribute('y2', '46');
     label.textContent = 'Fairly uncomfortable';
     label.style.color = '#ff4060';
-    desc.textContent = 'ISO 2631-1: Fairly uncomfortable. Seasickness risk, reduced work capacity.';
+    desc.textContent = 'Exceeds NORDFORSK IW limit (0.05g). ISO 2631-1: Fairly uncomfortable. Seasickness risk.';
     accelDisp.style.color = '#ff4060';
     document.getElementById('sweat1').setAttribute('opacity', '0.9');
     document.getElementById('sweat2').setAttribute('opacity', '0.8');
@@ -754,13 +808,18 @@ btnRec.addEventListener('click', () => {
 // --- COMFORT BARS ---
 const comfortDiv = document.getElementById('comfortBars');
 const hLabels = ['1m (deck)', '3m (main deck)', '5m (bridge deck)', '8m (wheelhouse)'];
+const NORDFORSK_IW_LAT = 0.05; // NORDFORSK Intellectual Work lateral limit (g)
 COMFORT.heights.forEach((h, i) => {
   const rms = COMFORT.rms_g[i];
   const pct = Math.min(rms / 0.15 * 100, 100);
-  const color = rms < 0.02 ? 'var(--ok)' : rms < 0.05 ? 'var(--warn)' : 'var(--danger)';
+  const nfPct = Math.min(NORDFORSK_IW_LAT / 0.15 * 100, 100);
+  const color = rms < 0.02 ? 'var(--ok)' : rms < NORDFORSK_IW_LAT ? 'var(--warn)' : 'var(--danger)';
   comfortDiv.innerHTML += `<div class="comfort-bar">
     <div class="label">${h}m</div>
-    <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${color}"></div></div>
+    <div class="bar-bg">
+      <div class="bar-fill" style="width:${pct}%;background:${color}"></div>
+      <div style="position:absolute;left:${nfPct}%;top:0;width:2px;height:100%;background:#60a5fa;opacity:0.8" title="NORDFORSK IW 0.05g"></div>
+    </div>
     <div class="bar-val" style="color:${color}">${rms.toFixed(3)}g</div>
   </div>`;
 });
@@ -823,6 +882,27 @@ window.addEventListener('resize', () => {
   camera.updateProjectionMatrix();
   renderer.setSize(w, h);
 });
+</script>
+<script>
+function njordCheckPass() {
+  var p = document.getElementById('njord-gate-pwd').value;
+  if (p === 'njord2026') {
+    document.getElementById('njord-password-gate').classList.add('unlocked');
+    sessionStorage.setItem('njord-unlocked', '1');
+    return false;
+  }
+  var inp = document.getElementById('njord-gate-pwd');
+  inp.classList.add('error');
+  document.getElementById('njord-gate-err').classList.add('visible');
+  setTimeout(function(){ inp.classList.remove('error'); }, 500);
+  return false;
+}
+if (sessionStorage.getItem('njord-unlocked') === '1') {
+  document.addEventListener('DOMContentLoaded', function() {
+    var g = document.getElementById('njord-password-gate');
+    if (g) g.classList.add('unlocked');
+  });
+}
 </script>
 </body>
 </html>

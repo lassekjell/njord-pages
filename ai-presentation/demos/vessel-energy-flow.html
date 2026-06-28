@@ -434,7 +434,7 @@ body {
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <style>
-/* ─── PASSWORD GATE ─── */
+/* --- PASSWORD GATE --- */
 #njord-password-gate {
   position: fixed; inset: 0; z-index: 99999;
   background: #0a1e2a;
@@ -491,7 +491,7 @@ body {
 <div id="njord-password-gate">
   <div class="njord-gate-box">
     <div class="ns-logo">NS</div>
-    <h2>Njord Survey — Internal</h2>
+    <h2>Njord Survey &mdash; Internal</h2>
     <form onsubmit="return njordCheckPass()">
       <input type="password" id="njord-gate-pwd" class="njord-gate-input"
              placeholder="Enter password" autocomplete="off">
@@ -4099,7 +4099,6 @@ function initVessel() {
 
 document.addEventListener('DOMContentLoaded', initVessel);
 </script>
-
 <script>
 function njordCheckPass() {
   var p = document.getElementById('njord-gate-pwd').value;
@@ -4121,6 +4120,5 @@ if (sessionStorage.getItem('njord-unlocked') === '1') {
   });
 }
 </script>
-
 </body>
 </html>
